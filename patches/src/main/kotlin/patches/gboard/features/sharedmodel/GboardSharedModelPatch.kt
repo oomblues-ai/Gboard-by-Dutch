@@ -58,7 +58,7 @@ internal object GboardSharedWritingTargets {
         GboardMethodTarget("Ladtl;","k",emptyList(),"Z").resolve(context)
         listOf("g","h").forEach{GboardFieldTarget("Laicd;",it,"Lahdw;").resolve(context)}
         GboardMethodTarget("Laheb;","f",listOf("Lahdw;"),"Z").resolve(context)
-        listOf("g","h").forEach{GboardMethodTarget("Laheb;",it,listOf("Lahdw;"),"V").resolve(context)}
+        listOf("g","h").forEach{GboardMethodTarget("Laheb;",it,listOf("Lahdw;"),"Z").resolve(context)}
         // Enter through the same native request as the original Writing Tools access point.
         GboardMethodTarget("Lpve;","f",listOf("Ladbd;","Laicj;","Z","Laeaj;","Ljava/util/function/Consumer;"),"V").resolve(context)
         GboardMethodTarget("Laicj;","d",listOf("Lavgf;"),"Laicj;").resolve(context)
