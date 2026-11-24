@@ -71,8 +71,9 @@ public final class SharedKeyboardSurface {
         return null;
     }
     private static Drawable copy(Drawable drawable,Context context){if(drawable==null || drawable.getConstantState()==null)return null;Drawable result=drawable.getConstantState().newDrawable(context.getResources(),context.getTheme()).mutate();result.setAlpha(drawable.getAlpha());result.setColorFilter(drawable.getColorFilter());result.setLevel(drawable.getLevel());result.setLayoutDirection(drawable.getLayoutDirection());return result;}
-    static TextView styledText(TextView source,String value){
-        TextView text=new TextView(source.getContext());text.setText(value);text.setTextColor(source.getTextColors());text.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX,source.getTextSize());text.setTypeface(source.getTypeface());text.setLetterSpacing(source.getLetterSpacing());text.setFontFeatureSettings(source.getFontFeatureSettings());text.setGravity(source.getGravity());text.setIncludeFontPadding(source.getIncludeFontPadding());text.setTextDirection(source.getTextDirection());text.setTextAlignment(source.getTextAlignment());if(source.getFontVariationSettings()!=null)text.setFontVariationSettings(source.getFontVariationSettings());text.setLineSpacing(source.getLineSpacingExtra(),source.getLineSpacingMultiplier());text.setPadding(source.getPaddingLeft(),source.getPaddingTop(),source.getPaddingRight(),source.getPaddingBottom());return text;
+    static TextView styledText(TextView source,String value){return copyTextStyle(source,new TextView(source.getContext()),value);}
+    private static TextView copyTextStyle(TextView source,TextView text,String value){
+        text.setText(value);text.setTextColor(source.getTextColors());text.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX,source.getTextSize());text.setTypeface(source.getTypeface());text.setLetterSpacing(source.getLetterSpacing());text.setFontFeatureSettings(source.getFontFeatureSettings());text.setGravity(source.getGravity());text.setIncludeFontPadding(source.getIncludeFontPadding());text.setTextDirection(source.getTextDirection());text.setTextAlignment(source.getTextAlignment());if(source.getFontVariationSettings()!=null)text.setFontVariationSettings(source.getFontVariationSettings());text.setLineSpacing(source.getLineSpacingExtra(),source.getLineSpacingMultiplier());text.setPadding(source.getPaddingLeft(),source.getPaddingTop(),source.getPaddingRight(),source.getPaddingBottom());return text;
     }
     static LinearLayout body(){
         ViewGroup nativeBody=templateRoot();LinearLayout result=new LinearLayout(nativeBody.getContext());result.setOrientation(LinearLayout.VERTICAL);
@@ -87,9 +88,26 @@ public final class SharedKeyboardSurface {
     private static void appendButton(LinearLayout body,TextView template,View shape,String title,Runnable action){
         Drawable background=copy(shape.getBackground(),template.getContext());
         if(background==null)throw new IllegalStateException("NATIVE_THEME_UNAVAILABLE");
-        TextView button=styledText(template,title);button.setBackground(background);button.setTextColor(template.getCurrentTextColor());ColorStateList tint=shape.getBackgroundTintList();if(tint!=null)button.setBackgroundTintList(ColorStateList.valueOf(tint.getColorForState(shape.getDrawableState(),tint.getDefaultColor())));button.setPadding(shape.getPaddingLeft(),shape.getPaddingTop(),shape.getPaddingRight(),shape.getPaddingBottom());button.setMinHeight(Math.max(shape.getMinimumHeight(),shape.getHeight()));button.setMinWidth(shape.getMinimumWidth());button.setElevation(shape.getElevation());if(shape.isEnabled())button.setAlpha(shape.getAlpha());button.setClickable(true);button.setFocusable(true);button.setEnabled(true);button.setOnClickListener(v->action.run());
+        NativeActionButton button=new NativeActionButton(template.getContext(),shape);copyTextStyle(template,button,title);button.setGravity(Gravity.CENTER);button.setTextAlignment(View.TEXT_ALIGNMENT_GRAVITY);button.setBackground(background);ColorStateList tint=shape.getBackgroundTintList();if(tint!=null)button.setBackgroundTintList(tint);button.setPadding(shape.getPaddingLeft(),shape.getPaddingTop(),shape.getPaddingRight(),shape.getPaddingBottom());button.setMinHeight(Math.max(shape.getMinimumHeight(),shape.getHeight()));button.setMinWidth(shape.getMinimumWidth());button.setElevation(shape.getElevation());if(shape.isEnabled())button.setAlpha(shape.getAlpha());button.setClickable(true);button.setFocusable(true);button.setEnabled(true);button.setOnClickListener(v->action.run());
         LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
-        ViewGroup.LayoutParams source=shape.getLayoutParams();if(source instanceof ViewGroup.MarginLayoutParams){ViewGroup.MarginLayoutParams margins=(ViewGroup.MarginLayoutParams)source;params.setMargins(margins.leftMargin,margins.topMargin,margins.rightMargin,margins.bottomMargin);}body.addView(button,params);
+        ViewGroup.LayoutParams source=shape.getLayoutParams();if(source instanceof ViewGroup.MarginLayoutParams){ViewGroup.MarginLayoutParams margins=(ViewGroup.MarginLayoutParams)source;params.setMargins(margins.leftMargin,margins.topMargin,margins.rightMargin,margins.bottomMargin);}params.topMargin=Math.max(params.topMargin,button.nativeSpacing);body.addView(button,params);
+    }
+    /** Preserve Material's native checked/checkable drawable states without making an action a checkbox. */
+    private static final class NativeActionButton extends Button {
+        private int[] themeStates;final int nativeSpacing;
+        NativeActionButton(Context context,View source){
+            super(context,null,0);setAllCaps(false);
+            int[] states=source.getDrawableState();int count=0;for(int state:states)if(state==android.R.attr.state_checkable || state==android.R.attr.state_checked)count++;
+            themeStates=new int[count];int at=0;for(int state:states)if(state==android.R.attr.state_checkable || state==android.R.attr.state_checked)themeStates[at++]=state;
+            nativeSpacing=source instanceof NativeActionButton?((NativeActionButton)source).nativeSpacing:spacing(source);
+            setSelected(source.isSelected());setActivated(source.isActivated());refreshDrawableState();
+        }
+        @Override protected int[] onCreateDrawableState(int extra){int[] nativeStates=themeStates;int[] states=super.onCreateDrawableState(extra+(nativeStates==null?0:nativeStates.length));return nativeStates==null?states:mergeDrawableStates(states,nativeStates);}
+        private static int spacing(View source){
+            ViewParent parent=source.getParent();if(!(parent instanceof ViewGroup))return 0;ViewGroup group=(ViewGroup)parent;int gap=Integer.MAX_VALUE;
+            for(int i=0;i<group.getChildCount();i++){View other=group.getChildAt(i);if(other==source || !(other instanceof TextView) || !other.isClickable())continue;int distance=other.getLeft()>=source.getRight()?other.getLeft()-source.getRight():source.getLeft()>=other.getRight()?source.getLeft()-other.getRight():0;if(distance>0)gap=Math.min(gap,distance);}
+            return gap==Integer.MAX_VALUE?0:gap;
+        }
     }
     static final class Panel {
         final LinearLayout content;private FrameLayout wrapper,parent;private Runnable onDismiss;private boolean detached;private TextView labelStyle,actionStyle;
