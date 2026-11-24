@@ -1,4 +1,21 @@
 <!-- dap-release-branding:v1 -->
+![Dutch App Patches. Dutch apps. Your choices.](https://gitlab.com/johninnld/nl-morphe-patches/-/raw/d845381e3be550b6269a6c3507e14dcf6f62ecbc/docs/site/assets/brand/release-banner.png)
+
+**Release · patch bundle v1.105.1.**
+
+[Source metadata](https://gitlab.com/johninnld/nl-morphe-patches/-/raw/main/patches-bundle.json) · [User guide](https://gitlab.com/johninnld/nl-morphe-patches/-/blob/main/docs/site/en/index.md)
+
+Source: [d845381e3be5](https://gitlab.com/johninnld/nl-morphe-patches/-/commit/d845381e3be550b6269a6c3507e14dcf6f62ecbc). Check each app's target versions in the user guide before patching.
+
+---
+
+## [1.105.1](https://gitlab.com/johninnld/nl-morphe-patches/compare/v1.105.0...v1.105.1) (2026-11-24)
+
+### 🐛 Bug Fixes
+
+* **ABRP:** fix GPS and Android Auto location with Premium enabled ([d845381](https://gitlab.com/johninnld/nl-morphe-patches/commit/d845381e3be550b6269a6c3507e14dcf6f62ecbc))
+
+<!-- dap-release-branding:v1 -->
 ![Dutch App Patches. Dutch apps. Your choices.](https://gitlab.com/johninnld/nl-morphe-patches/-/raw/21c47ad061dcda8607f404183061c251244d5092/docs/site/assets/brand/release-banner.png)
 
 **Release · patch bundle v1.105.0.**
