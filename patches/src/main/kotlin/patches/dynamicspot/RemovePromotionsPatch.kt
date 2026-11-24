@@ -1,6 +1,7 @@
 package patches.dynamicspot
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import org.w3c.dom.Element
@@ -44,9 +45,9 @@ val removePromotionsPatch = bytecodePatch(
     dependsOn(patches.shared.originalInput(dynamicspot), fixPairipStartupPatch, homePromotionsResources)
 
     execute {
-        listOf(OfferDialogFingerprint, RatingDialogFingerprint,
-            HomeOfferFingerprint, PromoNotificationFingerprint).forEach {
+        listOf(OfferDialogFingerprint, RatingDialogFingerprint, PromoNotificationFingerprint).forEach {
             it.method.addInstruction(0, "return-void")
         }
+        HomeOfferFingerprint.method.addInstructions(0, "const/4 v0, 0x0\nreturn v0")
     }
 }

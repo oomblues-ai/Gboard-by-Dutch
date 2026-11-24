@@ -98,7 +98,7 @@ internal object RatingDialogFingerprint : Fingerprint(
 internal object HomeOfferFingerprint : Fingerprint(
     definingClass = "Lcom/jamworks/dynamicspot/SettingsHome;",
     name = "p",
-    returnType = "V",
+    returnType = "Z",
     parameters = emptyList(),
     strings = listOf("prefPromoShown_3"),
 )
