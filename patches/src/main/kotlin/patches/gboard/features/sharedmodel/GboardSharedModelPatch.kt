@@ -32,7 +32,7 @@ internal val gboardSharedModelPatch = bytecodePatch(
         applySharedRequestDispatch(this)
         val provisioning=GboardMethodTarget("Ladtl;","k",emptyList(),"Z").resolve(this)
         val stockProvisioning="morpheSharedStock_k"
-        check(context.mutableClass("Ladtl;").methods.none{it.name==stockProvisioning}){"Native provisioning wrapper already exists"}
+        check(mutableClass("Ladtl;").methods.none{it.name==stockProvisioning}){"Native provisioning wrapper already exists"}
         provisioning.name=stockProvisioning
         addHelperMethodIfMissing("Ladtl;","k",emptyList(),"Z",provisioning.accessFlags,2,"""
             ${RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_NATIVE_PROVISIONING_BLOCKED, "")}
