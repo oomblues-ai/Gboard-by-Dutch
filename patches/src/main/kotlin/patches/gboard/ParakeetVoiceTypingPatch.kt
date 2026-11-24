@@ -510,6 +510,7 @@ val parakeetVoiceTyping = bytecodePatch(
                     ?: throw PatchException("Gboard manifest has no application")
                 val root=manifest.documentElement
                 ensureManifestUsesPermission(manifest,root,"android.permission.REQUEST_INSTALL_PACKAGES")
+                ensureManifestUsesPermission(manifest,root,"android.permission.RECORD_AUDIO")
                 val queries=root.childElements("queries").firstOrNull()?:manifest.createElement("queries").also{root.insertBefore(it,application)}
                 if(queries.childElements("package").none{it.manifestAndroidAttribute("name")=="app.johninnl.modelhost"})queries.appendChild(manifest.createElement("package").apply{setManifestAndroidAttribute("name","app.johninnl.modelhost")})
                 ensureManifestComponent(manifest,application,"activity","dev.jason.gboardpatches.extension.sharedmodel.SharedModelSetupActivity").setManifestAndroidAttribute("exported","false")

@@ -143,6 +143,8 @@ public final class ParakeetRecognizer {
             try {
                 vad = SharedSpeechHook.open(context);
                 shared=vad;
+                if(cancelled){vad.close();return;}
+                if(!listening){vad.close();signalStopListening(cb);if(finished.compareAndSet(false,true))cbStopRecognition(cb);decoder.shutdown();return;}
             } catch (Throwable t) {
                 Log.w(TAG, "Speech detection unavailable", t);
                 fail(cb, ERROR_OTHER);
@@ -154,6 +156,7 @@ public final class ParakeetRecognizer {
                     AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,
                     Math.max(minimum, ParakeetEngine.SAMPLE_RATE / 2 * 2));
             if (record.getState() != AudioRecord.STATE_INITIALIZED) throw new IllegalStateException("microphone");
+            if(cancelled){release(record);vad.close();return;}
             record.startRecording();
             if (record.getRecordingState() != AudioRecord.RECORDSTATE_RECORDING) {
                 throw new IllegalStateException("microphone busy");
