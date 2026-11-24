@@ -36,7 +36,7 @@
 - [x] Add native-styled selectable text and original Insert action; retain retry/back and avoid fabricated geometry.
 - [x] Add product tests for readiness/privacy, range insertion and explicit editor handoff boundaries.
 - [x] Grouped Android build/tests/lint passed in disposable batch46; source snapshot `c89b7d8a` and cleanup retained.
-- [ ] Both real original ABI emissions for the final immutable review.
+- [x] Final immutable review `2bf0eb1301cc` built/signed and passed original arm64/arm32 emission with validation in batch48; intended wrapper/capture classes and host pins checked.
 - [ ] Bounded phone camera/image recognition, selection/Insert/Undo, theme and cancellation acceptance.
 
 ## Task 2: Screen-context replies/My Style
@@ -48,7 +48,7 @@
 - [x] Route empty-draft native Writing Tools and AI Reply/My Style actions through captured conversation context. Use the current draft as reply intention and saved style preferences when provided; do not claim automatic learning from all visible messages.
 - [x] Reuse the existing native preview/Apply/Undo path and operation-local styles.
 - [x] Add product tests for image bounds, conversation/style separation and handoff identity/staleness.
-- [ ] Grouped checkpoint and fresh read-only review.
+- [x] Fresh whole-delta review completed; its critical/important findings were fixed together. Final affected tests and lint passed in batch48; other unchanged Android aggregate evidence reused from batch46.
 - [ ] Bounded Slack/WhatsApp or owner-approved test-chat acceptance: consent, capture teardown, missing/secure context, empty/current draft, cancellation, stale app/selection, Apply/Undo.
 
 ## Delivery boundary
@@ -73,3 +73,5 @@ Grouped checkpoint: the complete affected Android aggregate, patch tests/list ge
 Version-contract correction before immutable emission: 18.8 `aadv.b(I)` stores an integer state, so the unrelated older split-keyboard field mapping is not reused. The shared override now runs at `ppq.l`'s exact `j:I` assignment, deriving receiver/state registers from that typed write. It retains native `p/h/e` editor/privacy policy and substitutes shared readiness for Google's model provisioning requirement. Both original ABIs must resolve these exact fields and wrappers before delivery.
 
 Ruling: commit the complete reviewed build input to derive a unique review identity, then run the final build/affected checks and original-APK emissions before pushing that feature head. An unsuccessful review build is not delivered or promoted.
+
+Final offline review identity: source `2bf0eb1301ccdae73e0a6715f88d4fbf382f2b39`, version `1.105.0+review.2bf0eb1301cc`, MPP SHA-256 `f32cf6e131a14ea4aa814b04cb8724578b7384be878dff9ab8576535168ea822`. Build/affected tests/lint, signature and both original ABI validations passed with compact receipts and cleanup. This artifact is not installed on the phone. Camera/Gemma quality, native entry visibility, consent return, selectable insertion/undo and Slack/WhatsApp replies remain unaccepted. Strict handoff intentionally rejects a replaced input connection; actual Android chooser/capture compatibility must be established on the device.
