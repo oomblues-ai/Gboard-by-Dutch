@@ -100,7 +100,8 @@ function unreleasedCommitHashes(context) {
 
 // Short app names used in commit trailers. Keep the public release-note scope
 // equal to the app's Compatibility name so Morphe badges the right app.
-const APP_ALIASES = new Map([["maps", "Google Maps"], ["googlemaps", "Google Maps"], ["projectivy", "Projectivy Launcher"]]);
+const APP_ALIASES = new Map([["maps", "Google Maps"], ["googlemaps", "Google Maps"], ["projectivy", "Projectivy Launcher"],
+  ["com.jamworks.dynamicspot", "dynamicSpot"]]);
 function normalizeAppName(name) {
   const trimmed = String(name).trim();
   return APP_ALIASES.get(trimmed.toLowerCase()) || trimmed;
@@ -153,7 +154,12 @@ function appImpact(context) {
 
 function scopeCommits(commits, context) {
   const impact = context && appImpact(context);
+  // Match the verifier's source-commit set. Conventional merge subjects describe
+  // integration; the underlying source commits supply the release bullets.
+  const merges = impact ? new Set(git(context, "log", "--merges", "--format=%H", context.nextRelease.gitHead,
+    ...(context.lastRelease.gitTag ? ["--not", context.lastRelease.gitTag] : [])).split("\n").filter(Boolean)) : new Set();
   return commits.flatMap(commit => {
+    if (merges.has(commit.hash)) return [];
     if (impact?.unreleased && !impact.unreleased.has(commit.hash)) return [];
     const match = /^(\w+)(?:\(([^)]+)\))?(!?): (.*)/.exec(commit.message);
     if (!match) return [commit];
