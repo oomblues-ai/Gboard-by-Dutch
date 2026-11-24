@@ -26,6 +26,9 @@ internal val gboardSharedModelPatch = bytecodePatch(
         GboardSharedWritingTargets.preflight(this)
         installSharedEditorBridge(this)
         GboardMethodTarget("Lpdq;","fk",emptyList(),"V").resolve(this).addInstructions(0,RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_EDITOR_INVALIDATE,""))
+        val nativeKeyboard="Lcom/google/android/apps/inputmethod/libs/jarvis/JarvisKeyboard;"
+        GboardMethodTarget(nativeKeyboard,"ep",listOf("Lcom/google/android/libraries/inputmethod/widgets/SoftKeyboardView;","Lcom/google/android/libraries/inputmethod/metadata/KeyboardViewDef;"),"V").resolve(this).addInstructions(0,RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_KEYBOARD_SURFACE_BIND,"p0 .. p1"))
+        GboardMethodTarget(nativeKeyboard,"f",emptyList(),"V").resolve(this).addInstructions(0,RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_KEYBOARD_SURFACE_CLEAR,""))
         applySharedRequestDispatch(this)
         findMutableMethodOrThrow(GboardSharedWritingTargets.readiness).applySharedFactory(this,RuntimeCallId.SHARED_WRITING_READINESS, "")
         findMutableMethodOrThrow(GboardSharedWritingTargets.v2Factory).applySharedFactory(this,RuntimeCallId.SHARED_WRITING_CREATE_V2,"p0 .. p1")
@@ -42,10 +45,12 @@ internal object GboardSharedWritingTargets {
     val wrappedFactory=GboardMethodTarget("Ladtl;","d",listOf("Lagrh;"),"Ladvh;")
     fun preflight(context: BytecodePatchContext) {
         v2Factory.resolve(context);wrappedFactory.resolve(context);readiness.resolve(context)
-        // The Local AI entry uses the same native secondary-keyboard activation event as Jarvis.
-        GboardMethodTarget("Lagoq;","<init>",listOf("Lagoo;","Ljava/lang/Object;"),"V").resolve(context)
-        GboardMethodTarget("Ladan;","e",listOf("I","Ljava/lang/Object;"),"Ladan;").resolve(context)
+        // Enter through the same native request as the original Writing Tools access point.
+        GboardMethodTarget("Lpve;","f",listOf("Ladbd;","Laicj;","Z","Laeaj;","Ljava/util/function/Consumer;"),"V").resolve(context)
+        GboardMethodTarget("Laicj;","d",listOf("Lavgf;"),"Laicj;").resolve(context)
         GboardMethodTarget("Lafae;","bT",listOf("Ladan;"),"V").resolve(context)
+        GboardFieldTarget("Ladbd;","d","Ladbd;").resolve(context)
+        GboardMethodTarget("Ladan;","e",listOf("I","Ljava/lang/Object;"),"Ladan;").resolve(context)
         GboardFieldTarget("Lpva;","a","Lagoo;").resolve(context)
         check(context.mutableClass("Ladvg;").interfaces.toSet()==setOf("Ljava/lang/AutoCloseable;","Lzwg;")) { "Writing handler parent interface drift" }
         listOf(

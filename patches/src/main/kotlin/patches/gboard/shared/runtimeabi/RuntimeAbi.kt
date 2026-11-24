@@ -8,6 +8,8 @@ internal enum class RuntimeCallId(internal val encodedAbi: String) {
     SHARED_COMPLETION_REMEMBER("LMorpheSharedCompletion188;->remember(Ljava/lang/Object;)V"),
     SHARED_COMPLETION_ACCEPT("LMorpheSharedCompletion188;->tryAccept(Ljava/lang/Object;)Z"),
     SHARED_COMPLETION_ELIGIBILITY("LMorpheSharedCompletion188;->eligibility(Ljava/lang/Object;)I"),
+    SHARED_KEYBOARD_SURFACE_BIND("Ldev/jason/gboardpatches/extension/sharedmodel/SharedKeyboardSurface;->bind(Ljava/lang/Object;Ljava/lang/Object;)V"),
+    SHARED_KEYBOARD_SURFACE_CLEAR("Ldev/jason/gboardpatches/extension/sharedmodel/SharedKeyboardSurface;->clear()V"),
     SHARED_EDITOR_INVALIDATE("LMorpheSharedEditor188;->invalidate()V"),
     SHARED_EDITOR_REMEMBER("LMorpheSharedEditor188;->remember(Ljava/lang/Object;)V"),
     SHARED_EDITOR_OPERATION("LMorpheSharedEditor188;->operation(Ljava/lang/String;)Laeaj;"),

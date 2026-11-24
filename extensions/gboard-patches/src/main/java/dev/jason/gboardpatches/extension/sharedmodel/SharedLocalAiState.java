@@ -65,7 +65,7 @@ public final class SharedLocalAiState {
             case "PROVIDER_STOPPED":case "DISABLED":case "STOPPED":return "Provider OFF. Open provider setup and tap Start local AI.";
             case "PROVIDER_UNTRUSTED":case "UNTRUSTED_PROVIDER":return "Provider verification failed. Install the matching signed Local Model Host APK.";
             case "MODEL_MISSING":return "Model MISSING. Download or import it in provider setup.";
-            case "LOAD_FAILED":case "ENGINE_OWNERSHIP_UNKNOWN":return "Model FAILED to load. Open provider setup, stop it and start it again ("+safeCode(code)+").";
+            case "LOAD_FAILED":case "ENGINE_OWNERSHIP_UNKNOWN":return "The model could not load. Open Model setup, switch it off and on again.";
             case "MEMORY_PAUSED":return "Model PAUSED for memory. Close other demanding apps and try again.";
             case "LOADING":case "PREPARING":case "RECOVERING":case "LOAD_BACKOFF":case "RECONFIGURING":return "Model is STARTING. Wait for Model ready in provider setup.";
             case "SESSION_INACTIVE":case "SESSION_UNAVAILABLE":return "Keyboard session is unavailable. Close and reopen the keyboard, then retry.";
@@ -73,11 +73,12 @@ public final class SharedLocalAiState {
             case "INPUT_TOO_LONG":case "CONTEXT_EXCEEDED":case "TOKEN_BUDGET_EXCEEDED":case "CONTEXT_LIMIT":return "This text exceeds the local model's context limit. Select a shorter passage.";
             case "OUTPUT_TRUNCATED":return "The model ran out of output space. Nothing was applied; try a shorter passage.";
             case "DEADLINE_EXCEEDED":case "TIMEOUT":return "The local request timed out. Nothing was applied; retry when the model is ready.";
+            case "NATIVE_THEME_UNAVAILABLE":return "Gboard’s themed writing surface is not ready. Close and reopen Writing Tools.";
             case "NATIVE_WRITING_ACTIVATION_FAILED":return "Gboard could not open its writing session in this editor. Nothing was applied.";
             case "NATIVE_EDITOR_UNAVAILABLE":return "Gboard’s writing session is not active. Open Writing tools for this draft, then retry Local AI.";
             case "EDITOR_UNAVAILABLE":return "Writing tools are unavailable in this editor. Try a normal editable draft.";
             case "SHARED_BACKEND_NOT_SELECTED":return "Local AI is OFF for Gboard. Enable it in Local AI settings.";
-            default:return "Local request failed ("+safeCode(code)+"). Nothing was applied. Open Local AI settings for provider status.";
+            default:return "The local request could not finish. Nothing was applied. Check the model status or try again.";
         }
     }
 }

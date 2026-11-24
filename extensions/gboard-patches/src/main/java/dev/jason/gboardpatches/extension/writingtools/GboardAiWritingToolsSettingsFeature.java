@@ -188,7 +188,13 @@ public final class GboardAiWritingToolsSettingsFeature
                 () -> {
                 },
                 value -> {
-                    GboardAiWritingToolsSettings.writeBackendType(preferences, value);
+                    if(GboardAiWritingToolsSettings.BACKEND_SHARED_LOCAL.equals(value)){
+                        dev.jason.gboardpatches.extension.sharedmodel.SharedLocalAiState.select(preferences,true);
+                        dev.jason.gboardpatches.extension.sharedmodel.SharedModelClient.activate(host.getContext());
+                    }else{
+                        GboardAiWritingToolsSettings.writeBackendType(preferences,value);
+                        dev.jason.gboardpatches.extension.sharedmodel.SharedModelClient.releaseSession();
+                    }
                     GboardPatchesSettingsContract.refresh(host);
                 });
     }

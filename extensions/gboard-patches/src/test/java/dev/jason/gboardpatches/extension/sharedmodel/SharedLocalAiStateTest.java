@@ -43,7 +43,7 @@ public class SharedLocalAiStateTest {
     }
     @Test public void failedLoadHasAnActionInsteadOfTheGenericInstalledMessage(){
         String message=SharedLocalAiState.providerSummary(new HostStatus("{\"state\":\"FAILED\",\"enabled\":true,\"code\":\"LOAD_FAILED\"}"),"");
-        assertTrue(message.contains("FAILED"));assertTrue(message.contains("start it again"));
+        assertTrue(message.contains("could not load"));assertTrue(message.contains("off and on"));
     }
     @Test public void nativePreflightFailureIsVisibleInLocalAiStatus(){
         Context context=RuntimeEnvironment.getApplication();

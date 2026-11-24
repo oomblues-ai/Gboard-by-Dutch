@@ -19,7 +19,7 @@ public final class SharedWritingActivation {
         EditorSnapshot snapshot=GboardSharedWritingRuntime.captureEditor();
         if(ime==null || snapshot==null){SharedTextActions.failure(context,"EDITOR_UNAVAILABLE");return;}
         CompletableFuture<Void> result=start(snapshot,new Entry(){
-            public boolean available(){return NativeEditBridge.available();}
+            public boolean available(){return NativeEditBridge.available() && SharedKeyboardSurface.available();}
             public void open()throws Exception{NativeEditBridge.activate(ime);}
         });
         result.whenComplete((ignored,error)->MAIN.post(()->{
