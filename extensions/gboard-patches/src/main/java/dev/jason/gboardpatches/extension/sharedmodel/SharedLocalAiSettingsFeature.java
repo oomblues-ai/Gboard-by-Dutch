@@ -13,22 +13,24 @@ public final class SharedLocalAiSettingsFeature implements GboardPatchesSettings
     private final String title,badge;
     private final WritingOptions writing;
     private final Advanced advanced;
+    private final LanguageCoverage languages;
     public SharedLocalAiSettingsFeature(Context context){
         this.context=context.getApplicationContext();
         title=GboardSettingsText.get(context,R.string.gboard_patches_shared_model_entry);
         badge=GboardSettingsText.get(context,R.string.gboard_patches_header_badge);
-        writing=new WritingOptions(this.context,badge);advanced=new Advanced(this.context,badge);
+        writing=new WritingOptions(this.context,badge);advanced=new Advanced(this.context,badge);languages=new LanguageCoverage(badge);
     }
     @Override public String getEntryTitle(){return title;}
     @Override public String getEntrySummary(){return GboardSharedWritingRuntime.selected(context)?"On · Writing tools and text scanning use the local model":"Off · Set up local writing tools";}
     @Override public boolean isAvailable(Context context){return GboardPatchesFeatureAvailability.hasFeature(context,GboardPatchesFeatureAvailability.FEATURE_SHARED_LOCAL_MODEL);}
-    @Override public List<GboardPatchesSettingsContract.Feature> getNavigationChildren(){return Arrays.asList(writing,advanced);}
+    @Override public List<GboardPatchesSettingsContract.Feature> getNavigationChildren(){return Arrays.asList(writing,languages,advanced);}
     @Override public void onVisible(GboardPatchesSettingsContract.FeatureHost host){SharedModelClient.reconnect(host.getContext());}
     @Override public GboardPatchesSettingsContract.Screen buildScreen(GboardPatchesSettingsContract.FeatureHost host){
         Context c=host.getContext();boolean installed=ProviderDiscovery.inspect(c).installed;
         boolean selected=GboardSharedWritingRuntime.selected(c),ready=installed && SharedModelClient.ready(c);
         List<GboardPatchesSettingsContract.StatusBlock> status=new ArrayList<>();
         status.add(new GboardPatchesSettingsContract.StatusBlock(ready?"Model ready":"Model status",installed?SharedModelClient.readinessMessage(c):"Install Local Model Host to use Gemma on this device.",ready?GboardPatchesSettingsContract.StatusTone.INFO:GboardPatchesSettingsContract.StatusTone.WARNING));
+        status.add(new GboardPatchesSettingsContract.StatusBlock("Language quality","Quality and speed vary by language. Additional languages are experimental; review all suggestions."));
         if(!SharedProviderSetup.message().isEmpty())status.add(new GboardPatchesSettingsContract.StatusBlock("Setup",SharedProviderSetup.message()));
         String failure=SharedModelClient.lastRequestError();
         if(!failure.isEmpty())status.add(new GboardPatchesSettingsContract.StatusBlock("Last action",SharedLocalAiState.failureMessage(failure),GboardPatchesSettingsContract.StatusTone.WARNING));
@@ -44,12 +46,26 @@ public final class SharedLocalAiSettingsFeature implements GboardPatchesSettings
         if(SharedProviderSetup.busy())rows.add(new GboardPatchesSettingsContract.ActionRow("Cancel download","Keep your current setup.",true,SharedProviderSetup::cancel));
         rows.add(new GboardPatchesSettingsContract.ActionRow("Model setup","Download the model, start or stop it, and choose image support.",installed,()->openProvider(c)));
         rows.add(new GboardPatchesSettingsContract.ActionRow("Writing preferences","Your style, reply context, saved instructions and experimental typing features.",true,()->GboardPatchesSettingsContract.openFeature(host,writing)));
+        rows.add(new GboardPatchesSettingsContract.ActionRow("Language coverage","38-language baseline · additional languages available as experimental",true,()->GboardPatchesSettingsContract.openFeature(host,languages)));
         rows.add(new GboardPatchesSettingsContract.ActionRow("Advanced","Manual installation and technical status.",true,()->GboardPatchesSettingsContract.openFeature(host,advanced)));
         return new GboardPatchesSettingsContract.Screen(title,badge,title,"Writing help that stays on your device.",status,Collections.singletonList(new GboardPatchesSettingsContract.Section("Local AI",rows)),GboardPatchesSettingsContract.RefreshPolicy.fullScreen(1500),GboardPatchesSettingsContract.PanelStyle.FLAT);
     }
     static void openProvider(Context context){
         try{context.startActivity(new Intent().setComponent(new ComponentName(ModelHostClient.DEFAULT_PACKAGE,"app.johninnl.modelhost.setup.HostSettingsActivity")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));}
         catch(ActivityNotFoundException missing){SharedProviderSetup.finished("Install Local Model Host first.");}
+    }
+    public static final class LanguageCoverage implements GboardPatchesSettingsContract.Feature {
+        private final String badge;
+        LanguageCoverage(String badge){this.badge=badge;}
+        public String getEntryTitle(){return "Language coverage";}
+        public String getEntrySummary(){return "Baseline languages and experimental language quality";}
+        public GboardPatchesSettingsContract.Screen buildScreen(GboardPatchesSettingsContract.FeatureHost host){
+            List<GboardPatchesSettingsContract.Row> rows=new ArrayList<>();
+            rows.add(new GboardPatchesSettingsContract.DetailRow("38-language baseline",SharedLanguageCoverage.baselineNames(),true,false));
+            rows.add(new GboardPatchesSettingsContract.DetailRow("Additional languages","Available · experimental. Even simple punctuation edits may be useful, but correctness is not guaranteed.",true,false));
+            rows.add(new GboardPatchesSettingsContract.DetailRow("Quality checks","Check names, numbers, negation and meaning before applying an edit. A language is only verified after our task-specific checks pass.",true,false));
+            return new GboardPatchesSettingsContract.Screen(getEntryTitle(),badge,getEntryTitle(),SharedLanguageCoverage.qualityNotice(),Collections.emptyList(),Collections.singletonList(new GboardPatchesSettingsContract.Section("Language policy",rows)),GboardPatchesSettingsContract.RefreshPolicy.none(),GboardPatchesSettingsContract.PanelStyle.FLAT);
+        }
     }
     public static final class WritingOptions implements GboardPatchesSettingsContract.Feature {
         private final Context context;private final String badge;private String error="";
