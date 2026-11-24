@@ -532,11 +532,11 @@ val parakeetVoiceTyping = bytecodePatch(
             for ((folder, texts) in listOf(
                 "values" to listOf(
                     "Local AI voice typing", "Speech models and downloads are managed in Local Model Host",
-                    "Local AI", "Use the shared speech model selected in Local Model Host",
+                    "Standard", "Google voice typing, or the selected Local AI speech model when enabled below",
                 ),
                 "values-nl" to listOf(
                     "Lokale AI-spraakinvoer", "Spraakmodellen en downloads worden beheerd in Local Model Host",
-                    "Lokale AI", "Gebruik het gedeelde spraakmodel uit Local Model Host",
+                    "Standaard", "Google-spraakinvoer, of het gekozen lokale AI-spraakmodel als dit hieronder is ingeschakeld",
                 ),
             )) {
                 val path = "res/$folder/strings.xml"
