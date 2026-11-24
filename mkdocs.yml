@@ -208,6 +208,7 @@ nav:
           - apps/aliexpress.md
           - apps/bol.md
           - apps/cronometer.md
+          - apps/dynamicspot.md
           - apps/gboard.md
           - apps/homeassistant.md
           - apps/homeassistant-automotive.md
