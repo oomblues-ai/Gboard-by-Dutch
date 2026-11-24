@@ -9,6 +9,7 @@ public final class SharedToolsMenu {
  }
  static void extra(Context context,String operation){
   if(!GboardSharedWritingRuntime.selected(context) || !SharedModelClient.ready(context)){SharedModelSetupActivity.open(context);return;}
+  if("reply".equals(operation)||"my_style".equals(operation)){SharedScreenContext.reply(context,"my_style".equals(operation));return;}
   SharedWritingActivation.ensure(context,()->SharedKeyboardSurface.whenAvailable(context,()->{
    SharedModelClient.cancelRequests();
    if("voice_edit".equals(operation)){SharedVoiceEditController.arm(context);return;}

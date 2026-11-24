@@ -3,6 +3,7 @@ package patches.gboard.features.sharedmodel
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
@@ -25,6 +26,8 @@ internal val gboardSharedModelPatch = bytecodePatch(
     execute {
         GboardSharedWritingTargets.preflight(this)
         installSharedEditorBridge(this)
+        installSharedNativeEntry(this)
+        installSharedCameraOcr(this)
         GboardMethodTarget("Lpdq;","fk",emptyList(),"V").resolve(this).addInstructions(0,RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_EDITOR_INVALIDATE,""))
         val nativeKeyboard="Lcom/google/android/apps/inputmethod/libs/jarvis/JarvisKeyboard;"
         GboardMethodTarget(nativeKeyboard,"ep",listOf("Lcom/google/android/libraries/inputmethod/widgets/SoftKeyboardView;","Lcom/google/android/libraries/inputmethod/metadata/KeyboardViewDef;"),"V").resolve(this).addInstructions(0,RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_KEYBOARD_SURFACE_BIND,"p0 .. p1"))
@@ -211,4 +214,55 @@ internal fun installSharedEditorBridge(context:BytecodePatchContext){
         :done
         return v0
     """)
+}
+
+/** Native AccessPointController state; the original token, icon, label, click and order survive. */
+internal fun installSharedNativeEntry(context:BytecodePatchContext){
+    listOf("p","h","e").forEach{GboardFieldTarget("Lppq;",it,"Z").resolve(context)}
+    GboardFieldTarget("Lppq;","j","I").resolve(context)
+    GboardMethodTarget("Laadv;","b",listOf("I"),"V").resolve(context)
+    val state=GboardMethodTarget("Lppq;","l",emptyList(),"V").resolve(context)
+    val writes=state.implementation!!.instructions.withIndex().filter{it.value.isOpcode("IPUT") && it.value.isFieldReference("Lppq;->j:I")}
+    check(writes.size==1){"Writing access-point state assignment drift"}
+    val write=writes.single();val registers=write.value as TwoRegisterInstruction
+    val open=GboardMethodTarget("Lpsi;","u",listOf("Z"),"V").resolve(context)
+    val flags=open.accessFlags;open.name="morpheSharedStock_u"
+    context.addHelperMethodIfMissing("Lpsi;","u",listOf("Z"),"V",flags,3,"""
+        ${RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_NATIVE_ENTRY_OPEN,"")}
+        move-result v0
+        if-nez v0, :done
+        invoke-virtual {p0, p1}, Lpsi;->morpheSharedStock_u(Z)V
+        :done
+        return-void
+    """.trimIndent())
+    state.addInstructions(write.index,"""
+        ${RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_NATIVE_ENTRY_STATE,"v${registers.registerB}, v${registers.registerA}")}
+        move-result v${registers.registerA}
+    """.trimIndent())
+}
+
+internal fun installSharedCameraOcr(context:BytecodePatchContext){
+    val owner="Ltwm;"
+    listOf("b" to "Landroid/content/Context;","c" to "Landroidx/camera/view/PreviewView;","f" to "Landroid/widget/TextView;","g" to "Landroid/widget/TextView;","h" to "Landroid/widget/ImageButton;","l" to "Landroid/widget/FrameLayout;","B" to "Landroid/widget/TextView;","A" to "Landroid/view/View;","C" to "Landroid/view/View;","d" to "Landroid/view/View;","r" to "Lcia;","u" to "Z").forEach{(name,type)->GboardFieldTarget(owner,name,type).resolve(context)}
+    listOf(GboardMethodTarget(owner,"b",listOf("Ljava/lang/String;"),"V"),GboardMethodTarget(owner,"j",listOf("Ljava/lang/String;"),"V"),GboardMethodTarget(owner,"d",emptyList(),"V"),GboardMethodTarget(owner,"i",emptyList(),"V"),GboardMethodTarget("Lcia;","c",emptyList(),"V")).forEach{it.resolve(context)}
+    // Use separate wrapper frames so original methods may reuse parameter registers safely.
+    for((name,params,call) in listOf(Triple("e",emptyList<String>(),RuntimeCallId.SHARED_CAMERA_OCR_BIND),Triple("h",emptyList<String>(),RuntimeCallId.SHARED_CAMERA_OCR_CLEAR))){
+        val method=GboardMethodTarget(owner,name,params,"V").resolve(context)
+        val flags=method.accessFlags;method.name="morpheSharedStock_"+name
+        val hook=RuntimeCallEmitter.invoke(call,"p0")
+        val original="invoke-virtual {p0}, $owner->${method.name}()V"
+        context.addHelperMethodIfMissing(owner,name,params,"V",flags,1,if(name=="h")"$hook\n$original\nreturn-void" else "$original\n$hook\nreturn-void")
+    }
+    GboardFieldTarget("Ltvy;","a",owner).resolve(context)
+    val click=GboardMethodTarget("Ltvy;","onClick",listOf("Landroid/view/View;"),"V").resolve(context)
+    val flags=click.accessFlags;click.name="morpheSharedStock_onClick"
+    context.addHelperMethodIfMissing("Ltvy;","onClick",listOf("Landroid/view/View;"),"V",flags,3,"""
+        iget-object v0, p0, Ltvy;->a:Ltwm;
+        ${RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_CAMERA_OCR_CAPTURE,"v0")}
+        move-result v0
+        if-nez v0, :done
+        invoke-virtual {p0, p1}, Ltvy;->morpheSharedStock_onClick(Landroid/view/View;)V
+        :done
+        return-void
+    """.trimIndent())
 }

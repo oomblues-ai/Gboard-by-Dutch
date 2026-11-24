@@ -23,8 +23,8 @@ public final class SharedTextActions {
  static void request(Context context,String operation,String original,String instruction,String explicitContext,String language,EditorSnapshot snapshot){
   request(context,operation,original,instruction,explicitContext,language,snapshot,null);
  }
- private static void request(Context context,String operation,String original,String instruction,String explicitContext,String language,EditorSnapshot snapshot,SharedKeyboardSurface.Panel existing){
-  TextRequest request=new TextRequest(operation,original,instruction,explicitContext,language,null,512,30000);
+ static void request(Context context,String operation,String original,String instruction,String explicitContext,String language,EditorSnapshot snapshot,SharedKeyboardSurface.Panel existing){
+  TextRequest request=new TextRequest(operation,"reply".equals(operation)&&original.trim().isEmpty()?"Draft a brief, relevant reply to the visible messages. Do not invent facts, excuses, promises or commitments. Ask for missing information when needed.":original,instruction,explicitContext,language,null,512,30000);
   final SharedKeyboardSurface.Panel working;
   java.util.concurrent.atomic.AtomicReference<CompletableFuture<String>> active=new java.util.concurrent.atomic.AtomicReference<>();
   if(existing==null){

@@ -20,7 +20,7 @@ public final class SharedLocalAiSettingsFeature implements GboardPatchesSettings
         writing=new WritingOptions(this.context,badge);advanced=new Advanced(this.context,badge);
     }
     @Override public String getEntryTitle(){return title;}
-    @Override public String getEntrySummary(){return GboardSharedWritingRuntime.selected(context)?"On · Writing tools use the local model":"Off · Set up local writing tools";}
+    @Override public String getEntrySummary(){return GboardSharedWritingRuntime.selected(context)?"On · Writing tools and text scanning use the local model":"Off · Set up local writing tools";}
     @Override public boolean isAvailable(Context context){return GboardPatchesFeatureAvailability.hasFeature(context,GboardPatchesFeatureAvailability.FEATURE_SHARED_LOCAL_MODEL);}
     @Override public List<GboardPatchesSettingsContract.Feature> getNavigationChildren(){return Arrays.asList(writing,advanced);}
     @Override public void onVisible(GboardPatchesSettingsContract.FeatureHost host){SharedModelClient.reconnect(host.getContext());}
@@ -33,7 +33,7 @@ public final class SharedLocalAiSettingsFeature implements GboardPatchesSettings
         String failure=SharedModelClient.lastRequestError();
         if(!failure.isEmpty())status.add(new GboardPatchesSettingsContract.StatusBlock("Last action",SharedLocalAiState.failureMessage(failure),GboardPatchesSettingsContract.StatusTone.WARNING));
         List<GboardPatchesSettingsContract.Row> rows=new ArrayList<>();
-        rows.add(new GboardPatchesSettingsContract.ToggleRow("Use Local AI",selected?"On · Writing tools use Gemma on this device.":"Off · Turn on when the model is ready.",selected||ready,selected,value->{
+        rows.add(new GboardPatchesSettingsContract.ToggleRow("Use Local AI",selected?"On · Writing tools and text scanning use Gemma on this device.":"Off · Turn on when the model is ready.",selected||ready,selected,value->{
             if(value&&!SharedModelClient.ready(c)){host.submit(adapter->adapter.showMessage("Wait until the model is ready."));GboardPatchesSettingsContract.refresh(host);return;}
             boolean saved=SharedLocalAiState.select(GboardAiWritingToolsSettings.preferences(c),value);
             if(saved){if(value)SharedModelClient.activate(c);else SharedModelClient.releaseSession();}
@@ -59,7 +59,6 @@ public final class SharedLocalAiSettingsFeature implements GboardPatchesSettings
         public GboardPatchesSettingsContract.Screen buildScreen(GboardPatchesSettingsContract.FeatureHost host){
             List<GboardPatchesSettingsContract.Row> rows=new ArrayList<>();
             textRow(host,rows,"Your style","style","Add your own examples and preferences.");
-            textRow(host,rows,"Message to reply to","reply","Only the message you enter here is used for suggested replies.");
             textRow(host,rows,"Saved instruction","instruction","Choose how Local AI should edit your draft.");
             String[] languages={"English","French","German","Spanish","Italian","Portuguese","Dutch"},codes={"en","fr","de","es","it","pt","nl"};
             String selected=SharedWritingPreferences.language(context);int index=java.util.Arrays.asList(codes).indexOf(selected);

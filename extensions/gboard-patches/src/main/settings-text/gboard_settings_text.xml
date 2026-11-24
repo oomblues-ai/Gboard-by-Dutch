@@ -1580,7 +1580,7 @@
         <translation locale="en">Recognise text from an image, and choose the backend engine.</translation>
     </string>
     <string name="gboard_patches_ocr_header_summary">
-        <translation locale="en">The engine ships inside the patch, so nothing is downloaded. Latin text only.</translation>
+        <translation locale="en">Scan Text captures a photo. Use Local AI for Gemma recognition, or keep the bundled Latin recognizer.</translation>
     </string>
     <string name="gboard_patches_ocr_image_section">
         <translation locale="en">Text from an image</translation>
@@ -1589,7 +1589,7 @@
         <translation locale="en">Choose an image</translation>
     </string>
     <string name="gboard_patches_ocr_image_summary">
-        <translation locale="en">Runs the bundled engine on a screenshot or photo and copies the text to the clipboard. Latin text only.</translation>
+        <translation locale="en">Read a screenshot or photo with the selected OCR backend and copy its text to the clipboard.</translation>
     </string>
     <string name="gboard_patches_ocr_image_unreadable">
         <translation locale="en">That file could not be read as an image.</translation>
@@ -2960,8 +2960,8 @@
     <string name="gboard_patches_shared_model_setup_title"><translation locale="en">Set up shared local model</translation></string>
     <string name="gboard_patches_shared_model_setup_summary"><translation locale="en">Open Local Model Host for installation, model readiness and Always ready settings.</translation></string>
     <string name="gboard_patches_shared_model_label"><translation locale="en">Shared local model</translation></string>
-    <string name="gboard_patches_ocr_shared_title"><translation locale="en">Use shared model for image OCR</translation></string>
-    <string name="gboard_patches_ocr_shared_summary"><translation locale="en">Extract text from chosen images with Local Model Host. Enable images/OCR in the provider. The camera overlay keeps its bundled recognizer.</translation></string>
+    <string name="gboard_patches_ocr_shared_title"><translation locale="en">Use Local AI for text scanning</translation></string>
+    <string name="gboard_patches_ocr_shared_summary"><translation locale="en">Use Gemma for the Scan Text camera and chosen images. Also enabled by Use Local AI. Enable Images and text scanning in Local Model Host.</translation></string>
     <string name="gboard_patches_ocr_shared_unavailable"><translation locale="en">Shared OCR is unavailable. Check provider readiness, enable images/OCR, or choose a smaller crop.</translation></string>
     <string name="gboard_patches_shared_model_install_note"><translation locale="en">Install Local Model Host as a separate optional provider. The APK must match the trusted package, release checksum and signing certificate. Android will ask you to confirm installation.</translation></string>
     <string name="gboard_patches_shared_model_open"><translation locale="en">Open provider setup</translation></string>
