@@ -199,7 +199,16 @@ internal fun installSharedEditorBridge(context:BytecodePatchContext){
         return-void
     """)
     val activation=GboardMethodTarget("Lpdq;","n",listOf("Laeuj;","Landroid/view/inputmethod/EditorInfo;","Z","Ljava/util/Map;","Ladbd;"),"Z").resolve(context)
-    val returns=activation.returnInstructionIndices().filter{activation.implementation!!.instructions[it].isOpcode("RETURN")}
-    check(returns.isNotEmpty())
-    returns.asReversed().forEach{activation.addInstructions(it,RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_EDITOR_REMEMBER,"p0"))}
+    // Stock n reuses its p0 register for its boolean result. Preserve the receiver in a separate frame.
+    val stockActivation="morpheSharedStock_n"
+    check(context.mutableClass("Lpdq;").methods.none{it.name==stockActivation}){"Native activation wrapper already exists"}
+    activation.name=stockActivation
+    context.addHelperMethodIfMissing("Lpdq;","n",activation.parameterTypes.map(CharSequence::toString),"Z",activation.accessFlags,7,"""
+        invoke-virtual/range {p0 .. p5}, Lpdq;->$stockActivation(Laeuj;Landroid/view/inputmethod/EditorInfo;ZLjava/util/Map;Ladbd;)Z
+        move-result v0
+        if-eqz v0, :done
+        ${RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_EDITOR_REMEMBER,"p0")}
+        :done
+        return v0
+    """)
 }

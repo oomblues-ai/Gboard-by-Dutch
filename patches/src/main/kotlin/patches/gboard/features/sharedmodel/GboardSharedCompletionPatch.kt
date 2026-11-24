@@ -62,7 +62,15 @@ internal val gboardSharedCompletionPatch=bytecodePatch(description="Connect opti
    move-result-object p1
   """)
   val start=GboardMethodTarget("Laemy;","g",listOf("Landroid/view/inputmethod/EditorInfo;"),"V").resolve(this)
-  start.returnInstructionIndices().asReversed().forEach{start.addInstructions(it,RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_COMPLETION_REMEMBER,"p0"))}
+  // Do not assume the native method preserves its receiver register at every return.
+  val stockStart="morpheSharedStock_g"
+  check(mutableClass("Laemy;").methods.none{it.name==stockStart}){"Completion start wrapper already exists"}
+  start.name=stockStart
+  addHelperMethodIfMissing("Laemy;","g",listOf("Landroid/view/inputmethod/EditorInfo;"),"V",start.accessFlags,2,"""
+   invoke-virtual/range {p0 .. p1}, Laemy;->$stockStart(Landroid/view/inputmethod/EditorInfo;)V
+   ${RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_COMPLETION_REMEMBER,"p0")}
+   return-void
+  """)
   val eligible=GboardMethodTarget("Laemy;","x",emptyList(),"Z").resolve(this)
   check(eligible.implementation!!.registerCount>1)
   eligible.addInstructionsWithLabels(0,"""
