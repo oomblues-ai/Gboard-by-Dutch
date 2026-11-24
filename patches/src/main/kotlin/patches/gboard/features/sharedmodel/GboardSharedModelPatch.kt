@@ -45,7 +45,7 @@ internal object GboardSharedWritingTargets {
         listOf(
             GboardMethodTarget("Lavvx;","b",listOf("Ljava/lang/Runnable;","Ljava/util/concurrent/Executor;"),"V"),
             GboardMethodTarget("Lzwg;","j",emptyList(),"Ljava/lang/String;"),
-            GboardMethodTarget("Ladtm;","<init>",listOf("Ladvg;"),"V"),
+            GboardMethodTarget("Ladvh;","s",listOf("Landroid/content/Context;"),"V"),
             GboardMethodTarget("Laeak;","b",emptyList(),"Laeai;"),
             GboardMethodTarget("Laeai;","a",emptyList(),"Laeak;"),
             GboardMethodTarget("Laeai;","i",listOf("Ljava/lang/String;"),"V"),
@@ -64,7 +64,8 @@ internal object GboardSharedWritingTargets {
         ).forEach{it.resolve(context)}
         listOf(GboardFieldTarget("Laeaf;","a","Laeaf;"),GboardFieldTarget("Ladsd;","a","Ladsd;"),GboardFieldTarget("Ladsd;","b","Ladsd;")).forEach{it.resolve(context)}
         check(context.mutableClass("Laeal;").superclass=="Ljava/lang/Enum;"){"Native error enum representation drift"}
-        val native=context.mutableClass("Ladvg;").methods.filter{it.name!="<clinit>"}.map{it.name to (it.parameterTypes.map(CharSequence::toString) to it.returnType)}.toSet()
+        check(context.mutableClass("Ladvh;").interfaces.toSet()==setOf("Ladvg;")){"Prepared writing handler parent drift"}
+        val native=(context.mutableClass("Ladvg;").methods+context.mutableClass("Ladvh;").methods).filter{it.name!="<clinit>"}.map{it.name to (it.parameterTypes.map(CharSequence::toString) to it.returnType)}.toSet()
         val adapter=context.mutableClass("LMorpheSharedWritingHandler188;").methods.map{it.name to (it.parameterTypes.map(CharSequence::toString) to it.returnType)}.toSet()
         check(adapter.containsAll(native)){"Shared handler omits a native method"}
         check("Lavvx;" in context.mutableClass("LMorpheSharedFuture188;").interfaces)

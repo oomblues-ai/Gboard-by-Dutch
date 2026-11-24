@@ -5,7 +5,7 @@ import java.util.concurrent.*;
 import dev.jason.gboardpatches.extension.sharedmodel.*;
 
 /** Complete native 18.8 advg ABI. Stubs are compile-only; the target APK supplies every native class. */
-public final class MorpheSharedWritingHandler188 implements advg {
+public final class MorpheSharedWritingHandler188 implements advh {
     private final Context context;
     private final agrh logger;
     private advg fallback;
@@ -14,7 +14,7 @@ public final class MorpheSharedWritingHandler188 implements advg {
     public MorpheSharedWritingHandler188(Context context){this(context,null);}
     public MorpheSharedWritingHandler188(Context context,agrh logger){this.context=context.getApplicationContext();this.logger=logger;SharedModelClient.connect(this.context);}
     public static advg tryCreate(Context context,agrh logger){return GboardSharedWritingRuntime.selected(context)?new MorpheSharedWritingHandler188(context,logger):null;}
-    public static advh tryWrapped(agrh logger){Context c=GboardSharedWritingRuntime.context();return GboardSharedWritingRuntime.selected(c)?new adtm(new MorpheSharedWritingHandler188(c,logger)):null;}
+    public static advh tryWrapped(agrh logger){Context c=GboardSharedWritingRuntime.context();return GboardSharedWritingRuntime.selected(c)?new MorpheSharedWritingHandler188(c,logger):null;}
     public synchronized advg nativeBackend(){
         if(logger==null)throw new IllegalStateException("NATIVE_BACKEND_RESTART_REQUIRED");
         String mode=dev.jason.gboardpatches.extension.writingtools.GboardAiWritingToolsSettings.readBackendType(dev.jason.gboardpatches.extension.writingtools.GboardAiWritingToolsSettings.preferences(context));
