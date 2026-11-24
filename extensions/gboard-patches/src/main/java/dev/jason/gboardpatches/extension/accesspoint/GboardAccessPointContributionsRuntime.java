@@ -44,6 +44,9 @@ public final class GboardAccessPointContributionsRuntime {
         } catch (Throwable failure) {
             logFailure("Editing buttons catalog contribution failed", failure);
         }
+        if (hasFeature(context, GboardPatchesFeatureAvailability.FEATURE_AI_WRITING_TOOLS)) {
+            result = dev.jason.gboardpatches.extension.sharedmodel.GboardSharedToolsContribution.extend(context, result);
+        }
         return result;
     }
 
@@ -54,6 +57,7 @@ public final class GboardAccessPointContributionsRuntime {
             logFailure("Access Point controller catalog synchronization failed", failure);
             return;
         }
+        registerSharedTools(controller, context);
         try {
             if (hasFeature(context, GboardPatchesFeatureAvailability.FEATURE_MANUAL_INCOGNITO)) {
                 GboardManualIncognitoRuntime.afterAccessPointControllerCreated(
@@ -78,6 +82,11 @@ public final class GboardAccessPointContributionsRuntime {
         } catch (Throwable failure) {
             logFailure("Editing buttons controller contribution failed", failure);
         }
+    }
+
+    private static void registerSharedTools(Object controller, Context context) {
+        if (hasFeature(context, GboardPatchesFeatureAvailability.FEATURE_AI_WRITING_TOOLS))
+            dev.jason.gboardpatches.extension.sharedmodel.GboardSharedToolsContribution.register(controller, context);
     }
 
     static void synchronizeControllerOrderCatalog(Object controller, Context context)

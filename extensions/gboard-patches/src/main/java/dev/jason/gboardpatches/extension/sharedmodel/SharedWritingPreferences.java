@@ -1,0 +1,16 @@
+package dev.jason.gboardpatches.extension.sharedmodel;
+import android.content.Context;
+import android.util.AtomicFile;
+import java.io.*;
+import org.json.JSONObject;
+/** User-authored examples/context only. Kept outside cloud backup and never collected from app conversations. */
+public final class SharedWritingPreferences {
+ private SharedWritingPreferences(){}
+ private static AtomicFile file(Context context){return new AtomicFile(new File(context.getNoBackupFilesDir(),"shared-writing-context.json"));}
+ public static synchronized String read(Context context,String key){try(InputStream in=file(context).openRead()){ByteArrayOutputStream data=new ByteArrayOutputStream();byte[] b=new byte[1024];int n;while((n=in.read(b))!=-1){if(data.size()+n>32768)return "";data.write(b,0,n);}return new JSONObject(data.toString("UTF-8")).optString(key,"");}catch(Exception e){return "";}}
+ public static synchronized void write(Context context,String style,String reply,String instruction,boolean compose,boolean grammar)throws Exception{
+  if(style.length()>8192 || reply.length()>4096 || instruction.length()>1024)throw new IllegalArgumentException("Context too long");
+  byte[] data=new JSONObject().put("style",style).put("reply",reply).put("instruction",instruction).put("compose",compose?"true":"false").put("grammar",grammar?"true":"false").toString().getBytes("UTF-8");
+  AtomicFile f=file(context);FileOutputStream out=f.startWrite();try{out.write(data);f.finishWrite(out);}catch(Exception e){f.failWrite(out);throw e;}
+ }
+}

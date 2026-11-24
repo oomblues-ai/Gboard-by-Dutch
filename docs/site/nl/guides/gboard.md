@@ -146,7 +146,33 @@ De patch opent de client-side rolloutvoorwaarde en toont de instelling. Hij leve
 
 ### AI Writing Tools
 
-Open **Patches → AI & Voice → AI Writing Tools** en zet zo nodig **Enable AI Writing Tools** aan. Selecteer een zin in een gewoon tekstveld en open de chip voor schrijfhulpmiddelen. Probeer de tekst te herschrijven of van toon te veranderen. Lees het resultaat voordat je het overneemt. De beschikbaarheid hangt af van de taal, het tekstveld en de backend van Google. **Proofread / Auto Fix** valt buiten de 18.8-port. Een zichtbare proefleesoptie bewijst niet dat die werkt. Gebruik voorbeeldtekst als de dienst tekst op een server kan verwerken.
+Open **Patches → AI & Voice → AI Writing Tools**. De bestaande backends **GBOARD_SERVER**, **PRIVATE_INFERENCE_AICORE** en **PRIVATE_INFERENCE_ASTREA** blijven beschikbaar, met hun oorspronkelijke voorwaarden voor Google-accounts, modellen en services. Alleen het installeren van de optionele lokale provider verandert de gekozen backend niet.
+
+#### Optionele Local AI instellen
+
+Dit is een reviewversie. Geslaagde code- en buildcontroles bewijzen nog geen native inferentie, functiekwaliteit of werking op de telefoon.
+
+1. Neem **AI Writing Tools** op bij het patchen van Gboard in Morphe. Behoud de overige patchkeuzes en de bestaande APK-ondertekening van het toestel.
+2. Open **Patches → AI & Voice → Local AI**, open de instellingen en kies **Install from GitLab**. Gboard controleert pakketnaam, versie, SHA-256 en ondertekeningscertificaat voordat Android de normale installatiebevestiging toont. Android kan toestemming vragen om vanuit Gboard te installeren.
+3. Open **Local Model Host**. Download het vastgelegde **Gemma 4 E2B**-model (ongeveer 2,6 GB), of importeer via DriveDeck expliciet een overeenkomend bestaand model. De host controleert het model voor gebruik; Gboard bewaart geen tweede kopie.
+4. Kies **Start** in de provider. **Always ready** is na installatie de standaard en gebruikt een blijvende melding; **Session ready** is het alternatief met kortere verblijftijd in het geheugen. Wacht op **Model ready**.
+5. Keer terug naar Local AI in Gboard en kies **Use Local AI**. Via de backendkeuze blijven de bestaande diensten beschikbaar. Als de host gestopt of niet beschikbaar is, meldt Shared die toestand in plaats van de tekst ongemerkt elders heen te sturen.
+
+#### Lokaal schrijven en spraakbewerkingen
+
+Selecteer tekst of zet de cursor in een concept en open **Local AI** vanuit Gboard's bewerkingshulpmiddelen. Het menu bevat **Proofread / Auto Fix**, **Rephrase**, **Professional**, **Friendly**, **Emojify**, **Elaborate** en **Shorten**. Controleer het voorstel voor je het toepast. De tekstacties gebruiken Gboard's native bewerking; een gewijzigd tekstveld of gewijzigde selectie maakt een lopend resultaat ongeldig.
+
+**Voice edit** is een expliciete modus met de bestaande Parakeet-spraakherkenner. Activeer die modus, gebruik de microfoon en spreek een instructie zoals “fix it” of “make this friendlier”. Gewoon dicteren blijft gewoon dicteren. De provider vervangt de spraakherkenning niet en initialiseert geen audio-encoder.
+
+**Local AI context settings** bevat alleen voorbeelden, antwoordcontext en instructies die de gebruiker zelf invoert. **Suggested reply** vereist een expliciet aangeleverd bericht; **My style** vereist eigen voorbeelden. Die context staat in Gboard's privéopslag buiten cloudback-up. Binnenkomende gesprekken en schermafbeeldingen worden niet verzameld.
+
+#### Tekstaanvulling, grammatica en afbeeldingen
+
+Het contextscherm heeft afzonderlijke experimentele schakelaars voor **Shared Smart Compose** en **Shared inline grammar**. Shared-tekstaanvulling gebruikt Gboard's inline-weergave als het tekstveld bruikbare cursorinformatie levert. Grammatica geeft native correcties terug met bereiken die uit de oorspronkelijke tekst worden afgeleid. Voor beide moeten native kwaliteit, snelheid en het verwerpen van verouderde resultaten nog afzonderlijk worden gevalideerd. Een zichtbare schakelaar bewijst niet dat het modelpad werkt. Gewoon typen, vegen en woordvoorspelling behouden hun native paden.
+
+Kies bij afbeeldingsselectie onder **Scan text** de gedeelde OCR-optie en schakel vision in de provider in. De bestaande gebundelde OCR blijft beschikbaar. Shared OCR levert letterlijke tekst en verzint geen tekstvakken of betrouwbaarheidsscores. De provider vereist geen camera- of microfoontoestemming.
+
+Na gecontroleerde installatie gebeurt de inferentie op het toestel. Het downloaden van APK en model vereist verbinding. Laden, geheugendruk en Stop blijven echte toestanden; alleen een geïnstalleerde APK betekent nog geen gebruiksklaar model.
 
 ### Enable OCR / Scan Text
 

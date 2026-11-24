@@ -65,6 +65,7 @@ public final class ParakeetRecognizer {
     private volatile Object callback;
     private volatile int utterance;
     private volatile boolean decodePending;
+    private volatile boolean voiceEditSession;
     private volatile String lastPartial;
     /** Utterances committed this session; Gboard joins results as they come, so later ones bring a space. */
     private int committed;
@@ -88,10 +89,16 @@ public final class ParakeetRecognizer {
         }
     }
 
+    public static boolean availableForVoiceEdit(Context context) {
+        return context != null && !runtimeBroken && ParakeetStore.active(context)
+                && context.checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
+    }
+
     // ---- Gboard recognizer interface, wired by the patch ----
 
     public void start(Object callback) {
         if (!started.compareAndSet(false, true)) return;
+        voiceEditSession = VoiceEditHook.begin(context);
         this.callback = callback;
         listening = true;
         Thread capture = new Thread(this::capture, "MorpheParakeetMic");
@@ -241,7 +248,7 @@ public final class ParakeetRecognizer {
                 String text = ParakeetEngine.transcribe(context, audio, audio.length);
                 if (!cancelled && id == utterance && !text.isEmpty()) {
                     lastPartial = text;
-                    cbResult(cb, separated(text), false);
+                    if (!voiceEditSession) cbResult(cb, separated(text), false);
                 }
             } catch (Throwable t) {
                 decodeFailed(cb, t);
@@ -262,6 +269,11 @@ public final class ParakeetRecognizer {
                 lastPartial = null;
                 if (text.isEmpty()) text = partial == null ? "" : partial;
                 if (!cancelled && !text.isEmpty()) {
+                    if (voiceEditSession) {
+                        listening = false;
+                        VoiceEditHook.finish(context, text);
+                        return;
+                    }
                     String sent = separated(text);
                     cbResult(cb, sent, true);
                     if (committed > 0) restoreCase(sent);

@@ -47,6 +47,13 @@ public final class GboardFeatureFlagsRuntime {
     }
 
     public static Object applyGrammarCheckerFlagValue(String flagName, Object original) {
+        Context shared=applicationContext();
+        if(shared!=null && dev.jason.gboardpatches.extension.sharedmodel.GboardSharedWritingRuntime.selected(shared)){
+            boolean enabled=dev.jason.gboardpatches.extension.sharedmodel.SharedInlineSettings.grammarSelected(shared);
+            if(FLAG_GRAMMAR_CHECKER.equals(flagName))return Boolean.valueOf(enabled);
+            if(enabled && "grammar_checker_use_grammar_checker_manager".equals(flagName))return Boolean.TRUE;
+            if(enabled && ("grammar_checker_enable_language_detector".equals(flagName) || "enable_llm_based_grammar_checker".equals(flagName)))return Boolean.FALSE;
+        }
         return applySelectedFlagValue(
                 flagName,
                 original,
@@ -55,6 +62,9 @@ public final class GboardFeatureFlagsRuntime {
     }
 
     public static Object applyInlineSuggestionsFlagValue(String flagName, Object original) {
+        Context shared=applicationContext();
+        if(shared!=null && FLAG_INLINE_SUGGESTIONS.equals(flagName) && dev.jason.gboardpatches.extension.sharedmodel.GboardSharedWritingRuntime.selected(shared))
+            return Boolean.valueOf(dev.jason.gboardpatches.extension.sharedmodel.SharedInlineSettings.completionSelected(shared));
         return applySelectedFlagValue(
                 flagName,
                 original,

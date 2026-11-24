@@ -1,6 +1,8 @@
 package patches.gboard
 
 import app.morphe.patcher.patch.resourcePatch
+import patches.gboard.features.sharedmodel.gboardSharedModelPatch
+import patches.gboard.features.sharedmodel.gboardSharedModelManifestPatch
 import patches.gboard.features.ocr.gboardOcrFeatureMarkerPatch
 import patches.gboard.features.ocr.gboardOcrFlagValuePatch
 import patches.gboard.features.ocr.gboardOcrModelAssetsPatch
@@ -58,18 +60,15 @@ val gboardOcrScanTextPatch = resourcePatch(
  * tuple and repairs the three init points that otherwise throw on a client type the
  * assistant never learns.
  *
- * Auto Fix / proofread is NOT ported to 18.8: 18.6.3 added INTENT_AUTO_FIX to a
- * route-set builder (`wgv.h(Object)`) that no longer exists, and 18.8 builds the
- * routed set from the `voice_command_intent_types_routed_to_writing_tools_v2` flag
- * (`aeam.f`, an `adgn`) instead. The acceptance shim returns immediately on the 18.8
- * binding, so depending on it would report success for behaviour that was never
- * emitted. Rewrite and tone changes are unaffected.
+ * Shared mode restores the confirmed Auto Fix route, disambiguation and native
+ * Proofread dispatch for 18.8. Other backend routes remain stock; actual native
+ * model/editor acceptance is required before this is promoted from review.
  */
 @Suppress("unused")
 val gboardAiWritingToolsPatch = resourcePatch(
     name = "AI Writing Tools",
     description = "Enables Gboard's Writing tools: rewrite and tone changes on selected " +
-        "text, in every language and keyboard. Proofread/Auto Fix is not ported to 18.8.",
+        "text, with an optional shared Gemma provider for Proofread, local writing, completion and grammar.",
     default = true,
 ) {
     compatibleWith(gboard)
@@ -77,6 +76,11 @@ val gboardAiWritingToolsPatch = resourcePatch(
     dependsOn(
         gboardPatchesSettingsPatch,
         gboardAiWritingToolsFeatureMarkerPatch,
+        gboardSharedModelPatch,
+        patches.gboard.features.writingtools.gboardAiWritingTools188AutoFixPatch,
+        patches.gboard.features.sharedmodel.gboardSharedCompletionPatch,
+        patches.gboard.features.sharedmodel.gboardSharedGrammarPatch,
+        gboardSharedModelManifestPatch,
         gboardAiWritingToolsFlagValuePatch,
     )
 }

@@ -146,7 +146,33 @@ The patch opens the client-side rollout gate and exposes the setting; it does no
 
 ### AI Writing Tools
 
-Open **Patches → AI & Voice → AI Writing Tools** and turn on **Enable AI Writing Tools** if needed. In a normal editable field, select a sentence, open the Writing tools chip and try a rewrite or tone change. Review Google’s result before replacing the selection. Availability depends on the language, editor and Google backend. **Proofread / Auto Fix** is outside this 18.8 port. A visible Proofread entry does not establish that it works. Use sample text when testing a service that may process it remotely.
+Open **Patches → AI & Voice → AI Writing Tools**. Existing **GBOARD_SERVER**, **PRIVATE_INFERENCE_AICORE** and **PRIVATE_INFERENCE_ASTREA** backends remain selectable, with their original Google account/model/service requirements. Installing the optional local provider does not silently change the selected backend.
+
+#### Optional Local AI setup
+
+This is a review implementation. The code/build checks do not establish native inference, per-feature quality or phone acceptance yet.
+
+1. Include **AI Writing Tools** when patching Gboard in Morphe. Keep the other patch choices and APK signing identity already used on the device.
+2. Open **Patches → AI & Voice → Local AI**, then open setup and choose **Install from GitLab**. Gboard checks the pinned APK package, version, SHA-256 and signing certificate before opening Android's normal installer. Android may ask to allow installs from Gboard.
+3. Open **Local Model Host**. Download its pinned **Gemma 4 E2B** model (about 2.6 GB), or explicitly import a matching existing DriveDeck model through DriveDeck's setup. The host verifies the model before using it; Gboard does not keep a second copy.
+4. Choose **Start** in the provider. **Always ready** is the setup default and uses an ongoing notification; **Session ready** is the lower-residency option. Wait for **Model ready**.
+5. Return to Gboard's Local AI setup and choose **Use Local AI**. The existing backends remain available in the backend selector. If the host is stopped or unavailable, Shared mode reports that state instead of silently sending the text elsewhere.
+
+#### Local writing and voice edits
+
+Select text or place the cursor in a draft, then open **Local AI** from Gboard's editing tools. The menu offers **Proofread / Auto Fix**, **Rephrase**, **Professional**, **Friendly**, **Emojify**, **Elaborate** and **Shorten**. Review the proposed result before applying it. Text actions use Gboard's native edit handling; changed editors/selections invalidate pending results.
+
+**Voice edit** is an explicit mode using the existing Parakeet recognizer. Arm it, use the microphone and speak an instruction such as “fix it” or “make this friendlier”. Ordinary dictation stays ordinary dictation. The provider does not replace speech recognition or initialize an audio encoder.
+
+**Local AI context settings** contains only examples, reply context and instructions that the user enters. **Suggested reply** requires an explicitly supplied incoming message; **My style** requires user-authored examples. Context is kept in Gboard's private storage outside cloud backup. Incoming conversations and screenshots are not collected.
+
+#### Completion, grammar and images
+
+The context screen has separate experimental switches for **Shared Smart Compose** and **Shared inline grammar**. Shared completion uses Gboard's inline surface when the editor supplies usable cursor geometry. Grammar returns native corrections with ranges derived from the original text. Both remain subject to separate native quality, timing and stale-result acceptance; a visible switch is not proof of a working model path. Ordinary typing, glide and word predictions retain their native paths.
+
+For **Scan text** image selection, choose the shared image OCR option and enable vision in the provider. The existing bundled OCR choice remains available. Shared OCR returns literal text; it does not provide fabricated boxes or confidence scores. No provider camera or microphone permission is required.
+
+After verified setup, inference is on-device. APK/model downloads need connectivity. Loading, memory pressure and user Stop remain real states; an installed APK alone does not mean a model is ready.
 
 ### Enable OCR / Scan Text
 

@@ -45,6 +45,7 @@ public final class GboardPatchesFeatureAvailability {
             "dev.jason.gboardpatches.feature.english_uppercase_toggle";
     public static final String FEATURE_ZHUYIN_BOTTOM_ROW_WEIGHT =
             "dev.jason.gboardpatches.feature.zhuyin_bottom_row_weight";
+    public static final String FEATURE_SHARED_LOCAL_MODEL = "dev.jason.gboardpatches.feature.shared_local_model";
     public static final String FEATURE_AI_WRITING_TOOLS =
             "dev.jason.gboardpatches.feature.ai_writing_tools";
     public static final String FEATURE_TOP_ROW_SWIPE =
