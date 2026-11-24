@@ -45,6 +45,15 @@ public class SharedLocalAiStateTest {
         String message=SharedLocalAiState.providerSummary(new HostStatus("{\"state\":\"FAILED\",\"enabled\":true,\"code\":\"LOAD_FAILED\"}"),"");
         assertTrue(message.contains("FAILED"));assertTrue(message.contains("start it again"));
     }
+    @Test public void nativePreflightFailureIsVisibleInLocalAiStatus(){
+        Context context=RuntimeEnvironment.getApplication();
+        SharedPreferences settings=GboardAiWritingToolsSettings.preferences(context);
+        settings.edit().clear().putBoolean(GboardAiWritingToolsSettings.PREF_KEY_ENABLED,false).commit();
+        java.util.concurrent.CompletableFuture<String> request=GboardSharedWritingRuntime.request(context,"proofread","Draft",null);
+        org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+        assertTrue(request.isCompletedExceptionally());
+        assertEquals("SHARED_BACKEND_NOT_SELECTED",SharedModelClient.lastRequestError());
+    }
     @Test public void wrappedProtocolErrorsRemainActionableWithoutExposingArbitraryText(){
         assertEquals("OUTPUT_TRUNCATED",SharedLocalAiState.failureCode(new java.util.concurrent.CompletionException(new IllegalStateException("OUTPUT_TRUNCATED"))));
         assertEquals("REQUEST_FAILED",SharedLocalAiState.failureCode(new IllegalStateException("private draft text 123")));

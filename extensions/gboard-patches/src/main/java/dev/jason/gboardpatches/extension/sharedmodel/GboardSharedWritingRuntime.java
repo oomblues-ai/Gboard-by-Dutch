@@ -28,6 +28,7 @@ public final class GboardSharedWritingRuntime {
     public static void onInputHidden(Object receiver){SharedCompletionController.reset();SharedVoiceEditController.cancel();revision.incrementAndGet();SharedModelClient.releaseSession();service.clear();}
     public static CompletableFuture<String> request(Context context,String operation,String text,String instruction){
         CompletableFuture<String> result=new CompletableFuture<>();
+        result.whenComplete((value,error)->{if(error!=null && !result.isCancelled())SharedModelClient.noteFailure(SharedLocalAiState.failureCode(error));});
         long requestedRevision=revision.get();
         MAIN.post(()->{
             if(result.isCancelled())return;
