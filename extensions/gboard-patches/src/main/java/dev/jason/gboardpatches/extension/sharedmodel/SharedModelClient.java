@@ -27,24 +27,24 @@ public final class SharedModelClient {
     public static synchronized void connect(Context context){
         if(client!=null)return;
         Context app=context.getApplicationContext();
-        try{SharedProviderIdentity.verify(app);}catch(HostException failure){error=failure.code;ready=false;lastStatus=null;return;}
+        try{SharedProviderIdentity.verify(app);}catch(HostException failure){error=failure.code;ready=false;lastStatus=null;SharedNativeReadiness.sync();return;}
         ModelHostClient connecting=new ModelHostClient(new ComponentName(ModelHostClient.DEFAULT_PACKAGE,ModelHostClient.SERVICE_CLASS),Runnable::run);client=connecting;
         new Handler(Looper.getMainLooper()).post(()->{if(client!=connecting)return;connecting.connect(app,new ConnectionListener(){
             @Override public void onConnected(HostStatus status,HostCapabilities capabilities){if(client!=connecting)return;connected=true;acceptStatus(status);worker.execute(SharedModelClient::openSession);}
-            @Override public void onDisconnected(HostException failure){if(client!=connecting)return;connected=false;ready=false;lastStatus=null;session=null;error=failure.code;cancelRequests();}
+            @Override public void onDisconnected(HostException failure){if(client!=connecting)return;connected=false;ready=false;lastStatus=null;session=null;error=failure.code;cancelRequests();SharedNativeReadiness.sync();}
         });});
         if(poll!=null)poll.cancel(false);
-        poll=worker.scheduleWithFixedDelay(()->{if(!connected)return;try{HostStatus status=client.status();acceptStatus(status);}catch(Exception e){ready=false;lastStatus=null;error="PROVIDER_UNAVAILABLE";}},1,2,TimeUnit.SECONDS);
+        poll=worker.scheduleWithFixedDelay(()->{if(!connected)return;try{HostStatus status=client.status();acceptStatus(status);}catch(Exception e){ready=false;lastStatus=null;error="PROVIDER_UNAVAILABLE";SharedNativeReadiness.sync();}},1,2,TimeUnit.SECONDS);
     }
-    private static void acceptStatus(HostStatus status){lastStatus=status;ready=status.enabled && status.isReady();error=status.state;}
+    private static void acceptStatus(HostStatus status){lastStatus=status;ready=status.enabled && status.isReady();error=status.state;SharedNativeReadiness.sync();}
     public static HostStatus lastStatus(){return lastStatus;}
     public static String lastRequestError(){return lastRequestError;}
     public static void noteFailure(String code){lastRequestError=SharedLocalAiState.safeCode(code);}
     public static synchronized void reconnect(Context context){if(client!=null && !connected){client.close();client=null;}connect(context);}
     public static String readinessMessage(Context context){connect(context);return SharedLocalAiState.providerSummary(lastStatus,error);}
     private static void openSession(){if(!active || !connected || session!=null)return;try{session=client.openSession(new SessionOptions("Gboard",null,4096));}catch(Exception e){error="SESSION_UNAVAILABLE";}}
-    public static synchronized void activate(Context context){active=true;if(client!=null && !connected){client.close();client=null;}connect(context);worker.execute(SharedModelClient::openSession);}
-    public static void releaseSession(){active=false;cancelRequests();worker.execute(()->{HostSession old=session;session=null;if(old!=null)old.close();});}
+    public static synchronized void activate(Context context){active=true;if(client!=null && !connected){client.close();client=null;}connect(context);worker.execute(SharedModelClient::openSession);SharedNativeReadiness.sync();}
+    public static void releaseSession(){active=false;cancelRequests();SharedNativeReadiness.sync();worker.execute(()->{HostSession old=session;session=null;if(old!=null)old.close();});}
     public static boolean isReadyCached(){return ready && connected;}
     public static boolean ready(Context context){connect(context);return ready;}
     public static String status(Context context){connect(context);return error;}

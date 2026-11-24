@@ -30,6 +30,15 @@ internal val gboardSharedModelPatch = bytecodePatch(
         GboardMethodTarget(nativeKeyboard,"ep",listOf("Lcom/google/android/libraries/inputmethod/widgets/SoftKeyboardView;","Lcom/google/android/libraries/inputmethod/metadata/KeyboardViewDef;"),"V").resolve(this).addInstructions(0,RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_KEYBOARD_SURFACE_BIND,"p0 .. p1"))
         GboardMethodTarget(nativeKeyboard,"f",emptyList(),"V").resolve(this).addInstructions(0,RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_KEYBOARD_SURFACE_CLEAR,""))
         applySharedRequestDispatch(this)
+        val provisioning=GboardMethodTarget("Ladtl;","k",emptyList(),"Z").resolve(this)
+        check(provisioning.implementation!!.registerCount>1){"Native provisioning gate has no local register"}
+        val stockProvisioning=provisioning.implementation!!.instructions.first()
+        provisioning.addInstructionsWithLabels(0,"""
+            ${RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_NATIVE_PROVISIONING_BLOCKED, "")}
+            move-result v0
+            if-ltz v0, :stock_provisioning
+            return v0
+        """.trimIndent(),ExternalLabel("stock_provisioning",stockProvisioning))
         findMutableMethodOrThrow(GboardSharedWritingTargets.readiness).applySharedFactory(this,RuntimeCallId.SHARED_WRITING_READINESS, "")
         findMutableMethodOrThrow(GboardSharedWritingTargets.v2Factory).applySharedFactory(this,RuntimeCallId.SHARED_WRITING_CREATE_V2,"p0 .. p1")
         // Preserve adtl.d: pdq.al casts its result to the original adtk wrapper.
@@ -46,6 +55,10 @@ internal object GboardSharedWritingTargets {
     val nativeWrapperFactory=GboardMethodTarget("Ladtl;","d",listOf("Lagrh;"),"Ladvh;")
     fun preflight(context: BytecodePatchContext) {
         v2Factory.resolve(context);nativeWrapperFactory.resolve(context);readiness.resolve(context)
+        GboardMethodTarget("Ladtl;","k",emptyList(),"Z").resolve(context)
+        listOf("g","h").forEach{GboardFieldTarget("Laicd;",it,"Lahdw;").resolve(context)}
+        GboardMethodTarget("Laheb;","f",listOf("Lahdw;"),"Z").resolve(context)
+        listOf("g","h").forEach{GboardMethodTarget("Laheb;",it,listOf("Lahdw;"),"V").resolve(context)}
         // Enter through the same native request as the original Writing Tools access point.
         GboardMethodTarget("Lpve;","f",listOf("Ladbd;","Laicj;","Z","Laeaj;","Ljava/util/function/Consumer;"),"V").resolve(context)
         GboardMethodTarget("Laicj;","d",listOf("Lavgf;"),"Laicj;").resolve(context)

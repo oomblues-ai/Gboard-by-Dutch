@@ -21,6 +21,7 @@ internal enum class RuntimeCallId(internal val encodedAbi: String) {
     SHARED_WRITING_DISPATCH_F("LMorpheSharedWritingDispatch188;->f(Ladvg;Ljava/lang/String;Lauaz;Landroid/view/inputmethod/EditorInfo;Laxjl;Landroid/content/Context;Laisu;Ladvf;)Lavvx;"),
     SHARED_WRITING_DISPATCH_G("LMorpheSharedWritingDispatch188;->g(Ladvg;Ljava/lang/String;Lauaz;Landroid/view/inputmethod/EditorInfo;Laxjl;Landroid/content/Context;Laisu;Lauaz;Ladvf;)Lavvx;"),
     SHARED_WRITING_DISPATCH_CANCEL("LMorpheSharedWritingDispatch188;->r(Ladvg;)V"),
+    SHARED_NATIVE_PROVISIONING_BLOCKED("Ldev/jason/gboardpatches/extension/sharedmodel/SharedNativeReadiness;->provisioningBlocked()I"),
     SHARED_WRITING_READINESS("LMorpheSharedWritingDispatch188;->tryReadiness()Ladsd;"),
     SHARED_WRITING_CREATE_V2("LMorpheSharedWritingHandler188;->tryCreate(Landroid/content/Context;Lagrh;)Ladvg;"),
     SHARED_WRITING_INPUT_START("Ldev/jason/gboardpatches/extension/sharedmodel/GboardSharedWritingRuntime;->onInputStarting(Ljava/lang/Object;Landroid/view/inputmethod/EditorInfo;)V"),
