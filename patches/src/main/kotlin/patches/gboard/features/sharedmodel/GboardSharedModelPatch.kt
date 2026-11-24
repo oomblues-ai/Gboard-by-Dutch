@@ -31,14 +31,19 @@ internal val gboardSharedModelPatch = bytecodePatch(
         GboardMethodTarget(nativeKeyboard,"f",emptyList(),"V").resolve(this).addInstructions(0,RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_KEYBOARD_SURFACE_CLEAR,""))
         applySharedRequestDispatch(this)
         val provisioning=GboardMethodTarget("Ladtl;","k",emptyList(),"Z").resolve(this)
-        check(provisioning.implementation!!.registerCount>1){"Native provisioning gate has no local register"}
-        val stockProvisioning=provisioning.implementation!!.instructions.first()
-        provisioning.addInstructionsWithLabels(0,"""
+        val stockProvisioning="morpheSharedStock_k"
+        check(context.mutableClass("Ladtl;").methods.none{it.name==stockProvisioning}){"Native provisioning wrapper already exists"}
+        provisioning.name=stockProvisioning
+        addHelperMethodIfMissing("Ladtl;","k",emptyList(),"Z",provisioning.accessFlags,2,"""
             ${RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_NATIVE_PROVISIONING_BLOCKED, "")}
             move-result v0
             if-ltz v0, :stock_provisioning
             return v0
-        """.trimIndent(),ExternalLabel("stock_provisioning",stockProvisioning))
+            :stock_provisioning
+            invoke-virtual {p0}, Ladtl;->$stockProvisioning()Z
+            move-result v0
+            return v0
+        """.trimIndent())
         findMutableMethodOrThrow(GboardSharedWritingTargets.readiness).applySharedFactory(this,RuntimeCallId.SHARED_WRITING_READINESS, "")
         findMutableMethodOrThrow(GboardSharedWritingTargets.v2Factory).applySharedFactory(this,RuntimeCallId.SHARED_WRITING_CREATE_V2,"p0 .. p1")
         // Preserve adtl.d: pdq.al casts its result to the original adtk wrapper.
