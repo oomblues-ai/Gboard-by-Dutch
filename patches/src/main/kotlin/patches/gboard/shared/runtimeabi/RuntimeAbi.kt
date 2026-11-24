@@ -4,6 +4,7 @@ internal enum class RuntimeCallId(internal val encodedAbi: String) {
     AI_WRITING_TOOLS_RUNTIME_IS_AUTO_FIX_ROUTING_ENABLED("Ldev/jason/gboardpatches/extension/writingtools/GboardAiWritingToolsRuntime;->isAutoFixRoutingEnabled(Ljava/lang/Object;)Z"),
     AI_WRITING_TOOLS_RUNTIME_ALLOW_AUTO_FIX_ROUTE("Ldev/jason/gboardpatches/extension/writingtools/GboardAiWritingToolsRuntime;->allowAutoFixRoute(ZLjava/lang/Object;)Z"),
     SHARED_GRAMMAR_CREATE("LMorpheSharedGrammar188;->create(Landroid/content/Context;)Luum;"),
+    SHARED_COMPLETION_FILTER("LMorpheSharedCompletion188;->filter(Ljava/lang/Object;Ljava/lang/Object;)Laegy;"),
     SHARED_COMPLETION_REMEMBER("LMorpheSharedCompletion188;->remember(Ljava/lang/Object;)V"),
     SHARED_COMPLETION_ACCEPT("LMorpheSharedCompletion188;->tryAccept(Ljava/lang/Object;)Z"),
     SHARED_COMPLETION_ELIGIBILITY("LMorpheSharedCompletion188;->eligibility(Ljava/lang/Object;)I"),

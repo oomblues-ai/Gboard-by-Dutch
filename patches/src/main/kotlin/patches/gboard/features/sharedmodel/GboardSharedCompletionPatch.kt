@@ -50,13 +50,16 @@ internal val gboardSharedCompletionPatch=bytecodePatch(description="Connect opti
    if-nez v0, :blocked
    iget-boolean v0, p0, Laemy;->u:Z
    if-eqz v0, :blocked
-   iget-object v0, p0, Laemy;->k:Landroid/graphics/Rect;
-   if-eqz v0, :blocked
    const/4 v0, 0x1
    return v0
    :blocked
    const/4 v0, 0x0
    return v0
+  """)
+  val candidate=GboardMethodTarget("Laemy;","r",listOf("Laegy;","Z"),"Z").resolve(this)
+  candidate.addInstructions(0,"""
+   ${RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_COMPLETION_FILTER,"p0 .. p1")}
+   move-result-object p1
   """)
   val start=GboardMethodTarget("Laemy;","g",listOf("Landroid/view/inputmethod/EditorInfo;"),"V").resolve(this)
   start.returnInstructionIndices().asReversed().forEach{start.addInstructions(it,RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_COMPLETION_REMEMBER,"p0"))}
