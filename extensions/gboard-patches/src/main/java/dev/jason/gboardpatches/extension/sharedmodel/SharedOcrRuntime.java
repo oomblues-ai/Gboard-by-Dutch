@@ -25,7 +25,8 @@ public final class SharedOcrRuntime {
         File image=null;HostSession session=null;RequestHandle handle=null;
         try {
             if(!connected.await(5,TimeUnit.SECONDS) || status.get()==null)throw new IllegalStateException(failure.get()==null?"PROVIDER_UNAVAILABLE":failure.get());
-            if(!status.get().isReady())throw new IllegalStateException("PROVIDER_NOT_READY");
+            if(!status.get().enabled)throw new IllegalStateException("PROVIDER_STOPPED");
+            if(!status.get().isReady())throw new IllegalStateException(SharedLocalAiState.safeCode(status.get().state));
             if(!capabilities.get().supports("ocr"))throw new IllegalStateException("ENABLE_OCR_IN_PROVIDER");
             image=File.createTempFile("shared-ocr-",".png",app.getCacheDir());
             try(FileOutputStream output=new FileOutputStream(image)){if(!bitmap.compress(Bitmap.CompressFormat.PNG,100,output))throw new IOException("IMAGE_ENCODING_FAILED");}

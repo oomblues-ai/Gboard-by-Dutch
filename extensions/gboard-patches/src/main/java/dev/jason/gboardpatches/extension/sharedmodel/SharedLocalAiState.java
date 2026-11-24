@@ -67,6 +67,9 @@ public final class SharedLocalAiState {
             case "MODEL_MISSING":return "Model MISSING. Download or import it in provider setup.";
             case "LOAD_FAILED":case "ENGINE_OWNERSHIP_UNKNOWN":return "The model could not load. Open Model setup, switch it off and on again.";
             case "MEMORY_PAUSED":return "Model PAUSED for memory. Close other demanding apps and try again.";
+            case "ENABLE_OCR_IN_PROVIDER":return "Image support is OFF. Enable Images and text scanning in Local Model Host.";
+            case "PROVIDER_NOT_READY":return "The model is not ready. Open Model setup to see its current state.";
+            case "OCR_TIMEOUT":return "Reading the image timed out. Try a smaller crop when the model is ready.";
             case "LOADING":case "PREPARING":case "RECOVERING":case "LOAD_BACKOFF":case "RECONFIGURING":return "Model is STARTING. Wait for Model ready in provider setup.";
             case "SESSION_INACTIVE":case "SESSION_UNAVAILABLE":return "Keyboard session is unavailable. Close and reopen the keyboard, then retry.";
             case "PROVIDER_UNAVAILABLE":case "SERVICE_DISCONNECTED":case "BINDING_DIED":return "Provider connection was lost. Open provider setup, then reopen the keyboard.";

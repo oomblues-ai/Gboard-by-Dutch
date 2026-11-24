@@ -43,7 +43,6 @@ public final class SharedCameraOcr {
         if(owner==null)return false;
         try{
             Context context=(Context)field(owner,"b");if(!selected(context))return false;
-            if(!ready(context))return true;
             EditorSnapshot snapshot=GboardSharedWritingRuntime.captureEditor();if(snapshot==null){message(context,"Text scanning is unavailable in this private or changed editor.");return true;}
             View preview=(View)field(owner,"c");View texture=child(preview,TextureView.class),surface=child(preview,SurfaceView.class);
             if(texture instanceof TextureView){Bitmap bitmap=((TextureView)texture).getBitmap();if(bitmap==null)message(context,"Wait until the camera preview is visible, then try again.");else recognize(owner,bitmap,snapshot);}
@@ -55,11 +54,9 @@ public final class SharedCameraOcr {
         }catch(Exception failure){Context context=GboardSharedWritingRuntime.context();if(context!=null)message(context,"Could not capture this camera frame. Try Choose an image.");}
         return true;
     }
-    private static boolean ready(Context c){if(!SharedModelClient.ready(c)){message(c,"Local Model Host is not ready. Open Local AI settings and enable Images and text scanning.");return false;}return true;}
     private static void choose(Context context){
         if(picking!=null){message(context,"An image choice is already in progress.");return;}
         EditorSnapshot snapshot=GboardSharedWritingRuntime.captureEditor();if(snapshot==null){message(context,"This editor cannot receive recognised text.");return;}
-        if(!ready(context))return;
         Pick request=new Pick(snapshot.handoff());picking=request;
         SharedImageInputActivity.choose(context,bitmap->{
             if(picking!=request){if(bitmap!=null)bitmap.recycle();return;}
@@ -106,8 +103,21 @@ public final class SharedCameraOcr {
             int gap=((TextView)field(owner,"f")).getPaddingLeft();int bottom=Math.max(insertPanel.getHeight(),insertPanel.getLayoutParams().height)+Math.max(((View)field(owner,"g")).getHeight(),((View)field(owner,"g")).getLayoutParams().height);text.setPadding(Math.max(gap,style.getPaddingLeft()),style.getPaddingTop(),Math.max(gap,style.getPaddingRight()),Math.max(0,bottom));
             ScrollView scroll=new ScrollView(frame.getContext());scroll.setFillViewport(true);scroll.addView(text,new ScrollView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT));frame.addView(scroll,new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));state.text=text;
             State current=state;Context context=frame.getContext();
-            state.work=WORK.submit(()->{try{synchronized(current){if(current.cancelled)return;current.started=true;}String result=SharedOcrRuntime.recognize(context,image);MAIN.post(()->complete(current,result));}catch(Exception failure){MAIN.post(()->{if(valid(current)){current.text.setText("Could not read text. Check Local Model Host image support or try a clearer crop.");SharedModelClient.noteFailure("OCR_FAILED");}});}finally{if(!image.isRecycled())image.recycle();}});
+            state.work=WORK.submit(()->{try{synchronized(current){if(current.cancelled)return;current.started=true;}String result=SharedOcrRuntime.recognize(context,image);MAIN.post(()->complete(current,result));}catch(Exception failure){MAIN.post(()->showFailure(current,failure));}finally{if(!image.isRecycled())image.recycle();}});
         }catch(Exception failure){if(!image.isRecycled())image.recycle();if(state!=null)state.cancelled=true;SharedModelClient.noteFailure("NATIVE_OCR_UNAVAILABLE");}
+    }
+    private static void showFailure(State state,Exception failure){
+        if(!valid(state))return;
+        String code=SharedLocalAiState.failureCode(failure);SharedModelClient.noteFailure(code);
+        state.text.setText(failureMessage(code));
+        try{
+            TextView setup=(TextView)field(state.peer,"f");setup.setText("Model setup");setup.setContentDescription("Open Local Model Host status and setup");setup.setVisibility(View.VISIBLE);
+            setup.setOnClickListener(v->SharedLocalAiSettingsFeature.openProvider(setup.getContext()));
+        }catch(ReflectiveOperationException unavailable){message(state.text.getContext(),failureMessage(code));}
+    }
+    static String failureMessage(String code){
+        if("OCR_FAILED".equals(code)||"REQUEST_FAILED".equals(code))return "Could not read this image. Try a clearer crop or check Model setup.";
+        return SharedLocalAiState.failureMessage(code)+"\n\nNo text was inserted. Open Model setup, then capture or choose the image again when ready.";
     }
     private static void complete(State state,String result){
         if(!valid(state)){if(active==state&&!state.cancelled&&shown(state.peer))state.text.setText("The editor changed. Capture again in the intended field.");return;}
