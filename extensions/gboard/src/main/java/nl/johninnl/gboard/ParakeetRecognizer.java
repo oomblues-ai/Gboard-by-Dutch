@@ -136,6 +136,10 @@ public final class ParakeetRecognizer {
         int sincePartial = 0;
         boolean noSpeech = false;
         try {
+            if(context.checkSelfPermission(Manifest.permission.RECORD_AUDIO)!=PackageManager.PERMISSION_GRANTED){
+                fail(cb,ERROR_AUDIO);
+                return;
+            }
             try {
                 vad = SharedSpeechHook.open(context);
                 shared=vad;
