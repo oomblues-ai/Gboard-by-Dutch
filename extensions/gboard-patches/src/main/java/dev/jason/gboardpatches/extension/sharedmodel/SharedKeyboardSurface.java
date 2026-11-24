@@ -14,7 +14,7 @@ import java.lang.ref.WeakReference;
 public final class SharedKeyboardSurface {
     private static final int BODY_SWITCHER=0x7f0b2a8b;
     private static final int MESSAGE_TEXT=0x7f0b0436;
-    private static final int MODERN_BODY=0x7f0b2a8c,RESULTS=0x7f0b0430,RESULT_TEXT=0x7f0b042e,FOOTER=0x7f0b045e;
+    private static final int MODERN_BODY=0x7f0b2a8c,RESULTS=0x7f0b0430,RESULT_TEXT=0x7f0b042e,FOOTER=0x7f0b045e,PRIMARY_ACTION=0x7f0b0458;
     private static final Handler MAIN=new Handler(Looper.getMainLooper());
     private static WeakReference<ViewGroup> keyboard=new WeakReference<>(null);
     private static WeakReference<ViewSwitcher> switcher=new WeakReference<>(null);
@@ -37,7 +37,7 @@ public final class SharedKeyboardSurface {
     static boolean available(){
         ViewGroup root=keyboard.get();if(root==null || !root.isAttachedToWindow() || !root.isShown())return false;
         if(switcher.get()!=null)return switcher.get().getCurrentView() instanceof FrameLayout;
-        FrameLayout card=nativeCard();TextView action=footerTemplate();return card!=null && card.getWidth()>0 && card.getHeight()>0 && stableModernParent()!=null && action!=null && action.getHeight()>0;
+        FrameLayout card=nativeCard();TextView action=primaryTemplate(),footer=footerTemplate();return card!=null && card.getWidth()>0 && card.getHeight()>0 && stableModernParent()!=null && action!=null && footer!=null && footer.getHeight()>0;
     }
     static void whenAvailable(Context context,Runnable show){await(context,show,20);}
     private static void await(Context context,Runnable show,int remaining){
@@ -56,7 +56,8 @@ public final class SharedKeyboardSurface {
         if(known instanceof TextView)return (TextView)known;
         TextView text=findText(root,false);if(text==null)throw new IllegalStateException("NATIVE_THEME_UNAVAILABLE");return text;
     }
-    private static TextView buttonTemplate(){TextView text=footerTemplate();if(text==null)text=findText(templateRoot(),true);if(text==null)throw new IllegalStateException("NATIVE_THEME_UNAVAILABLE");return text;}
+    private static TextView primaryTemplate(){FrameLayout card=nativeCard();View action=card==null?null:card.findViewById(PRIMARY_ACTION);if(!(action instanceof TextView) || action.getBackground()==null || action.getBackground().getConstantState()==null)return null;return (TextView)action;}
+    private static TextView buttonTemplate(){TextView text=modern.get()!=null?primaryTemplate():findText(templateRoot(),true);if(text==null)throw new IllegalStateException("NATIVE_THEME_UNAVAILABLE");return text;}
     private static TextView findText(View view,boolean clickable){
         if(view instanceof TextView && !(view instanceof EditText)){
             TextView text=(TextView)view;
@@ -88,7 +89,7 @@ public final class SharedKeyboardSurface {
     private static void appendButton(LinearLayout body,TextView template,View shape,String title,Runnable action){
         Drawable background=copy(shape.getBackground(),template.getContext());
         if(background==null)throw new IllegalStateException("NATIVE_THEME_UNAVAILABLE");
-        NativeActionButton button=new NativeActionButton(template.getContext(),shape);copyTextStyle(template,button,title);button.setGravity(Gravity.CENTER);button.setTextAlignment(View.TEXT_ALIGNMENT_GRAVITY);button.setBackground(background);ColorStateList tint=shape.getBackgroundTintList();if(tint!=null)button.setBackgroundTintList(tint);button.setPadding(shape.getPaddingLeft(),shape.getPaddingTop(),shape.getPaddingRight(),shape.getPaddingBottom());button.setMinHeight(Math.max(shape.getMinimumHeight(),shape.getHeight()));button.setMinWidth(shape.getMinimumWidth());button.setElevation(shape.getElevation());if(shape.isEnabled())button.setAlpha(shape.getAlpha());button.setClickable(true);button.setFocusable(true);button.setEnabled(true);button.setOnClickListener(v->action.run());
+        NativeActionButton button=new NativeActionButton(template.getContext(),shape);copyTextStyle(template,button,title);button.setGravity(Gravity.CENTER);button.setTextAlignment(View.TEXT_ALIGNMENT_GRAVITY);button.setBackground(background);ColorStateList tint=shape.getBackgroundTintList();if(tint!=null)button.setBackgroundTintList(tint);button.setPadding(shape.getPaddingLeft(),shape.getPaddingTop(),shape.getPaddingRight(),shape.getPaddingBottom());button.setMinHeight(Math.max(Math.max(shape.getMinimumHeight(),shape.getHeight()),shape.getLayoutParams()!=null?Math.max(0,shape.getLayoutParams().height):0));button.setMinWidth(shape.getMinimumWidth());button.setElevation(shape.getElevation());if(shape.isEnabled())button.setAlpha(shape.getAlpha());button.setClickable(true);button.setFocusable(true);button.setEnabled(true);button.setOnClickListener(v->action.run());
         LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
         ViewGroup.LayoutParams source=shape.getLayoutParams();if(source instanceof ViewGroup.MarginLayoutParams){ViewGroup.MarginLayoutParams margins=(ViewGroup.MarginLayoutParams)source;params.setMargins(margins.leftMargin,margins.topMargin,margins.rightMargin,margins.bottomMargin);}params.topMargin=Math.max(params.topMargin,button.nativeSpacing);body.addView(button,params);
     }
@@ -99,7 +100,7 @@ public final class SharedKeyboardSurface {
             super(context,null,0);setAllCaps(false);
             int[] states=source.getDrawableState();int count=0;for(int state:states)if(state==android.R.attr.state_checkable || state==android.R.attr.state_checked)count++;
             themeStates=new int[count];int at=0;for(int state:states)if(state==android.R.attr.state_checkable || state==android.R.attr.state_checked)themeStates[at++]=state;
-            nativeSpacing=source instanceof NativeActionButton?((NativeActionButton)source).nativeSpacing:spacing(source);
+            int gap=spacing(source);if(gap==0){TextView footer=footerTemplate();if(footer!=null)gap=spacing(footer);}nativeSpacing=source instanceof NativeActionButton?((NativeActionButton)source).nativeSpacing:gap;
             setSelected(source.isSelected());setActivated(source.isActivated());refreshDrawableState();
         }
         @Override protected int[] onCreateDrawableState(int extra){int[] nativeStates=themeStates;int[] states=super.onCreateDrawableState(extra+(nativeStates==null?0:nativeStates.length));return nativeStates==null?states:mergeDrawableStates(states,nativeStates);}
