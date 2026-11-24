@@ -21,37 +21,48 @@ public final class SharedTextActions {
   }catch(Exception error){failure(context,SharedLocalAiState.failureCode(error));}
  }
  static void request(Context context,String operation,String original,String instruction,String explicitContext,String language,EditorSnapshot snapshot){
+  request(context,operation,original,instruction,explicitContext,language,snapshot,null);
+ }
+ private static void request(Context context,String operation,String original,String instruction,String explicitContext,String language,EditorSnapshot snapshot,SharedKeyboardSurface.Panel existing){
   TextRequest request=new TextRequest(operation,original,instruction,explicitContext,language,null,512,30000);
-  LinearLayout progress=SharedKeyboardSurface.body();SharedKeyboardSurface.label(progress,"Working on your text…");
-  SharedKeyboardSurface.Panel working=new SharedKeyboardSurface.Panel(progress);
+  final SharedKeyboardSurface.Panel working;
   java.util.concurrent.atomic.AtomicReference<CompletableFuture<String>> active=new java.util.concurrent.atomic.AtomicReference<>();
-  SharedKeyboardSurface.button(progress,"Cancel",working::dismiss);
+  if(existing==null){
+   LinearLayout progress=SharedKeyboardSurface.body();SharedKeyboardSurface.label(progress,"Working on your text…");working=new SharedKeyboardSurface.Panel(progress);
+   SharedKeyboardSurface.button(progress,"Cancel",working::dismiss);
+  }else{
+   working=existing;if(!working.isShowing())return;working.replaceContent();working.label("Working on your text…");working.button("Cancel",working::dismiss);
+  }
   working.setOnDismissListener(()->{CompletableFuture<String> task=active.get();if(task!=null&&!task.isDone())task.cancel(false);});
-  if(!working.show()){failure(context,"NATIVE_THEME_UNAVAILABLE");return;}
+  if(existing==null&&!working.show()){failure(context,"NATIVE_THEME_UNAVAILABLE");return;}
   final CompletableFuture<String> pending;
   try{pending=SharedModelClient.request(context,request);active.set(pending);}
-  catch(RuntimeException unavailable){working.dismiss();throw unavailable;}
+  catch(RuntimeException unavailable){showFailure(context,working,SharedLocalAiState.failureCode(unavailable));return;}
   pending.whenComplete((result,error)->MAIN.post(()->{
-   working.dismiss();if(pending.isCancelled())return;
-   if(!GboardSharedWritingRuntime.isCurrent(snapshot)){message(context,"The editor changed. Nothing was applied.");return;}
-   if(error!=null){failure(context,SharedLocalAiState.failureCode(error));return;}
-   try{if("suggest_instructions".equals(operation))showInstructions(context,result,snapshot);else preview(context,result,operation,snapshot);}
-   catch(Exception unavailable){failure(context,"NATIVE_THEME_UNAVAILABLE");}
+   if(pending.isCancelled() || !working.isShowing())return;
+   if(!GboardSharedWritingRuntime.isCurrent(snapshot)){working.dismiss();message(context,"The editor changed. Nothing was applied.");return;}
+   if(error!=null){showFailure(context,working,SharedLocalAiState.failureCode(error));return;}
+   try{if("suggest_instructions".equals(operation))showInstructions(context,working,result,original,snapshot);else preview(context,working,result,operation,snapshot);}
+   catch(Exception unavailable){showFailure(context,working,"NATIVE_THEME_UNAVAILABLE");}
   }));
  }
- private static void showInstructions(Context context,String result,EditorSnapshot snapshot){
+ private static void showInstructions(Context context,SharedKeyboardSurface.Panel panel,String result,String original,EditorSnapshot snapshot){
   try{
    JSONArray suggestions=new JSONArray(result);if(suggestions.length()<1||suggestions.length()>3)throw new IllegalArgumentException();
-   LinearLayout body=SharedKeyboardSurface.body();SharedKeyboardSurface.label(body,"Suggested changes");SharedKeyboardSurface.Panel panel=new SharedKeyboardSurface.Panel(body);
-   for(int i=0;i<suggestions.length();i++){String instruction=suggestions.getString(i);if(instruction.length()>160)throw new IllegalArgumentException();SharedKeyboardSurface.button(body,instruction,()->{panel.dismiss();if(GboardSharedWritingRuntime.isCurrent(snapshot))run(context,"edit",instruction,null,null);});}
-   SharedKeyboardSurface.button(body,"Back",panel::dismiss);panel.show();
-  }catch(Exception unusable){message(context,"No usable editing suggestions were returned.");}
+   String[] instructions=new String[suggestions.length()];for(int i=0;i<instructions.length;i++){instructions[i]=suggestions.getString(i);if(instructions[i].length()>160)throw new IllegalArgumentException();}
+   panel.replaceContent();panel.label("Suggested changes");
+   for(String instruction:instructions)panel.button(instruction,()->{if(GboardSharedWritingRuntime.isCurrent(snapshot))request(context,"edit",original,instruction,null,null,snapshot,panel);else{panel.dismiss();message(context,"The editor changed. Nothing was applied.");}});
+   panel.button("Back",panel::dismiss);
+  }catch(Exception unusable){showFailure(context,panel,"NO_USABLE_SUGGESTIONS");}
  }
- private static void preview(Context context,String result,String operation,EditorSnapshot snapshot){
-  if(result==null || result.isEmpty()){message(context,"No replacement was returned.");return;}
-  LinearLayout body=SharedKeyboardSurface.body();SharedKeyboardSurface.label(body,result);SharedKeyboardSurface.Panel panel=new SharedKeyboardSurface.Panel(body);
-  SharedKeyboardSurface.button(body,"Apply",()->{panel.dismiss();if(!GboardSharedWritingRuntime.isCurrent(snapshot)){message(context,"The editor changed. Nothing was applied.");return;}try{if(!NativeEditBridge.apply(result,operation))failure(context,"EDITOR_UNAVAILABLE");}catch(Exception unavailable){failure(context,"EDITOR_UNAVAILABLE");}});
-  SharedKeyboardSurface.button(body,"Cancel",panel::dismiss);panel.show();
+ private static void preview(Context context,SharedKeyboardSurface.Panel panel,String result,String operation,EditorSnapshot snapshot){
+  if(result==null || result.isEmpty()){showFailure(context,panel,"NO_OR_EMPTY_RESPONSE");return;}
+  panel.replaceContent();panel.label(result);
+  panel.button("Apply",()->{if(!GboardSharedWritingRuntime.isCurrent(snapshot)){panel.dismiss();message(context,"The editor changed. Nothing was applied.");return;}panel.dismiss();try{if(!NativeEditBridge.apply(result,operation))failure(context,"EDITOR_UNAVAILABLE");}catch(Exception unavailable){failure(context,"EDITOR_UNAVAILABLE");}});
+  panel.button("Cancel",panel::dismiss);
+ }
+ private static void showFailure(Context context,SharedKeyboardSurface.Panel panel,String code){
+  SharedModelClient.noteFailure(code);if(!panel.isShowing())return;panel.replaceContent();panel.label(SharedLocalAiState.failureMessage(code));panel.button("Back",panel::dismiss);panel.button("Local AI settings",()->{panel.dismiss();SharedModelSetupActivity.open(context);});
  }
  static void failure(Context context,String code){SharedModelClient.noteFailure(code);message(context,SharedLocalAiState.failureMessage(code));}
  static void message(Context context,String text){MAIN.post(()->{
