@@ -4,6 +4,10 @@ import android.widget.*;
 public final class SharedToolsMenu {
  private SharedToolsMenu(){}
  public static void open(Context context){
+  if(GboardSharedWritingRuntime.selected(context) && SharedModelClient.isReadyCached()){SharedWritingActivation.ensure(context,()->openMenu(context));return;}
+  openMenu(context);
+ }
+ private static void openMenu(Context context){
   LinearLayout body=SharedTextActions.body(context);PopupWindow menu=SharedTextActions.popup(body);
   SharedTextActions.label(body,GboardSharedWritingRuntime.selected(context)?"Local AI: ON for Gboard":"Local AI: OFF for Gboard");
   SharedTextActions.label(body,SharedModelClient.readinessMessage(context));

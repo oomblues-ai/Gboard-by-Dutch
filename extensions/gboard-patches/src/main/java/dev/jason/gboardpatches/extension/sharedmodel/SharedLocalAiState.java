@@ -73,6 +73,7 @@ public final class SharedLocalAiState {
             case "INPUT_TOO_LONG":case "CONTEXT_EXCEEDED":case "TOKEN_BUDGET_EXCEEDED":case "CONTEXT_LIMIT":return "This text exceeds the local model's context limit. Select a shorter passage.";
             case "OUTPUT_TRUNCATED":return "The model ran out of output space. Nothing was applied; try a shorter passage.";
             case "DEADLINE_EXCEEDED":case "TIMEOUT":return "The local request timed out. Nothing was applied; retry when the model is ready.";
+            case "NATIVE_WRITING_ACTIVATION_FAILED":return "Gboard could not open its writing session in this editor. Nothing was applied.";
             case "NATIVE_EDITOR_UNAVAILABLE":return "Gboard’s writing session is not active. Open Writing tools for this draft, then retry Local AI.";
             case "EDITOR_UNAVAILABLE":return "Writing tools are unavailable in this editor. Try a normal editable draft.";
             case "SHARED_BACKEND_NOT_SELECTED":return "Local AI is OFF for Gboard. Enable it in Local AI settings.";

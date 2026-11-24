@@ -25,6 +25,7 @@ internal val gboardSharedModelPatch = bytecodePatch(
     execute {
         GboardSharedWritingTargets.preflight(this)
         installSharedEditorBridge(this)
+        GboardMethodTarget("Lpdq;","fk",emptyList(),"V").resolve(this).addInstructions(0,RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_EDITOR_INVALIDATE,""))
         applySharedRequestDispatch(this)
         findMutableMethodOrThrow(GboardSharedWritingTargets.readiness).applySharedFactory(this,RuntimeCallId.SHARED_WRITING_READINESS, "")
         findMutableMethodOrThrow(GboardSharedWritingTargets.v2Factory).applySharedFactory(this,RuntimeCallId.SHARED_WRITING_CREATE_V2,"p0 .. p1")
@@ -41,6 +42,11 @@ internal object GboardSharedWritingTargets {
     val wrappedFactory=GboardMethodTarget("Ladtl;","d",listOf("Lagrh;"),"Ladvh;")
     fun preflight(context: BytecodePatchContext) {
         v2Factory.resolve(context);wrappedFactory.resolve(context);readiness.resolve(context)
+        // The Local AI entry uses the same native secondary-keyboard activation event as Jarvis.
+        GboardMethodTarget("Lagoq;","<init>",listOf("Lagoo;","Ljava/lang/Object;"),"V").resolve(context)
+        GboardMethodTarget("Ladan;","e",listOf("I","Ljava/lang/Object;"),"Ladan;").resolve(context)
+        GboardMethodTarget("Lafae;","bT",listOf("Ladan;"),"V").resolve(context)
+        GboardFieldTarget("Lpva;","a","Lagoo;").resolve(context)
         check(context.mutableClass("Ladvg;").interfaces.toSet()==setOf("Ljava/lang/AutoCloseable;","Lzwg;")) { "Writing handler parent interface drift" }
         listOf(
             GboardMethodTarget("Lavvx;","b",listOf("Ljava/lang/Runnable;","Ljava/util/concurrent/Executor;"),"V"),
