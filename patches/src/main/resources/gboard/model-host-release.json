@@ -1,12 +1,12 @@
 {
   "packageName": "app.johninnl.modelhost",
-  "apkSha256": "39c5da2ae2c4444de1662ecb26c3b633dfafedc71ccf63ddbd795af688dfc904",
+  "apkSha256": "643d67469064fddb2aac303ae509256a41f87d356661d51446c9bb71ca479af6",
   "signerSha256": "1c45e972f387160e6994391954d0f1ebd983a2b0ab506e444645f4ca9f47bdc4",
-  "versionCode": 103,
-  "versionName": "0.1.0-review.fa50d0b3d2e5",
-  "sourceCommit": "fa50d0b3d2e5725becb8828ae102812a8be3c462",
-  "apkBytes": 56686058,
-  "downloadUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/fa50d0b3d2e5725becb8828ae102812a8be3c462/local-model-host-0.1.0-review.fa50d0b3d2e5.apk",
+  "versionCode": 104,
+  "versionName": "0.1.0-review.2fc544a95227",
+  "sourceCommit": "2fc544a95227bcdafcfd6949337577093dea04c8",
+  "apkBytes": 57299059,
+  "downloadUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/2fc544a95227bcdafcfd6949337577093dea04c8/local-model-host-0.1.0-review.2fc544a95227.apk",
   "modelSha256": "181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c",
   "runtimeAarSha256": "652fe8bef9964d6b24fc72cf53c4e05f487c316bc55a9d148a268f2e9cbc5250"
 }

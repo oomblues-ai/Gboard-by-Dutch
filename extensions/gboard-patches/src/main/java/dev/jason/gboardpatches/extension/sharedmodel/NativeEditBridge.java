@@ -25,6 +25,17 @@ public final class NativeEditBridge {
   Method make=event.getDeclaredMethod("e",int.class,Object.class);make.setAccessible(true);Object request=make.invoke(null,-10151,type.get(null));
   Method dispatch=service.getDeclaredMethod("bT",event);dispatch.setAccessible(true);dispatch.invoke(ime,request);
  }
+ /** Restore the original OCR keyboard after Android's document picker hid it. */
+ static void activateOcr(android.inputmethodservice.InputMethodService ime)throws ReflectiveOperationException{
+  ClassLoader loader=ime.getClass().getClassLoader();
+  Class<?> keyboard=Class.forName("agoo",false,loader),request=Class.forName("agoq",false,loader),transition=Class.forName("aars",false,loader),event=Class.forName("adan",false,loader);
+  java.lang.reflect.Field ocr=Class.forName("nyr",true,loader).getDeclaredField("g");ocr.setAccessible(true);
+  java.lang.reflect.Constructor<?> constructor=request.getDeclaredConstructor(keyboard);constructor.setAccessible(true);
+  Method make=transition.getDeclaredMethod("a",request);make.setAccessible(true);
+  Object envelope=make.invoke(null,constructor.newInstance(ocr.get(null)));
+  java.lang.reflect.Field payload=transition.getDeclaredField("b");payload.setAccessible(true);
+  Method dispatch=Class.forName("afae",false,loader).getDeclaredMethod("bT",event);dispatch.setAccessible(true);dispatch.invoke(ime,payload.get(envelope));
+ }
  public static String prepare()throws ReflectiveOperationException{return (String)adapter().getMethod("prepare").invoke(null);}
  public static boolean apply(String text,String operation)throws ReflectiveOperationException{return (Boolean)adapter().getMethod("apply",String.class,String.class).invoke(null,text,operation);}
 }

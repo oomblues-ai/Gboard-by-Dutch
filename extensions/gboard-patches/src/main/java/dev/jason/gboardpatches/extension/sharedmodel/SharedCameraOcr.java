@@ -21,7 +21,7 @@ public final class SharedCameraOcr {
     private static WeakReference<Object> peer=new WeakReference<>(null);
     private static State active;
     private static Pick picking;
-    private static final class Pick {final EditorSnapshot.Handoff editor;final long expires=android.os.SystemClock.uptimeMillis()+60000;Bitmap image;Pick(EditorSnapshot.Handoff e){editor=e;}}
+    private static final class Pick {final EditorSnapshot.Handoff editor;final long expires=android.os.SystemClock.uptimeMillis()+120000;Bitmap image;boolean reopening;Pick(EditorSnapshot.Handoff e){editor=e;}}
     private static final class State {
         final Object peer;final EditorSnapshot snapshot;volatile boolean cancelled;boolean started;Bitmap image;Future<?> work;TextView text;
         State(Object p,EditorSnapshot s){peer=p;snapshot=s;}
@@ -64,11 +64,27 @@ public final class SharedCameraOcr {
         SharedImageInputActivity.choose(context,bitmap->{
             if(picking!=request){if(bitmap!=null)bitmap.recycle();return;}
             if(bitmap==null){picking=null;return;}
-            request.image=bitmap;deliverChosen(request);
-            MAIN.postDelayed(()->{if(picking==request){picking=null;if(request.image!=null){request.image.recycle();request.image=null;}message(context,"The original editor changed or did not return. Choose the image again in the intended field.");}},10000);
+            request.image=bitmap;resumeChosen(request,context,100);
         });
-        MAIN.postDelayed(()->{if(picking==request && android.os.SystemClock.uptimeMillis()>=request.expires){picking=null;if(request.image!=null){request.image.recycle();request.image=null;}}},60000);
+        MAIN.postDelayed(()->{if(picking==request && android.os.SystemClock.uptimeMillis()>=request.expires)discardChosen(request);},120000);
     }
+    private static void resumeChosen(Pick request,Context context,int remaining){
+        if(picking!=request)return;
+        if(remaining==0 || android.os.SystemClock.uptimeMillis()>request.expires){discardChosen(request);message(context,"The original editor changed or did not return. Choose the image again in the intended field.");return;}
+        // requestShowSelf restores normal typing, not the OCR keyboard. Wait for the original live
+        // editor before dispatching the stock OCR transition; never adopt the picker's editor.
+        if(request.editor.resume()!=null){
+            Object owner=peer.get();
+            if(owner!=null && shown(owner))deliverChosen(request);
+            else if(!request.reopening){
+                request.reopening=true;
+                try{NativeEditBridge.activateOcr(GboardSharedWritingRuntime.currentService());}
+                catch(ReflectiveOperationException unavailable){discardChosen(request);message(context,"Could not reopen Scan Text. Please try again.");return;}
+            }
+        }
+        if(picking==request)MAIN.postDelayed(()->resumeChosen(request,context,remaining-1),100);
+    }
+    private static void discardChosen(Pick request){if(picking==request)picking=null;if(request.image!=null){if(!request.image.isRecycled())request.image.recycle();request.image=null;}}
     private static void deliverChosen(Pick request){
         if(picking!=request || request.image==null)return;
         Object owner=peer.get();if(owner==null || !shown(owner))return;

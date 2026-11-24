@@ -242,6 +242,12 @@ internal fun installSharedNativeEntry(context:BytecodePatchContext){
 }
 
 internal fun installSharedCameraOcr(context:BytecodePatchContext){
+    // Same keyboard transition used by OcrCaptureExtension after permission handoff.
+    GboardFieldTarget("Lnyr;","g","Lagoo;").resolve(context)
+    GboardFieldTarget("Laars;","b","Ladan;").resolve(context)
+    GboardMethodTarget("Lagoq;","<init>",listOf("Lagoo;"),"V").resolve(context)
+    GboardMethodTarget("Laars;","a",listOf("Lagoq;"),"Laars;").resolve(context)
+    GboardMethodTarget("Lafae;","bT",listOf("Ladan;"),"V").resolve(context)
     val owner="Ltwm;"
     listOf("b" to "Landroid/content/Context;","c" to "Landroidx/camera/view/PreviewView;","f" to "Landroid/widget/TextView;","g" to "Landroid/widget/TextView;","h" to "Landroid/widget/ImageButton;","l" to "Landroid/widget/FrameLayout;","B" to "Landroid/widget/TextView;","A" to "Landroid/view/View;","C" to "Landroid/view/View;","d" to "Landroid/view/View;","r" to "Lcia;","u" to "Z").forEach{(name,type)->GboardFieldTarget(owner,name,type).resolve(context)}
     listOf(GboardMethodTarget(owner,"b",listOf("Ljava/lang/String;"),"V"),GboardMethodTarget(owner,"j",listOf("Ljava/lang/String;"),"V"),GboardMethodTarget(owner,"d",emptyList(),"V"),GboardMethodTarget(owner,"i",emptyList(),"V"),GboardMethodTarget("Lcia;","c",emptyList(),"V")).forEach{it.resolve(context)}
