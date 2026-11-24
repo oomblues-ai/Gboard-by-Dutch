@@ -32,7 +32,8 @@ internal val gboardSharedModelPatch = bytecodePatch(
         applySharedRequestDispatch(this)
         findMutableMethodOrThrow(GboardSharedWritingTargets.readiness).applySharedFactory(this,RuntimeCallId.SHARED_WRITING_READINESS, "")
         findMutableMethodOrThrow(GboardSharedWritingTargets.v2Factory).applySharedFactory(this,RuntimeCallId.SHARED_WRITING_CREATE_V2,"p0 .. p1")
-        findMutableMethodOrThrow(GboardSharedWritingTargets.wrappedFactory).applySharedFactory(this,RuntimeCallId.SHARED_WRITING_CREATE_WRAPPED,"p1")
+        // Preserve adtl.d: pdq.al casts its result to the original adtk wrapper.
+        // Shared dispatch replaces the underlying request handler, never this native wrapper.
         findMutableMethodOrThrow(GboardMethodTarget("Lafae;","onUpdateSelection",List(6){"I"},"V")).addInstructions(0,RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_WRITING_SELECTION_UPDATED,"p0 .. p6"))
         findMutableMethodOrThrow(GboardManualIncognitoTargets.onStartInput).addInstructions(0,RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_WRITING_INPUT_START,"p0 .. p1"))
         findMutableMethodOrThrow(GboardManualIncognitoTargets.onWindowHidden).applyVoidExitLifecycleDelegate(RuntimeCallId.SHARED_WRITING_INPUT_HIDDEN,"p0")
@@ -42,9 +43,9 @@ internal val gboardSharedModelPatch = bytecodePatch(
 internal object GboardSharedWritingTargets {
     val v2Factory=GboardMethodTarget("Lpzy;","a",listOf("Landroid/content/Context;","Lagrh;"),"Ladvg;")
     val readiness=GboardMethodTarget("Ladtl;","a",emptyList(),"Ladsd;")
-    val wrappedFactory=GboardMethodTarget("Ladtl;","d",listOf("Lagrh;"),"Ladvh;")
+    val nativeWrapperFactory=GboardMethodTarget("Ladtl;","d",listOf("Lagrh;"),"Ladvh;")
     fun preflight(context: BytecodePatchContext) {
-        v2Factory.resolve(context);wrappedFactory.resolve(context);readiness.resolve(context)
+        v2Factory.resolve(context);nativeWrapperFactory.resolve(context);readiness.resolve(context)
         // Enter through the same native request as the original Writing Tools access point.
         GboardMethodTarget("Lpve;","f",listOf("Ladbd;","Laicj;","Z","Laeaj;","Ljava/util/function/Consumer;"),"V").resolve(context)
         GboardMethodTarget("Laicj;","d",listOf("Lavgf;"),"Laicj;").resolve(context)

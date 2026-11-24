@@ -23,7 +23,6 @@ internal enum class RuntimeCallId(internal val encodedAbi: String) {
     SHARED_WRITING_DISPATCH_CANCEL("LMorpheSharedWritingDispatch188;->r(Ladvg;)V"),
     SHARED_WRITING_READINESS("LMorpheSharedWritingDispatch188;->tryReadiness()Ladsd;"),
     SHARED_WRITING_CREATE_V2("LMorpheSharedWritingHandler188;->tryCreate(Landroid/content/Context;Lagrh;)Ladvg;"),
-    SHARED_WRITING_CREATE_WRAPPED("LMorpheSharedWritingHandler188;->tryWrapped(Lagrh;)Ladvh;"),
     SHARED_WRITING_INPUT_START("Ldev/jason/gboardpatches/extension/sharedmodel/GboardSharedWritingRuntime;->onInputStarting(Ljava/lang/Object;Landroid/view/inputmethod/EditorInfo;)V"),
     SHARED_WRITING_INPUT_HIDDEN("Ldev/jason/gboardpatches/extension/sharedmodel/GboardSharedWritingRuntime;->onInputHidden(Ljava/lang/Object;)V"),
     KEYPRESS_HAPTICS_RUNTIME_APPLY_FLAG_VALUE("Ldev/jason/gboardpatches/extension/keypresshaptics/GboardKeypressHapticsRuntime;->applyFlagValue(Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;"),
