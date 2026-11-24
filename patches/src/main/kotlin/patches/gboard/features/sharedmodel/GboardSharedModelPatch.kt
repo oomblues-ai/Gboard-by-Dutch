@@ -77,7 +77,6 @@ internal fun MutableMethod.applySharedFactory(context:BytecodePatchContext,call:
     val parameterWords=parameterTypes.size + if (accessFlags and 8 == 0)1 else 0
     val abi=RuntimeAbiCatalog.abi(call)
     if(implementation!!.registerCount==parameterWords){
-        check(accessFlags and 8 != 0){"An instance factory without locals requires a specific wrapper"}
         val publicName=name
         val stockName="morpheSharedStock_"+publicName
         val owner=definingClass
@@ -86,8 +85,9 @@ internal fun MutableMethod.applySharedFactory(context:BytecodePatchContext,call:
         val flags=accessFlags
         name=stockName
         val args=if(parameterWords==0)"" else "p0 .. p${parameterWords-1}"
-        val stockInvoke=if(parameterWords==0)"invoke-static {}, $owner->$stockName(${parameters.joinToString("")})$returnType"
-            else "invoke-static/range {$args}, $owner->$stockName(${parameters.joinToString("")})$returnType"
+        val invokeKind=if(flags and 8 != 0)"invoke-static" else if(flags and 2 != 0)"invoke-direct" else "invoke-virtual"
+        val stockInvoke=if(parameterWords==0)"$invokeKind {}, $owner->$stockName(${parameters.joinToString("")})$returnType"
+            else "$invokeKind/range {$args}, $owner->$stockName(${parameters.joinToString("")})$returnType"
         context.addHelperMethodIfMissing(owner,publicName,parameters,returnType,flags,parameterWords+1,"""
             ${RuntimeCallEmitter.invoke(call,registers)}
             move-result-object v0
