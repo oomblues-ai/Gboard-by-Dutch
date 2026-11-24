@@ -4,8 +4,11 @@ import android.widget.*;
 public final class SharedToolsMenu {
  private SharedToolsMenu(){}
  public static void open(Context context){
-  if(!GboardSharedWritingRuntime.selected(context)){SharedTextActions.message(context,"Choose Shared local model in AI Writing Tools settings first.");return;}
   LinearLayout body=SharedTextActions.body(context);PopupWindow menu=SharedTextActions.popup(body);
+  SharedTextActions.label(body,GboardSharedWritingRuntime.selected(context)?"Local AI: ON for Gboard":"Local AI: OFF for Gboard");
+  SharedTextActions.label(body,SharedModelClient.readinessMessage(context));
+  SharedTextActions.button(body,"Local AI status / On or off",()->{menu.dismiss();SharedModelSetupActivity.open(context);});
+  if(!GboardSharedWritingRuntime.selected(context) || !SharedModelClient.isReadyCached()){SharedTextActions.show(menu);return;}
   String[][] writing={{"Proofread / Auto Fix","proofread"},{"Rephrase","rephrase"},{"Professional","professional"},{"Friendly","friendly"},{"Emojify","emojify"},{"Elaborate","elaborate"},{"Shorten","shorten"}};
   for(String[] action:writing)SharedTextActions.button(body,action[0],()->{menu.dismiss();SharedTextActions.run(context,action[1],null,null,null);});
   SharedTextActions.button(body,"Cancel Voice edit",()->{menu.dismiss();SharedVoiceEditController.cancel();});
@@ -18,5 +21,9 @@ public final class SharedToolsMenu {
   SharedTextActions.button(body,"Local AI context settings",()->{menu.dismiss();context.startActivity(new Intent(context,SharedWritingContextActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));});
   SharedTextActions.show(menu);
  }
- private static void languages(Context context){String[][] languages={{"English","en"},{"French","fr"},{"German","de"},{"Spanish","es"},{"Italian","it"},{"Portuguese","pt"},{"Dutch","nl"}};LinearLayout body=SharedTextActions.body(context);PopupWindow menu=SharedTextActions.popup(body);for(String[] language:languages)SharedTextActions.button(body,language[0],()->{menu.dismiss();SharedTextActions.run(context,"translate",null,null,language[1]);});SharedTextActions.show(menu);}
+ private static void languages(Context context){String[][] languages={{"English","en"},{"French","fr"},{"German","de"},{"Spanish","es"},{"Italian","it"},{"Portuguese","pt"},{"Dutch","nl"}};LinearLayout body=SharedTextActions.body(context);PopupWindow menu=SharedTextActions.popup(body);
+  SharedTextActions.label(body,GboardSharedWritingRuntime.selected(context)?"Local AI: ON for Gboard":"Local AI: OFF for Gboard");
+  SharedTextActions.label(body,SharedModelClient.readinessMessage(context));
+  SharedTextActions.button(body,"Local AI status / On or off",()->{menu.dismiss();SharedModelSetupActivity.open(context);});
+  if(!GboardSharedWritingRuntime.selected(context) || !SharedModelClient.isReadyCached()){SharedTextActions.show(menu);return;}for(String[] language:languages)SharedTextActions.button(body,language[0],()->{menu.dismiss();SharedTextActions.run(context,"translate",null,null,language[1]);});SharedTextActions.show(menu);}
 }

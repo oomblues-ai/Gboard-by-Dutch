@@ -17,7 +17,8 @@ import org.json.JSONObject;
 public final class SharedModelSetupActivity extends Activity {
     private static final int PICK_APK=7401,APPROVE_SOURCE=7402,INSTALL_APK=7403;
     private final ExecutorService worker=Executors.newSingleThreadExecutor(r->new Thread(r,"gboard-provider-setup"));
-    private TextView status;
+    private TextView status,selection,lastFailure;
+    private Button setup;
     private Button download,useLocal;
     private Future<?> downloadJob;
     private final android.os.Handler main=new android.os.Handler(android.os.Looper.getMainLooper());
@@ -27,33 +28,45 @@ public final class SharedModelSetupActivity extends Activity {
     public static void open(Context context){context.startActivity(new Intent(context,SharedModelSetupActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));}
     private String text(int id){return GboardSettingsText.get(this,id);}
     @Override public void onCreate(Bundle state){
-        super.onCreate(state);setTheme(android.R.style.Theme_Material_Light_NoActionBar);
-        LinearLayout body=new LinearLayout(this);body.setOrientation(LinearLayout.VERTICAL);body.setPadding(32,48,32,24);
-        TextView title=new TextView(this);title.setText(text(R.string.gboard_patches_shared_model_label));title.setTextSize(24);body.addView(title);
-        TextView note=new TextView(this);note.setText(text(R.string.gboard_patches_shared_model_install_note));body.addView(note);
-        status=new TextView(this);status.setPadding(0,24,0,24);body.addView(status);
+        boolean dark=(getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK)==android.content.res.Configuration.UI_MODE_NIGHT_YES;
+        setTheme(dark?android.R.style.Theme_Material_NoActionBar:android.R.style.Theme_Material_Light_NoActionBar);super.onCreate(state);
+        LinearLayout body=new LinearLayout(this);body.setOrientation(LinearLayout.VERTICAL);body.setPadding(dp(20),dp(20),dp(20),dp(24));
+        TextView title=new TextView(this);title.setText("Local AI for Gboard");title.setTextSize(26);body.addView(title);
+        selection=new TextView(this);selection.setTextSize(22);selection.setTypeface(null,android.graphics.Typeface.BOLD);selection.setPadding(0,dp(20),0,dp(12));body.addView(selection);
+        TextView note=new TextView(this);note.setText("Gboard selection and model readiness are separate. Installing the provider does not turn Local AI on.");note.setTextSize(16);body.addView(note);
+        status=new TextView(this);status.setTextSize(18);status.setPadding(0,dp(20),0,dp(16));body.addView(status);
+        useLocal=new Button(this);useLocal.setOnClickListener(v->enableLocal());body.addView(useLocal);
+        setup=new Button(this);setup.setText("Open provider setup / Start or stop model");setup.setOnClickListener(v->openProvider());body.addView(setup);
+        lastFailure=new TextView(this);lastFailure.setTextSize(16);lastFailure.setPadding(0,dp(16),0,dp(16));body.addView(lastFailure);
+        TextView installNote=new TextView(this);installNote.setText(text(R.string.gboard_patches_shared_model_install_note));installNote.setTextSize(16);installNote.setPadding(0,dp(16),0,dp(12));body.addView(installNote);
         download=new Button(this);download.setText(text(R.string.gboard_patches_shared_model_download));download.setOnClickListener(v->downloadRelease());body.addView(download);
-        Button setup=new Button(this);setup.setText(text(R.string.gboard_patches_shared_model_open));setup.setOnClickListener(v->openProvider());body.addView(setup);
         Button install=new Button(this);install.setText(text(R.string.gboard_patches_shared_model_choose_apk));install.setOnClickListener(v->{
             try{releaseIdentity();startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("application/vnd.android.package-archive").addCategory(Intent.CATEGORY_OPENABLE),PICK_APK);}catch(Exception error){status.setText(text(R.string.gboard_patches_shared_model_release_unavailable));}
         });body.addView(install);
-        useLocal=new Button(this);useLocal.setText(text(R.string.gboard_patches_shared_model_use));useLocal.setOnClickListener(v->enableLocal());body.addView(useLocal);
-        setContentView(body);refresh();
+        ScrollView scroll=new ScrollView(this);scroll.addView(body);
+        scroll.setOnApplyWindowInsetsListener((view,insets)->{body.setPadding(dp(20),Math.max(dp(20),insets.getSystemWindowInsetTop()),dp(20),Math.max(dp(24),insets.getSystemWindowInsetBottom()));return insets;});
+        setContentView(scroll);scroll.requestApplyInsets();refresh();
     }
-    @Override protected void onResume(){super.onResume();resumed=true;main.removeCallbacks(refreshLoop);main.post(refreshLoop);}
+    private int dp(int value){return Math.round(value*getResources().getDisplayMetrics().density);}
+    @Override protected void onResume(){super.onResume();SharedModelClient.reconnect(this);resumed=true;main.removeCallbacks(refreshLoop);main.post(refreshLoop);}
     @Override protected void onPause(){resumed=false;main.removeCallbacks(refreshLoop);super.onPause();}
     private void refresh(){
         boolean installed=ProviderDiscovery.inspect(this).installed;
-        boolean ready=installed && SharedModelClient.ready(this);useLocal.setEnabled(ready);
+        boolean selected=SharedLocalAiState.selected(dev.jason.gboardpatches.extension.writingtools.GboardAiWritingToolsSettings.preferences(this));
+        boolean ready=installed && SharedModelClient.ready(this);
+        selection.setText(selected?"ON — Local AI selected for Gboard":"OFF — Local AI not selected for Gboard");
+        boolean dark=(getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK)==android.content.res.Configuration.UI_MODE_NIGHT_YES;
+        selection.setTextColor(selected?(dark?0xff7bd89c:0xff146c2e):(dark?0xffe0e3e7:0xff343940));
+        useLocal.setText(selected?"Turn Local AI OFF for Gboard":"Turn Local AI ON for Gboard");
+        useLocal.setEnabled(selected || ready);
+        setup.setEnabled(installed);
         if(installed){
-            try{SharedProviderIdentity.verify(this);}catch(HostException error){useLocal.setEnabled(false);showingError=true;status.setText(text(R.string.gboard_patches_shared_model_untrusted));return;}
-            String state=SharedModelClient.status(this);
-            status.setText(text(ready?R.string.gboard_patches_shared_model_ready:
-                "LOADING".equals(state)?R.string.gboard_patches_shared_model_loading:
-                "MEMORY_PAUSED".equals(state)?R.string.gboard_patches_shared_model_memory_paused:
-                "MODEL_MISSING".equals(state)?R.string.gboard_patches_shared_model_model_missing:
-                "STOPPED".equals(state)?R.string.gboard_patches_shared_model_stopped:R.string.gboard_patches_shared_model_installed));
+            try{SharedProviderIdentity.verify(this);}catch(HostException error){useLocal.setEnabled(selected);showingError=true;status.setText(text(R.string.gboard_patches_shared_model_untrusted));return;}
+            status.setText(SharedModelClient.readinessMessage(this));
         }else status.setText(text(R.string.gboard_patches_shared_model_missing));
+        String failure=SharedModelClient.lastRequestError();
+        lastFailure.setVisibility(failure.isEmpty()?android.view.View.GONE:android.view.View.VISIBLE);
+        if(!failure.isEmpty())lastFailure.setText("Last action: "+SharedLocalAiState.failureMessage(failure));
         try{download.setEnabled(releaseIdentity().download!=null);}catch(Exception error){download.setEnabled(false);}
     }
     private void openProvider(){showingError=false;try{startActivity(new Intent().setComponent(new ComponentName(ModelHostClient.DEFAULT_PACKAGE,"app.johninnl.modelhost.setup.HostSettingsActivity")));}catch(ActivityNotFoundException e){status.setText(text(R.string.gboard_patches_shared_model_missing));}}
@@ -85,11 +98,13 @@ public final class SharedModelSetupActivity extends Activity {
         });
     }
     private void enableLocal(){
-        if(!SharedModelClient.ready(this)){refresh();return;}
         android.content.SharedPreferences preferences=dev.jason.gboardpatches.extension.writingtools.GboardAiWritingToolsSettings.preferences(this);
-        boolean saved=preferences.edit().putBoolean(dev.jason.gboardpatches.extension.writingtools.GboardAiWritingToolsSettings.PREF_KEY_ENABLED,true)
-            .putString(dev.jason.gboardpatches.extension.writingtools.GboardAiWritingToolsSettings.PREF_KEY_BACKEND_TYPE,dev.jason.gboardpatches.extension.writingtools.GboardAiWritingToolsSettings.BACKEND_SHARED_LOCAL).commit();
-        if(saved){SharedModelClient.activate(this);status.setText(text(R.string.gboard_patches_shared_model_enabled));}
+        boolean selected=SharedLocalAiState.selected(preferences);
+        if(!selected && !SharedModelClient.ready(this)){refresh();return;}
+        if(SharedLocalAiState.select(preferences,!selected)){
+            if(selected)SharedModelClient.releaseSession();else SharedModelClient.activate(this);
+            showingError=false;refresh();
+        }
     }
     @Override protected void onActivityResult(int request,int result,Intent data){
         super.onActivityResult(request,result,data);
