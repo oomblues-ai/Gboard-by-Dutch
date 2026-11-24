@@ -31,6 +31,7 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableFieldReference
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference
+import patches.gboard.shared.*
 import patches.gboard.shared.generated.GboardVersionBindings
 import org.w3c.dom.Element
 
@@ -492,9 +493,8 @@ private fun resolveTranscriptionBundle(): TranscriptionBundle {
 @Suppress("unused")
 val parakeetVoiceTyping = bytecodePatch(
     name = "Parakeet voice typing",
-    description = "Adds Gboard settings → Voice typing → Parakeet voice typing. After downloading NVIDIA Parakeet " +
-        "(Moondream's Parakeet Ultra or the original TDT v3), the microphone key transcribes on the phone and " +
-        "recognises Dutch, English and 23 more languages per sentence without switching. Gives the patched Gboard the Parakeet launcher icon.",
+    description = "Uses the speech model selected in Local Model Host through Binder while preserving Gboard's native microphone and dictation UI. " +
+        "Choose Parakeet, Nemotron Streaming or Whisper Tiny and download/enable the model in the host. Gboard keeps only its client switch; language support depends on the selected model.",
 ) {
     compatibleWith(gboard)
     extendWith("extensions/gboard.mpe")
@@ -508,6 +508,15 @@ val parakeetVoiceTyping = bytecodePatch(
                 packageName = manifest.documentElement.getAttribute("package").ifEmpty { packageName }
                 val application = manifest.getElementsByTagName("application").item(0) as? Element
                     ?: throw PatchException("Gboard manifest has no application")
+                val root=manifest.documentElement
+                ensureManifestUsesPermission(manifest,root,"android.permission.REQUEST_INSTALL_PACKAGES")
+                val queries=root.childElements("queries").firstOrNull()?:manifest.createElement("queries").also{root.insertBefore(it,application)}
+                if(queries.childElements("package").none{it.manifestAndroidAttribute("name")=="app.johninnl.modelhost"})queries.appendChild(manifest.createElement("package").apply{setManifestAndroidAttribute("name","app.johninnl.modelhost")})
+                ensureManifestComponent(manifest,application,"activity","dev.jason.gboardpatches.extension.sharedmodel.SharedModelSetupActivity").setManifestAndroidAttribute("exported","false")
+                ensureManifestComponent(manifest,application,"provider","app.johninnl.modelhost.api.ProviderApkProvider").apply{
+                    setManifestAndroidAttribute("authorities",packageName+".local-model-host-apks");setManifestAndroidAttribute("exported","false");setManifestAndroidAttribute("grantUriPermissions","true")
+                }
+
                 val activities = manifest.getElementsByTagName("activity")
                 if ((0 until activities.length).any { (activities.item(it) as Element).getAttributeNS(ANDROID, "name") == SETTINGS_ACTIVITY }) {
                     throw PatchException("Parakeet settings are already declared")
@@ -518,14 +527,16 @@ val parakeetVoiceTyping = bytecodePatch(
                     setAttributeNS(ANDROID, "android:label", "@string/morphe_parakeet_title")
                 })
             }
+            val release=object {}.javaClass.classLoader.getResourceAsStream("gboard/model-host-release.json")?.use{it.readBytes()}
+            if(release!=null){val target=this["assets/morphe/model-host-release.json",false];target.parentFile.mkdirs();target.writeBytes(release)}
             for ((folder, texts) in listOf(
                 "values" to listOf(
-                    "Parakeet voice typing", "On-device speech recognition, Dutch and English without switching",
-                    "Parakeet", "Voice typing on your phone with NVIDIA Parakeet, set up under Parakeet voice typing",
+                    "Local AI voice typing", "Speech models and downloads are managed in Local Model Host",
+                    "Local AI", "Use the shared speech model selected in Local Model Host",
                 ),
                 "values-nl" to listOf(
-                    "Parakeet-spraakinvoer", "Spraakherkenning op de telefoon, Nederlands en Engels zonder wisselen",
-                    "Parakeet", "Spraakinvoer op je telefoon met NVIDIA Parakeet, in te stellen onder Parakeet-spraakinvoer",
+                    "Lokale AI-spraakinvoer", "Spraakmodellen en downloads worden beheerd in Local Model Host",
+                    "Lokale AI", "Gebruik het gedeelde spraakmodel uit Local Model Host",
                 ),
             )) {
                 val path = "res/$folder/strings.xml"
@@ -586,7 +597,7 @@ val parakeetVoiceTyping = bytecodePatch(
             }
         }
     }
-    dependsOn(originalInput, settings, gboardParakeetIconPatch)
+    dependsOn(originalInput, settings, gboardParakeetIconPatch, gboardPatchesExtensionCarrierPatch)
 
     execute {
         val contract = resolveContract()

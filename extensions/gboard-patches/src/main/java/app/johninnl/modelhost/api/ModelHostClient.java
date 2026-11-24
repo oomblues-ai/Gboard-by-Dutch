@@ -22,6 +22,7 @@ public final class ModelHostClient implements AutoCloseable {
     private final ComponentName component;
     private final Executor callbacks;
     private final ThreadPoolExecutor worker=new ThreadPoolExecutor(1,2,30,TimeUnit.SECONDS,new ArrayBlockingQueue<>(64),r -> new Thread(r,"modelhost-client"));
+    private final List<SpeechSession> speechSessions=new CopyOnWriteArrayList<>();
     private final List<HostSession> sessions=new CopyOnWriteArrayList<>();
     private volatile IModelHost remote;
     private Context context;
@@ -65,7 +66,15 @@ public final class ModelHostClient implements AutoCloseable {
             return session;
         } catch(Exception e){throw new HostException("SESSION_UNAVAILABLE",e);}
     }
+    /** Call on a worker thread after the provider advertises its speech capability. */
+    public SpeechSession openSpeechSession(String language) throws HostException {
+        IModelHost host=remote;if(closed.get()||host==null)throw new HostException("NOT_CONNECTED");
+        try{String config=new org.json.JSONObject().put("schema",1).put("language",language==null?"auto":language).toString();ISpeechSession remoteSession=host.openSpeechSession(config,new IHostEvents.Stub(){@Override public void onStatus(String json){}});
+            SpeechSession session=new SpeechSession(remoteSession,worker,callbacks,context,speechSessions::remove);
+            synchronized(this){if(closed.get()||remote!=host){session.close();throw new HostException("NOT_CONNECTED");}speechSessions.add(session);}return session;
+        }catch(Exception error){throw new HostException("SPEECH_SESSION_UNAVAILABLE",error);}
+    }
     public HostStatus status() throws HostException { try { if(closed.get() || remote==null)throw new HostException("NOT_CONNECTED");return new HostStatus(remote.statusJson()); }catch(RemoteException e){throw new HostException("PROVIDER_UNAVAILABLE",e);} }
-    private void lost(HostException error) { remote=null;for(HostSession s:sessions)s.disconnected();sessions.clear();ConnectionListener l=listener;if(l!=null)callbacks.execute(() -> l.onDisconnected(error)); }
-    @Override public synchronized void close() { if(!closed.compareAndSet(false,true))return;for(HostSession s:sessions)s.close();sessions.clear();remote=null;if(bound){context.unbindService(connection);bound=false;}worker.shutdown();listener=null; }
+    private void lost(HostException error) { remote=null;for(SpeechSession s:speechSessions)s.disconnected();speechSessions.clear();for(HostSession s:sessions)s.disconnected();sessions.clear();ConnectionListener l=listener;if(l!=null)callbacks.execute(() -> l.onDisconnected(error)); }
+    @Override public synchronized void close() { if(!closed.compareAndSet(false,true))return;for(SpeechSession s:speechSessions)s.close();speechSessions.clear();for(HostSession s:sessions)s.close();sessions.clear();remote=null;if(bound){context.unbindService(connection);bound=false;}worker.shutdown();listener=null; }
 }

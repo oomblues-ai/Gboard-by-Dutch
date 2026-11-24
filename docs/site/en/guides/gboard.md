@@ -1,5 +1,9 @@
 # Use the Gboard patches
 
+## Shared speech review
+
+In the shared-speech review build, open **Voice typing → Local AI voice typing → Open or install Local AI**. Choose Parakeet (TDT v3 or Ultra), Nemotron Streaming or Whisper Tiny in the host, download it there, enable shared speech and enable Local AI. Then enable **Use shared local speech** in Gboard once the host reports Ready. Model download controls are no longer in Gboard. Turn **Text and images** off in the host to use speech without Gemma. The native microphone UI remains Gboard’s. Selected local speech never silently switches to Google during a memory pause. This preview still needs phone acceptance; the shared adapters do not yet provide acoustic voice-dictionary bias, and Whisper Tiny’s supplied bundle currently uses an English prefix. The following embedded-model instructions describe the earlier published backend.
+
 Set up dictation, change how the keyboard looks, and test each feature in a scratch text field. This guide covers Gboard 18.8. Use the [Gboard app page](../apps/gboard.md) for the published patch list, supported APKs and release defaults.
 
 If the keyboard still looks solid with blur on, go to [Frosted Glass](#frosted-glass) for a quick comparison using a transparent panel.

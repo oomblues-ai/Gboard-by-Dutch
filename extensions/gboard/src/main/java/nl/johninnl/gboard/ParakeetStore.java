@@ -96,9 +96,7 @@ public final class ParakeetStore {
     /** True when voice typing should use Parakeet right now. Never throws. */
     public static boolean active(Context context) {
         try {
-            if (!unlocked(context) || !enabled(context)) return false;
-            if (!supportsArm64()) return false;
-            return runtimeInstalled(context) && modelInstalled(context, selectedModel(context));
+            return unlocked(context) && enabled(context) && supportsArm64() && SharedSpeechHook.ready(context);
         } catch (RuntimeException e) {
             return false;
         }

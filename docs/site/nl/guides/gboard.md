@@ -1,5 +1,9 @@
 # De Gboard-patches gebruiken
 
+## Review van gedeelde spraak
+
+Open in de reviewversie met gedeelde spraak **Spraakinvoer → Lokale AI-spraakinvoer → Open or install Local AI**. Kies Parakeet (TDT v3 of Ultra), Nemotron Streaming of Whisper Tiny in de host, download het model daar en zet gedeelde spraak en Local AI aan. Zet daarna **Use shared local speech** in Gboard aan zodra de host Ready meldt. Modeldownloads staan niet meer in Gboard. Zet **Text and images** in de host uit om spraak zonder Gemma te gebruiken. De microfooninterface blijft die van Gboard. Geselecteerde lokale spraak schakelt bij geheugendruk niet stilzwijgend naar Google. Deze preview moet nog op de telefoon worden geaccepteerd; de gedeelde adapters ondersteunen nog geen akoestische voorkeur voor het spraakwoordenboek en de meegeleverde Whisper Tiny-bundel gebruikt momenteel een Engelse prefix. De onderstaande instructies voor ingebouwde modellen beschrijven de eerder gepubliceerde backend.
+
 Stel spraakinvoer in, pas het uiterlijk van het toetsenbord aan en test elke functie in een proefnotitie. Deze handleiding gaat over Gboard 18.8. Op de [Gboard-appagina](../apps/gboard.md) staan de uitgebrachte patches, ondersteunde APK’s en standaardkeuzes per uitgave.
 
 Blijft het toetsenbord er ondoorzichtig uitzien met vervaging aan? Ga naar [Frosted Glass](#frosted-glass) voor een korte vergelijking met een transparant paneel.

@@ -1,12 +1,23 @@
 {
   "packageName": "app.johninnl.modelhost",
-  "apkSha256": "301da2b93ec7e8f4aa4a5d5d8cece8c0d4a885f5ad3de9eec904df6ae2954ff8",
+  "apkSha256": "6de2d2d2f2d7c896b85d4677aa590d7bf6ebaeac97dca5d313f39d9d39a12b41",
   "signerSha256": "1c45e972f387160e6994391954d0f1ebd983a2b0ab506e444645f4ca9f47bdc4",
-  "versionCode": 105,
-  "versionName": "0.1.0-review.f0f59548c929",
-  "sourceCommit": "f0f59548c929e96d0d7da157d6a1dc96499e87ec",
-  "apkBytes": 57300335,
-  "downloadUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/f0f59548c929e96d0d7da157d6a1dc96499e87ec/local-model-host-0.1.0-review.f0f59548c929.apk",
+  "versionCode": 106,
+  "versionName": "0.1.0-review.60eb04e02639",
+  "sourceCommit": "60eb04e02639f3978dae5ab2fac20aaec19e0395",
+  "apkBytes": 122025118,
+  "downloadUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/60eb04e02639f3978dae5ab2fac20aaec19e0395/local-model-host-0.1.0-review.60eb04e02639.apk",
   "modelSha256": "181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c",
-  "runtimeAarSha256": "652fe8bef9964d6b24fc72cf53c4e05f487c316bc55a9d148a268f2e9cbc5250"
+  "runtimeAarSha256": "652fe8bef9964d6b24fc72cf53c4e05f487c316bc55a9d148a268f2e9cbc5250",
+  "protocolMajor": 1,
+  "protocolMinor": 1,
+  "clientSdkUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/60eb04e02639f3978dae5ab2fac20aaec19e0395/modelhost-client-api-0.1.0-review.60eb04e02639.aar",
+  "clientSdkSha256": "371492bb84220fa20c3249053ebfbce7f6b2fd16f2e062972c16cc300ec606e5",
+  "speechModels": [
+    "parakeet-tdt-v3",
+    "parakeet-ultra",
+    "nemotron-streaming",
+    "whisper-tiny"
+  ],
+  "runtimeValidation": "pending"
 }

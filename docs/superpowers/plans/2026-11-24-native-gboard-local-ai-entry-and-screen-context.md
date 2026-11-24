@@ -99,3 +99,20 @@ Remove the inference-readiness gate from opening the native image chooser and ca
 Build and validate the connected changes once, pin the new signed companion, then perform one bounded acceptance session on the active clone. Reuse unrelated passing checks. Native OCR quality, actual insertion/undo and cross-activity privacy gates remain open until exercised.
 
 Owner language decision: keep a 38-language baseline and allow other languages with an explicit experimental/quality caveat. No hard language admission gate or silent fallback is introduced. Add a visible Language coverage entry and quality notice in Local AI settings; normalize language regions/scripts and Norwegian/legacy aliases for baseline classification. Do not call the baseline verified. Google's Gemini Code Assist prompt list is distinct from ML Kit's task-specific language lists (proofreading currently documents seven); neither validates our Gemma prompts. Parakeet, OCR scripts, existing Google backend policy and private-editor guards remain independent. Include the exact baseline/alias/immutability product checks in this batch.
+
+## Shared speech extension (owner selected, 25 November 2026)
+
+The owner chose Binder-only speech sharing, with user-selectable Parakeet, Nemotron Streaming and Whisper Tiny in Local Model Host. Preserve Parakeet TDT v3 and Ultra as two profiles. Do not add Redux, Whisper Base or Medium in this batch. Host-side model downloads/readiness replace Gboard's model/runtime download controls. Gboard keeps its native microphone, listening callbacks, Silero endpointer, insertion/spacing and Voice edit routing. Native ownership moves to the host; old Gboard model files are preserved but no longer loaded. Shared speech has independent readiness from Gemma, supports speech-only operation and never silently sends selected local dictation to Google during a pause. The old patch name remains stable for saved Morphe selections; visible settings say Local AI voice typing.
+
+- [x] Add additive speech Binder/Java SDK in host and matching Gboard SDK copy.
+- [x] Route microphone decoding and Silero probability to host; move administration to host; include provider visibility/installer for the speech-only patch.
+- [x] Add a readiness check independent of Gemma status and truthful model-specific capability notices.
+- [ ] Grouped repository verifier/lint and original 18.8 ABI emissions, including a Parakeet-only emission.
+- [ ] Signed host/APK and immutable MPP payload inspection/public review delivery.
+- [ ] Actual speech/interim/final/cancel/native microphone acceptance; per-UID stream isolation and host Stop/memory checks.
+
+Known parity gap: the shared LiteRT adapters do not implement the old sherpa acoustic dictionary-bias/redecode mechanism. Preserve saved dictionaries and report unsupported bias; do not present them as tested or silently rewrite transcript names with Gemma. Whisper's supplied bundle is currently English-prefixed. The provider-side source/design/contract is in local-model-host `docs/superpowers/specs/2026-11-24-shared-speech.md`.
+
+Phone gate remains open: the active custom-package Gboard disappeared after session 28 without an assistant uninstall command; cause unresolved. No installation/runtime claims follow from Morphe's Installed label. Screen input remains paused pending ownership/removal clarification. Host 105 remains the last verified installed provider; the new source has not been accepted on the phone.
+
+Host review 106 is built, signed with the existing provider identity, and anonymously verified in the GitLab review registry at source `60eb04e02639f3978dae5ab2fac20aaec19e0395`. APK SHA-256 `6de2d2d2f2d7c896b85d4677aa590d7bf6ebaeac97dca5d313f39d9d39a12b41`. Host unit/lint gates passed; all packaged arm64 native PT_LOAD alignments are 16 KiB and the previous Gemma native libraries are byte-identical. Client SDK AAR is packaged without engines/native libraries. Native speech acceptance remains pending. This Gboard source pins that exact provider review.

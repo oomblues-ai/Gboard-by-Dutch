@@ -12,7 +12,6 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.inputmethod.InputConnection;
 
-import com.k2fsa.sherpa.onnx.Vad;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
@@ -48,10 +47,8 @@ public final class ParakeetRecognizer {
         keyboard = new WeakReference<>(service);
     }
 
-    /** Set when the native runtime could not load; Gboard's own voice typing then stays in use. */
-    private static volatile boolean runtimeBroken;
-
     private final Context context;
+    private volatile SharedSpeechHook.Session shared;
     private final ExecutorService decoder = Executors.newSingleThreadExecutor(r -> {
         Thread thread = new Thread(r, "MorpheParakeetDecode");
         thread.setPriority(Thread.NORM_PRIORITY + 1);
@@ -77,20 +74,18 @@ public final class ParakeetRecognizer {
     /** Called from Gboard's recognizer factory; null keeps Gboard's own recognizer. */
     public static ParakeetRecognizer create(Context context) {
         try {
-            if (context == null || runtimeBroken || !ParakeetStore.active(context)) return null;
-            if (context.checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                return null;
-            }
+            if (context == null || !ParakeetStore.unlocked(context) || !ParakeetStore.enabled(context)) return null;
             Context app = context.getApplicationContext();
             return new ParakeetRecognizer(app != null ? app : context);
         } catch (Throwable t) {
-            Log.w(TAG, "Parakeet unavailable, using Gboard voice typing", t);
-            return null;
+            Log.w(TAG, "Shared speech is unavailable", t);
+            // A selected local backend must not silently return Google's recognizer on a setup failure.
+            return context == null ? null : new ParakeetRecognizer(context);
         }
     }
 
     public static boolean availableForVoiceEdit(Context context) {
-        return context != null && !runtimeBroken && ParakeetStore.active(context)
+        return context != null && ParakeetStore.active(context)
                 && context.checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
     }
 
@@ -116,6 +111,7 @@ public final class ParakeetRecognizer {
         cancelled = true;
         listening = false;
         decoder.shutdownNow();
+        SharedSpeechHook.Session old=shared;if(old!=null)old.close();
     }
 
     public void shutdown() {
@@ -132,7 +128,7 @@ public final class ParakeetRecognizer {
     private void capture() {
         Object cb = callback;
         AudioRecord record = null;
-        Vad vad = null;
+        SharedSpeechHook.Session vad = null;
         Endpointer endpointer = new Endpointer();
         FloatBuffer current = new FloatBuffer();
         float[][] preroll = new float[Endpointer.PREROLL_WINDOWS][];
@@ -141,9 +137,9 @@ public final class ParakeetRecognizer {
         boolean noSpeech = false;
         try {
             try {
-                vad = ParakeetEngine.createVad(context);
+                vad = SharedSpeechHook.open(context);
+                shared=vad;
             } catch (Throwable t) {
-                if (t instanceof UnsatisfiedLinkError || t instanceof NoClassDefFoundError) runtimeBroken = true;
                 Log.w(TAG, "Speech detection unavailable", t);
                 fail(cb, ERROR_OTHER);
                 return;
@@ -158,8 +154,7 @@ public final class ParakeetRecognizer {
             if (record.getRecordingState() != AudioRecord.RECORDSTATE_RECORDING) {
                 throw new IllegalStateException("microphone busy");
             }
-            decoder.execute(() -> ParakeetEngine.warm(context));
-            ParakeetDictionary.onSessionStart(context);
+            // The host owns prewarming and models; Gboard retains only its microphone/endpointer.
             // Like Gboard's own engines: open the keyboard's dictation session, then listen.
             cbReady(cb);
             cbListening(cb);
@@ -227,6 +222,7 @@ public final class ParakeetRecognizer {
             } else {
                 cbStopRecognition(cb);
             }
+            SharedSpeechHook.Session old=shared;if(old!=null)old.close();
             decoder.shutdown();
         });
     }
@@ -236,6 +232,7 @@ public final class ParakeetRecognizer {
         utterance++;
         final String shown = lastPartial;
         lastPartial = null;
+        execute(()->{SharedSpeechHook.Session current=shared;if(current!=null)current.reset();});
         if (shown != null) Log.i(TAG, "Dropped a short utterance after showing a partial");
     }
 
@@ -245,7 +242,7 @@ public final class ParakeetRecognizer {
         execute(() -> {
             try {
                 if (cancelled || id != utterance) return;
-                String text = ParakeetEngine.transcribe(context, audio, audio.length);
+                String text = shared.transcribe(audio, audio.length, false);
                 if (!cancelled && id == utterance && !text.isEmpty()) {
                     lastPartial = text;
                     if (!voiceEditSession) cbResult(cb, separated(text), false);
@@ -264,7 +261,7 @@ public final class ParakeetRecognizer {
         execute(() -> {
             try {
                 if (cancelled) return;
-                String text = ParakeetEngine.transcribeFinal(context, audio, audio.length);
+                String text = shared.transcribe(audio, audio.length, true);
                 String partial = lastPartial;
                 lastPartial = null;
                 if (text.isEmpty()) text = partial == null ? "" : partial;
@@ -329,7 +326,6 @@ public final class ParakeetRecognizer {
 
     private void decodeFailed(Object cb, Throwable t) {
         Log.w(TAG, "Parakeet decoding failed", t);
-        if (t instanceof UnsatisfiedLinkError || t instanceof NoClassDefFoundError) runtimeBroken = true;
         listening = false;
         fail(cb, ERROR_OTHER);
     }
@@ -339,6 +335,7 @@ public final class ParakeetRecognizer {
         cancelled = true;
         cbError(cb, kind);
         decoder.shutdownNow();
+        SharedSpeechHook.Session old=shared;if(old!=null)old.close();
     }
 
     private void signalStopListening(Object cb) {
