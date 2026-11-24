@@ -1,4 +1,25 @@
 <!-- dap-release-branding:v1 -->
+![Dutch App Patches. Dutch apps. Your choices.](https://gitlab.com/johninnld/nl-morphe-patches/-/raw/2e66e61d30f33208132c9392cf3ffe73d22a8802/docs/site/assets/brand/release-banner.png)
+
+**Release · patch bundle v1.106.0.**
+
+[Source metadata](https://gitlab.com/johninnld/nl-morphe-patches/-/raw/main/patches-bundle.json) · [User guide](https://gitlab.com/johninnld/nl-morphe-patches/-/blob/main/docs/site/en/index.md)
+
+Source: [2e66e61d30f3](https://gitlab.com/johninnld/nl-morphe-patches/-/commit/2e66e61d30f33208132c9392cf3ffe73d22a8802). Check each app's target versions in the user guide before patching.
+
+---
+
+## [1.106.0](https://gitlab.com/johninnld/nl-morphe-patches/compare/v1.105.1...v1.106.0) (2026-11-24)
+
+### 🐛 Bug Fixes
+
+* **dynamicSpot:** match the boolean home offer gate ([4aea200](https://gitlab.com/johninnld/nl-morphe-patches/commit/4aea2005c4763c7548eedb70ba9bb109aade8958))
+
+### ✨ New Features
+
+* **dynamicSpot:** unlock local settings and remove promotions ([0ffbac1](https://gitlab.com/johninnld/nl-morphe-patches/commit/0ffbac197ad7ba28ace56aeae9eab06bc6f2a5a7))
+
+<!-- dap-release-branding:v1 -->
 ![Dutch App Patches. Dutch apps. Your choices.](https://gitlab.com/johninnld/nl-morphe-patches/-/raw/d845381e3be550b6269a6c3507e14dcf6f62ecbc/docs/site/assets/brand/release-banner.png)
 
 **Release · patch bundle v1.105.1.**

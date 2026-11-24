@@ -38,7 +38,7 @@ hide:
 <button type="button" data-category="other" aria-pressed="false">Other</button>
 </div>
 </div>
-<p class="dap-catalogue__status"><span data-app-count aria-live="polite" aria-atomic="true">89 apps</span> · Patch bundle: 1.105.1</p>
+<p class="dap-catalogue__status"><span data-app-count aria-live="polite" aria-atomic="true">90 apps</span> · Patch bundle: 1.106.0</p>
 <div class="dap-app-grid" markdown>
 <article class="dap-app-card" data-category="other" data-search="2dehands be.tweedehands.m 16.19.0 disable threatmetrix disable tracking hide ads skip consent screens" markdown>
 <p class="dap-app-card__category">Other</p>
@@ -516,6 +516,28 @@ hide:
 </details>
 
 [Guide and downloads](apps/dumpert.md){ .dap-app-card__link }
+
+</article>
+
+<article class="dap-app-card" data-category="other" data-search="dynamicspot com.jamworks.dynamicspot 3.02 amoled theme fix pairip startup remove promotions stop automatic app selection unlock pro" markdown>
+<p class="dap-app-card__category">Other</p>
+
+### [dynamicSpot](apps/dynamicspot.md)
+
+<p class="dap-app-card__version">App versions: <span class="dap-data">3.02</span></p>
+<p class="dap-app-card__package">com.jamworks.dynamicspot</p>
+<details class="dap-app-card__patches">
+<summary>5 patches</summary>
+<ul>
+<li>AMOLED theme <span class="dap-app-card__target">3.02</span></li>
+<li>Fix PairIP startup <span class="dap-app-card__target">3.02</span></li>
+<li>Remove promotions <span class="dap-app-card__target">3.02</span></li>
+<li>Stop automatic app selection <span class="dap-app-card__target">3.02</span></li>
+<li>Unlock Pro <span class="dap-app-card__target">3.02</span></li>
+</ul>
+</details>
+
+[Guide and downloads](apps/dynamicspot.md){ .dap-app-card__link }
 
 </article>
 
