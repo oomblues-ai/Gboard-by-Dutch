@@ -2,7 +2,15 @@ package app.johninnl.modelhost.api;
 import android.content.*;
 import android.content.pm.*;
 public final class ProviderDiscovery {
+    public static final int MIN_OFFICIAL_PROVIDER_API=30;
     private ProviderDiscovery(){}
+    /** Compatibility of the official APK's pinned native runtime, not a Binder client restriction. */
+    public static boolean isOfficialProviderSupported(){return supportsOfficialProvider(android.os.Build.VERSION.SDK_INT,android.os.Build.SUPPORTED_ABIS);}
+    static boolean supportsOfficialProvider(int api,String[] abis){
+        if(api<MIN_OFFICIAL_PROVIDER_API || abis==null)return false;
+        for(String abi:abis)if("arm64-v8a".equals(abi))return true;
+        return false;
+    }
     public static void verifySigner(Context context, ComponentName component, String expectedSigner) throws HostException {
         try {
             int flags=android.os.Build.VERSION.SDK_INT>=28?PackageManager.GET_SIGNING_CERTIFICATES:PackageManager.GET_SIGNATURES;

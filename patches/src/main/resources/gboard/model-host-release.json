@@ -1,12 +1,12 @@
 {
   "packageName": "app.johninnl.modelhost",
-  "apkSha256": "f9f0dff293e1b646dd1903cb3a46f4323aea06becb1ee6702305b60b8c36b609",
+  "apkSha256": "69c78cdd042668e1cf747609f32f6324ad9c4541be797681b503647ac85f439e",
   "signerSha256": "1c45e972f387160e6994391954d0f1ebd983a2b0ab506e444645f4ca9f47bdc4",
-  "versionCode": 123,
-  "versionName": "0.1.0-review.0361a5b03dd8",
-  "sourceCommit": "0361a5b03dd82d83f2d359d343361f4dd720ebfa",
-  "apkBytes": 167502305,
-  "downloadUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/0361a5b03dd82d83f2d359d343361f4dd720ebfa/local-model-host-0.1.0-review.0361a5b03dd8.apk",
+  "versionCode": 124,
+  "versionName": "0.1.0-review.5f4511674571",
+  "sourceCommit": "5f45116745715bdfa6992341f28b40a41a663011",
+  "apkBytes": 179859105,
+  "downloadUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/5f45116745715bdfa6992341f28b40a41a663011/local-model-host-0.1.0-review.5f4511674571.apk",
   "modelSha256": "181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c",
   "modelProfiles": [
     {
@@ -21,8 +21,8 @@
   "runtimeAarSha256": "652fe8bef9964d6b24fc72cf53c4e05f487c316bc55a9d148a268f2e9cbc5250",
   "protocolMajor": 1,
   "protocolMinor": 4,
-  "clientSdkUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/0361a5b03dd82d83f2d359d343361f4dd720ebfa/modelhost-client-api-0.1.0-review.0361a5b03dd8.aar",
-  "clientSdkSha256": "7f5e490524f96ece9aae5e513bea10d8a35d2f6069953f76d5c39659699dc7eb",
+  "clientSdkUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/5f45116745715bdfa6992341f28b40a41a663011/modelhost-client-api-0.1.0-review.5f4511674571.aar",
+  "clientSdkSha256": "c287b25f20d3423bfbadac1020ca6fd42a91d5272148e7d95f8da84a47f67a02",
   "speechModels": [
     "parakeet-tdt-v3",
     "parakeet-ultra",
@@ -32,8 +32,12 @@
   "extractionModels": [
     "gliner-multi-v2.1"
   ],
-  "developerHandoverUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/0361a5b03dd82d83f2d359d343361f4dd720ebfa/DriveDeck-Local-Model-Host-Handover.html",
-  "complianceHandoverUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/0361a5b03dd82d83f2d359d343361f4dd720ebfa/DriveDeck-Local-AI-Final-State-Compliance.md",
+  "developerHandoverUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/5f45116745715bdfa6992341f28b40a41a663011/DriveDeck-Local-Model-Host-Handover.html",
+  "complianceHandoverUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/5f45116745715bdfa6992341f28b40a41a663011/DriveDeck-Local-AI-Final-State-Compliance.md",
   "runtimeValidation": "Engineering review: E4B warm-up Ready verified with unchanged engine; Gboard acceptance pending phone control. Additional component phone validation owner-deferred.",
-  "installationApkMaxBytes": 268435456
+  "installationApkMaxBytes": 268435456,
+  "minimumAndroidApi": 30,
+  "supportedAbis": [
+    "arm64-v8a"
+  ]
 }

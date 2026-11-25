@@ -1,8 +1,8 @@
 # Use the Gboard patches
 
-## Shared speech review
+## Local AI and shared speech
 
-In the shared-speech review build, open **Voice typing → Local AI voice typing → Open or install Local AI**. Choose Parakeet (TDT v3 or Ultra), Nemotron Streaming or Whisper Tiny in the host, download it there, enable shared speech and enable Local AI. Then enable **Use shared local speech** in Gboard once the host reports Ready. Model download controls are no longer in Gboard. Turn **Text and images** off in the host to use speech without Gemma. The native microphone UI remains Gboard’s. Selected local speech never silently switches to Google during a memory pause. This preview still needs phone acceptance; the shared adapters do not yet provide acoustic voice-dictionary bias, and Whisper Tiny’s supplied bundle currently uses an English prefix. The following embedded-model instructions describe the earlier published backend.
+[Set up the standalone Local AI companion](local-ai.md) for themed writing tools, image text and shared local dictation. Choose and download models in the companion; Gboard keeps the native keyboard interface. Google backends remain available as explicit choices.
 
 Set up dictation, change how the keyboard looks, and test each feature in a scratch text field. This guide covers Gboard 18.8. Use the [Gboard app page](../apps/gboard.md) for the published patch list, supported APKs and release defaults.
 
@@ -33,16 +33,16 @@ Morphe signs the rebuilt keyboard with your local signing key. This patch makes 
 
 | What you want | Where to start | What to expect |
 | --- | --- | --- |
-| Local dictation | **Voice typing → Parakeet voice typing**, then select **Parakeet** or **Standard** | NVIDIA Parakeet runs on the phone after its model is ready. |
+| Local dictation | **Voice typing → Local AI voice typing**, then **Use shared local speech** | The selected host recognizer runs on the phone after its speech model is Ready. |
 | Polished dictation and spoken edits | **Voice typing → Rambler** | Rambler sends your speech to Google and can use text context to rewrite it. |
 | Google’s advanced dictation functions | **Patches → AI & Voice → Advanced Voice Typing** | Bundled recognizer support and Google’s eligibility checks. The patch does not create a third dictation type. |
 | Headset input | **Patches → AI & Voice → Use Bluetooth microphone**, then **Voice typing → Use Bluetooth microphone** | The first exposes the stock switch. The second asks Gboard to use the headset when its routing rules allow it. |
 
 ### Parakeet voice typing
 
-Open **Voice typing → Parakeet voice typing**, download one model, and enable Parakeet. **Parakeet Ultra** is the recommended option at roughly 630 MB. **Parakeet TDT 0.6B v3** is the original NVIDIA option at roughly 670 MB. Allow additional space for the speech runtime and speech detection. Wait for the download to finish before testing.
+Open **Voice typing → Local AI voice typing → Open or install Local AI**. Choose Parakeet TDT v3, Parakeet Ultra, Nemotron Streaming or Whisper Tiny in the companion's **Speech recognition** settings. Download the chosen profile, enable shared speech and wait for Ready. Then enable **Use shared local speech** in Gboard. Model files are managed in the host, not downloaded again for each integrating app.
 
-Select **Parakeet** (the Standard dictation choice) and tap the keyboard mic in a scratch note. Say one sentence in English and the next in Dutch. The model detects supported languages per sentence. A short pause between sentences helps delimit them. If the model is missing or not ready, the Standard path can fall back to Google’s recognizer. Confirm the model is ready before treating a transcript as evidence of local recognition.
+Tap the keyboard microphone in a scratch note and test a language declared by the selected profile. The supplied Whisper Tiny integration uses an English prefix. Keep text/image processing off if speech is all you need. Selected local speech reports missing models or memory pauses explicitly; it does not silently switch to Google. See [the complete setup](local-ai.md#set-up-local-dictation).
 
 ### Rambler voice typing
 
@@ -54,11 +54,11 @@ Under **Voice typing → Voice dictionary**, add an unusual name in the **Voice 
 
 ### Rambler contact names
 
-This extends the Voice correction list. Enable **Contact names** under **Voice dictionary** and grant Android contacts access if you want to use it. Start a fresh dictation and check that a known name appears. Names removed from the list stay removed. The list can be used locally by Parakeet and can be sent to Google when you select Rambler. Keep only the entries you want the active recognizer to see.
+This extends the Voice correction list. Enable **Contact names** under **Voice dictionary** and grant Android contacts access if you want to use it. Start a fresh dictation and check that a known name appears. Names removed from the list stay removed. The legacy embedded Parakeet decoder can use the list; shared Local AI adapters do not provide that acoustic bias. The list can be sent to Google when you select Rambler. Keep only the entries you want the active recognizer to see.
 
 ### Parakeet personal dictionary
 
-Apply this patch alongside **Parakeet voice typing** and **Rambler personal dictionary**. Open **Parakeet voice typing**, enable **Use the Voice dictionary**, and use **Download spelling data** if prompted. This download is separate from the large voice model. The local decoder prefers words in the list and accepts a proposed sound-alike correction only when a second local decode agrees. Test with an uncommon name and compare the result with the dictionary toggle off.
+This patch's acoustic dictionary integration belongs to the legacy embedded Parakeet decoder. The shared Local AI adapters do not offer acoustic voice-dictionary bias. Do not treat a saved correction list as proof that it changes shared recognition, and do not silently rewrite names with a language model to simulate acoustic support. Rambler's separate correction list retains its own behavior.
 
 ### Rambler custom instructions
 

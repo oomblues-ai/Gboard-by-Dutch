@@ -10,6 +10,7 @@ Extra installatiehulp: [Android Auto](android-auto.md), [Shizuku op een telefoon
 
 ## Gboard
 
+- [De zelfstandige Local AI-companion gebruiken voor schrijven, beelden en gedeelde spraak](local-ai.md).
 - [Parakeet, Rambler en de andere Gboard-patches instellen](gboard.md).
 - [Frosted Glass zichtbaar maken en vergelijken met vervaging uit en aan](gboard.md#frosted-glass).
 

@@ -1,8 +1,8 @@
 # De Gboard-patches gebruiken
 
-## Review van gedeelde spraak
+## Local AI en gedeelde spraak
 
-Open in de reviewversie met gedeelde spraak **Spraakinvoer → Lokale AI-spraakinvoer → Open or install Local AI**. Kies Parakeet (TDT v3 of Ultra), Nemotron Streaming of Whisper Tiny in de host, download het model daar en zet gedeelde spraak en Local AI aan. Zet daarna **Use shared local speech** in Gboard aan zodra de host Ready meldt. Modeldownloads staan niet meer in Gboard. Zet **Text and images** in de host uit om spraak zonder Gemma te gebruiken. De microfooninterface blijft die van Gboard. Geselecteerde lokale spraak schakelt bij geheugendruk niet stilzwijgend naar Google. Deze preview moet nog op de telefoon worden geaccepteerd; de gedeelde adapters ondersteunen nog geen akoestische voorkeur voor het spraakwoordenboek en de meegeleverde Whisper Tiny-bundel gebruikt momenteel een Engelse prefix. De onderstaande instructies voor ingebouwde modellen beschrijven de eerder gepubliceerde backend.
+[Stel de zelfstandige Local AI-companion in](local-ai.md) voor schrijfhulp in het toetsenbordthema, beeldtekst en gedeeld lokaal dicteren. Kies en download modellen in de companion; Gboard behoudt zijn eigen toetsenbordinterface. Google-backends blijven beschikbaar als expliciete keuzes.
 
 Stel spraakinvoer in, pas het uiterlijk van het toetsenbord aan en test elke functie in een proefnotitie. Deze handleiding gaat over Gboard 18.8. Op de [Gboard-appagina](../apps/gboard.md) staan de uitgebrachte patches, ondersteunde APK’s en standaardkeuzes per uitgave.
 
@@ -33,16 +33,16 @@ Morphe ondertekent de opnieuw opgebouwde app met je lokale sleutel. Deze patch z
 
 | Wat je wilt | Waar je begint | Wat je kunt verwachten |
 | --- | --- | --- |
-| Lokaal dicteren | **Spraakinvoer → Parakeet-spraakinvoer**, daarna **Parakeet** of **Standaard** selecteren | NVIDIA Parakeet draait op de telefoon zodra het model klaar is. |
+| Lokaal dicteren | **Voice typing → Local AI voice typing**, daarna **Use shared local speech** | De geselecteerde hostherkenner draait op de telefoon zodra het spraakmodel Ready meldt. |
 | Tekst laten afwerken en spraakbewerkingen gebruiken | **Spraakinvoer → Rambler** | Rambler stuurt je spraak naar Google en kan tekstcontext gebruiken bij het herschrijven. |
 | De geavanceerde dicteerfuncties van Google | **Patches → AI & Voice → Advanced Voice Typing** | Meegeleverde herkenningsondersteuning, met de geschiktheidscontroles van Google. Er komt geen derde dicteerkeuze bij. |
 | De microfoon van een headset | **Patches → AI & Voice → Use Bluetooth microphone**, daarna **Spraakinvoer → Use Bluetooth microphone** | De eerste schakelaar maakt de tweede zichtbaar. De tweede vraagt Gboard de headset te gebruiken als de routeregels dat toelaten. |
 
 ### Parakeet voice typing
 
-Open **Spraakinvoer → Parakeet-spraakinvoer**, download één model en schakel Parakeet in. **Parakeet Ultra** is de aanbevolen optie van ongeveer 630 MB. **Parakeet TDT 0.6B v3** is het oorspronkelijke NVIDIA-model van ongeveer 670 MB. Houd extra ruimte vrij voor de spraakruntime en spraakdetectie. Wacht tot de download afgerond is.
+Open **Voice typing → Local AI voice typing → Open or install Local AI**. Kies Parakeet TDT v3, Parakeet Ultra, Nemotron Streaming of Whisper Tiny onder **Speech recognition** in de companion. Download het profiel, schakel gedeelde spraak in en wacht op Ready. Zet daarna **Use shared local speech** in Gboard aan. Modelbestanden worden in de host beheerd en niet opnieuw voor iedere app gedownload.
 
-Selecteer **Parakeet** (de standaarddicteerkeuze) en tik in een proefnotitie op de microfoon. Spreek een zin in het Engels en daarna een zin in het Nederlands. Het model herkent ondersteunde talen per zin. Een korte pauze helpt de zinnen te scheiden. Zolang het model ontbreekt of nog niet klaar is, kan de standaardroute terugvallen op de herkenner van Google. Controleer dat het model klaar is voordat je het transcript als bewijs van lokale herkenning gebruikt.
+Tik in een proefnotitie op de microfoon en test een opgegeven taal van het geselecteerde profiel. De meegeleverde Whisper Tiny-integratie gebruikt een Engelse prefix. Tekst-/beeldverwerking mag uit als je alleen spraak nodig hebt. Geselecteerde lokale spraak meldt ontbrekende modellen of geheugenpauzes expliciet en schakelt niet stilzwijgend naar Google. Zie [de volledige instellingen](local-ai.md#lokaal-dicteren-instellen).
 
 ### Rambler voice typing
 
@@ -58,7 +58,7 @@ Deze patch vult dezelfde lijst met spraakcorrecties aan. Zet **Contact names** a
 
 ### Parakeet personal dictionary
 
-Gebruik deze patch samen met **Parakeet voice typing** en **Rambler personal dictionary**. Zet **Use the Voice dictionary** aan onder **Parakeet-spraakinvoer** en gebruik **Download spelling data** als daarom wordt gevraagd. Dit is een aparte, kleine download naast het grote spraakmodel. De lokale engine geeft woorden uit de lijst voorrang en houdt een klankcorrectie pas aan als een tweede lokale herkenning die bevestigt. Test met een ongewone naam en vergelijk het resultaat met de woordenboekschakelaar uit.
+De akoestische woordenboekintegratie van deze patch hoort bij de oude ingebouwde Parakeet-decoder. De gedeelde Local AI-adapters bieden geen akoestische spraakwoordenboekvoorkeur. Een opgeslagen correctielijst bewijst dus niet dat gedeelde herkenning die toepast. Namen worden niet stilzwijgend met een taalmodel herschreven om akoestische ondersteuning na te bootsen. Ramblers afzonderlijke correctielijst behoudt haar eigen werking.
 
 ### Rambler custom instructions
 

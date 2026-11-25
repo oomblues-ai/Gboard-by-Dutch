@@ -26,10 +26,11 @@ public final class SharedLocalAiSettingsFeature implements GboardPatchesSettings
     @Override public List<GboardPatchesSettingsContract.Feature> getNavigationChildren(){return Arrays.asList(writing,languages,advanced);}
     @Override public void onVisible(GboardPatchesSettingsContract.FeatureHost host){SharedModelClient.reconnect(host.getContext());}
     @Override public GboardPatchesSettingsContract.Screen buildScreen(GboardPatchesSettingsContract.FeatureHost host){
-        Context c=host.getContext();boolean installed=ProviderDiscovery.inspect(c).installed;
-        boolean selected=GboardSharedWritingRuntime.selected(c),ready=installed && SharedModelClient.ready(c);
+        Context c=host.getContext();boolean supported=ProviderDiscovery.isOfficialProviderSupported(),installed=ProviderDiscovery.inspect(c).installed;
+        boolean selected=GboardSharedWritingRuntime.selected(c),ready=supported && installed && SharedModelClient.ready(c);
         List<GboardPatchesSettingsContract.StatusBlock> status=new ArrayList<>();
-        status.add(new GboardPatchesSettingsContract.StatusBlock(ready?"Model ready":"Model status",installed?SharedModelClient.readinessMessage(c):"Install Local Model Host to use Gemma on this device.",ready?GboardPatchesSettingsContract.StatusTone.INFO:GboardPatchesSettingsContract.StatusTone.WARNING));
+        if(!supported)status.add(new GboardPatchesSettingsContract.StatusBlock("Device support",SharedProviderSetup.platformMessage(),GboardPatchesSettingsContract.StatusTone.WARNING));
+        else status.add(new GboardPatchesSettingsContract.StatusBlock(ready?"Model ready":"Model status",installed?SharedModelClient.readinessMessage(c):"Install Local Model Host to use Gemma on this device.",ready?GboardPatchesSettingsContract.StatusTone.INFO:GboardPatchesSettingsContract.StatusTone.WARNING));
         status.add(new GboardPatchesSettingsContract.StatusBlock("Language quality","Quality and speed vary by language. Additional languages are experimental; review all suggestions."));
         if(!SharedProviderSetup.message().isEmpty())status.add(new GboardPatchesSettingsContract.StatusBlock("Setup",SharedProviderSetup.message()));
         String failure=SharedModelClient.lastRequestError();
@@ -42,9 +43,9 @@ public final class SharedLocalAiSettingsFeature implements GboardPatchesSettings
             if(!saved)host.submit(adapter->adapter.showMessage("Could not save the Local AI setting."));
             GboardPatchesSettingsContract.refresh(host);
         }));
-        if(!installed || SharedProviderSetup.needsUpdate(c) || SharedProviderSetup.pending()!=null)rows.add(new GboardPatchesSettingsContract.ActionRow(SharedProviderSetup.pending()!=null?"Install companion app":installed?"Update Local Model Host":"Get Local Model Host","Download and verify the companion app, then confirm installation in Android.",!SharedProviderSetup.busy(),()->SharedProviderSetup.download(c)));
+        if(supported && (!installed || SharedProviderSetup.needsUpdate(c) || SharedProviderSetup.pending()!=null))rows.add(new GboardPatchesSettingsContract.ActionRow(SharedProviderSetup.pending()!=null?"Install companion app":installed?"Update Local Model Host":"Get Local Model Host","Download and verify the companion app, then confirm installation in Android.",!SharedProviderSetup.busy(),()->SharedProviderSetup.download(c)));
         if(SharedProviderSetup.busy())rows.add(new GboardPatchesSettingsContract.ActionRow("Cancel download","Keep your current setup.",true,SharedProviderSetup::cancel));
-        rows.add(new GboardPatchesSettingsContract.ActionRow("Model setup","Download the model, start or stop it, and choose image support.",installed,()->openProvider(c)));
+        rows.add(new GboardPatchesSettingsContract.ActionRow("Model setup","Download the model, start or stop it, and choose image support.",supported&&installed,()->openProvider(c)));
         rows.add(new GboardPatchesSettingsContract.ActionRow("Writing preferences","Your style, reply context, saved instructions and experimental typing features.",true,()->GboardPatchesSettingsContract.openFeature(host,writing)));
         rows.add(new GboardPatchesSettingsContract.ActionRow("Language coverage","38-language baseline · additional languages available as experimental",true,()->GboardPatchesSettingsContract.openFeature(host,languages)));
         rows.add(new GboardPatchesSettingsContract.ActionRow("Advanced","Manual installation and technical status.",true,()->GboardPatchesSettingsContract.openFeature(host,advanced)));
@@ -104,8 +105,8 @@ public final class SharedLocalAiSettingsFeature implements GboardPatchesSettings
         public String getEntrySummary(){return "Installation and technical status";}
         public GboardPatchesSettingsContract.Screen buildScreen(GboardPatchesSettingsContract.FeatureHost host){
             List<GboardPatchesSettingsContract.Row> rows=new ArrayList<>();
-            rows.add(new GboardPatchesSettingsContract.ActionRow("Choose companion APK","Only the matching signed APK will be accepted.",!SharedProviderSetup.busy(),()->SharedModelSetupActivity.choose(context)));
-            rows.add(new GboardPatchesSettingsContract.ActionRow("Download companion app again","Verify the current review and open Android’s installer.",!SharedProviderSetup.busy(),()->SharedProviderSetup.download(context)));
+            rows.add(new GboardPatchesSettingsContract.ActionRow("Choose companion APK","Only the matching signed APK will be accepted.",ProviderDiscovery.isOfficialProviderSupported()&&!SharedProviderSetup.busy(),()->SharedModelSetupActivity.choose(context)));
+            rows.add(new GboardPatchesSettingsContract.ActionRow("Download companion app again","Verify the current review and open Android’s installer.",ProviderDiscovery.isOfficialProviderSupported()&&!SharedProviderSetup.busy(),()->SharedProviderSetup.download(context)));
             rows.add(new GboardPatchesSettingsContract.DetailRow("Provider state",SharedModelClient.status(context),true,true));
             if(!SharedModelClient.lastRequestError().isEmpty())rows.add(new GboardPatchesSettingsContract.DetailRow("Last error code",SharedModelClient.lastRequestError(),true,true));
             return new GboardPatchesSettingsContract.Screen(getEntryTitle(),badge,getEntryTitle(),"Details for installation and troubleshooting.",Collections.emptyList(),Collections.singletonList(new GboardPatchesSettingsContract.Section("Advanced",rows)),GboardPatchesSettingsContract.RefreshPolicy.none(),GboardPatchesSettingsContract.PanelStyle.FLAT);

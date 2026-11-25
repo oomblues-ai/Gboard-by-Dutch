@@ -21,6 +21,7 @@ final class SharedProviderSetup {
     private static Future<?> job;
     static boolean installedMatchesReview(Context context){try{SharedProviderIdentity.verify(context);android.content.pm.PackageInfo info=context.getPackageManager().getPackageInfo(ModelHostClient.DEFAULT_PACKAGE,0);long version=android.os.Build.VERSION.SDK_INT>=28?info.getLongVersionCode():info.versionCode;return version==release(context).versionCode;}catch(Exception unavailable){return false;}}
     static boolean needsUpdate(Context context){try{android.content.pm.PackageInfo info=context.getPackageManager().getPackageInfo(ModelHostClient.DEFAULT_PACKAGE,0);long version=android.os.Build.VERSION.SDK_INT>=28?info.getLongVersionCode():info.versionCode;return version<release(context).versionCode;}catch(Exception unavailable){return false;}}
+    static String platformMessage(){return "Local AI requires Android 11 or later and a 64-bit ARM device.";}
     static boolean busy(){return busy;}
     static String message(){return message;}
     static VerifiedApk pending(){return pending;}
@@ -38,6 +39,7 @@ final class SharedProviderSetup {
     }
     static synchronized void cancel(){generation++;if(job!=null)job.cancel(true);busy=false;message="Download cancelled.";}
     static synchronized void download(Context context){
+        if(!ProviderDiscovery.isOfficialProviderSupported()){message=platformMessage();return;}
         if(busy)return;
         if(pending!=null){SharedModelSetupActivity.install(context);return;}
         Context app=context.getApplicationContext();java.lang.ref.WeakReference<Context> source=new java.lang.ref.WeakReference<>(context);long current=++generation;busy=true;message="Downloading companion app…";
@@ -55,6 +57,7 @@ final class SharedProviderSetup {
         });
     }
     static synchronized void verifySelected(Context context,Uri uri,Consumer<Boolean> result){
+        if(!ProviderDiscovery.isOfficialProviderSupported()){message=platformMessage();MAIN.post(()->result.accept(false));return;}
         if(busy){result.accept(false);return;}
         Context app=context.getApplicationContext();long current=++generation;busy=true;message="Checking the selected app…";
         job=WORKER.submit(()->{

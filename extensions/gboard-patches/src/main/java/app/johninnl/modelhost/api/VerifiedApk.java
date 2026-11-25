@@ -17,6 +17,7 @@ public final class VerifiedApk {
     public final long versionCode;
     private VerifiedApk(File file,String name,String hash,String signer,long version){this.file=file;packageName=name;sha256=hash;signerSha256=signer;versionCode=version;}
     public static VerifiedApk verify(Context context,Uri selected,String expectedPackage,String expectedSha256,String expectedSigner)throws HostException {
+        if(ModelHostClient.DEFAULT_PACKAGE.equals(expectedPackage)&&!ProviderDiscovery.isOfficialProviderSupported())throw new HostException("UNSUPPORTED_DEVICE");
         File directory=ProviderApkProvider.directory(context);File copy=new File(directory,UUID.randomUUID().toString()+".apk");boolean valid=false;
         try {
             String hash;
