@@ -55,3 +55,22 @@ The writing baseline covers 38 languages. Other languages remain available with 
 Text, image and speech inference stay on the device. Model/APK setup needs downloads. Search tools make network requests only when enabled by you and permitted by the consuming app. Review every generated edit before applying it.
 
 [All Gboard patches](gboard.md) · [Developer integration](../developers/local-ai/index.md)
+
+## Diagnose a failed local action
+
+**Suggest Changes** returns editing instructions for you to choose; it does not rewrite the draft immediately. “No editing changes were suggested” is a valid result. An unreadable suggestions format is reported separately from model readiness.
+
+Reply and My Style first request one Android-approved screen capture, then show **Read this screen** before local analysis. Returning from Android’s permission or image picker can recreate the input connection. The preview must match the same app, field and unchanged draft, and **Apply/Insert** checks a fresh snapshot again. Changing the draft or editor cancels a late result.
+
+For an actionable debug report, enable the opt-in tags, reproduce once, then disable them:
+
+```sh
+adb shell setprop log.tag.LocalModelHost DEBUG
+adb shell setprop log.tag.GboardLocalAi DEBUG
+adb logcat -v threadtime -s LocalModelHost:D GboardLocalAi:D '*:S'
+# Stop logcat with Ctrl-C, then disable tracing.
+adb shell setprop log.tag.LocalModelHost INFO
+adb shell setprop log.tag.GboardLocalAi INFO
+```
+
+The host tag requires the companion build which includes request diagnostics. Logs contain operation, correlation ID, image stages, timing and terminal error codes; they exclude your draft, prompt, image contents and keys. Keep raw device logs out of public bug reports and attach the relevant failure code and steps.

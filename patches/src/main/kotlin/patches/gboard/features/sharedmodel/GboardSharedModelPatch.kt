@@ -54,6 +54,16 @@ internal val gboardSharedModelPatch = bytecodePatch(
         findMutableMethodOrThrow(GboardMethodTarget("Lafae;","onUpdateSelection",List(6){"I"},"V")).addInstructions(0,RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_WRITING_SELECTION_UPDATED,"p0 .. p6"))
         findMutableMethodOrThrow(GboardManualIncognitoTargets.onStartInput).addInstructions(0,RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_WRITING_INPUT_START,"p0 .. p1"))
         findMutableMethodOrThrow(GboardManualIncognitoTargets.onWindowHidden).applyVoidExitLifecycleDelegate(RuntimeCallId.SHARED_WRITING_INPUT_HIDDEN,"p0")
+        val shown=GboardMethodTarget("Lafae;","onWindowShown",emptyList(),"V").resolve(this)
+        val shownFlags=shown.accessFlags
+        check(mutableClass("Lafae;").methods.none{it.name=="morpheSharedStock_onWindowShown"}){"Window shown wrapper already exists"}
+        shown.name="morpheSharedStock_onWindowShown"
+        // Keep the receiver in its own frame even if stock code reuses its parameter register.
+        addHelperMethodIfMissing("Lafae;","onWindowShown",emptyList(),"V",shownFlags,1,"""
+            invoke-virtual {p0}, Lafae;->morpheSharedStock_onWindowShown()V
+            ${RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_WRITING_INPUT_SHOWN,"p0")}
+            return-void
+        """.trimIndent())
     }
 }
 
@@ -249,15 +259,25 @@ internal fun installSharedCameraOcr(context:BytecodePatchContext){
     GboardMethodTarget("Laars;","a",listOf("Lagoq;"),"Laars;").resolve(context)
     GboardMethodTarget("Lafae;","bT",listOf("Ladan;"),"V").resolve(context)
     val owner="Ltwm;"
-    listOf("b" to "Landroid/content/Context;","c" to "Landroidx/camera/view/PreviewView;","f" to "Landroid/widget/TextView;","g" to "Landroid/widget/TextView;","h" to "Landroid/widget/ImageButton;","l" to "Landroid/widget/FrameLayout;","B" to "Landroid/widget/TextView;","A" to "Landroid/view/View;","C" to "Landroid/view/View;","d" to "Landroid/view/View;","r" to "Lcia;","u" to "Z").forEach{(name,type)->GboardFieldTarget(owner,name,type).resolve(context)}
+    listOf("b" to "Landroid/content/Context;","c" to "Landroidx/camera/view/PreviewView;","f" to "Landroid/widget/TextView;","g" to "Landroid/widget/TextView;","h" to "Landroid/widget/ImageButton;","l" to "Landroid/widget/FrameLayout;","B" to "Landroid/widget/TextView;","A" to "Landroid/view/View;","C" to "Landroid/view/View;","d" to "Landroid/view/View;","r" to "Lcia;","u" to "Z","x" to "I").forEach{(name,type)->GboardFieldTarget(owner,name,type).resolve(context)}
     listOf(GboardMethodTarget(owner,"b",listOf("Ljava/lang/String;"),"V"),GboardMethodTarget(owner,"j",listOf("Ljava/lang/String;"),"V"),GboardMethodTarget(owner,"d",emptyList(),"V"),GboardMethodTarget(owner,"i",emptyList(),"V"),GboardMethodTarget("Lcia;","c",emptyList(),"V")).forEach{it.resolve(context)}
     // Use separate wrapper frames so original methods may reuse parameter registers safely.
-    for((name,params,call) in listOf(Triple("e",emptyList<String>(),RuntimeCallId.SHARED_CAMERA_OCR_BIND),Triple("h",emptyList<String>(),RuntimeCallId.SHARED_CAMERA_OCR_CLEAR))){
+    for((name,params,call) in listOf(Triple("g",listOf("Landroid/view/inputmethod/EditorInfo;","Ljava/lang/Object;"),RuntimeCallId.SHARED_CAMERA_OCR_BIND),Triple("e",emptyList<String>(),RuntimeCallId.SHARED_CAMERA_OCR_BIND),Triple("h",emptyList<String>(),RuntimeCallId.SHARED_CAMERA_OCR_CLEAR))){
         val method=GboardMethodTarget(owner,name,params,"V").resolve(context)
         val flags=method.accessFlags;method.name="morpheSharedStock_"+name
         val hook=RuntimeCallEmitter.invoke(call,"p0")
-        val original="invoke-virtual {p0}, $owner->${method.name}()V"
-        context.addHelperMethodIfMissing(owner,name,params,"V",flags,1,if(name=="h")"$hook\n$original\nreturn-void" else "$original\n$hook\nreturn-void")
+        val descriptor=params.joinToString("")
+        val original=if(params.isEmpty())"invoke-virtual {p0}, $owner->${method.name}()V" else "invoke-virtual/range {p0 .. p${params.size}}, $owner->${method.name}($descriptor)V"
+        if(name=="e")context.addHelperMethodIfMissing(owner,name,params,"V",flags,2,"""
+            ${RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_CAMERA_OCR_KEEP_RESULT,"p0")}
+            move-result v0
+            if-nez v0, :done
+            $original
+            $hook
+            :done
+            return-void
+        """.trimIndent())
+        else context.addHelperMethodIfMissing(owner,name,params,"V",flags,params.size+1,if(name=="h")"$hook\n$original\nreturn-void" else "$original\n$hook\nreturn-void")
     }
     GboardFieldTarget("Ltvy;","a",owner).resolve(context)
     val click=GboardMethodTarget("Ltvy;","onClick",listOf("Landroid/view/View;"),"V").resolve(context)

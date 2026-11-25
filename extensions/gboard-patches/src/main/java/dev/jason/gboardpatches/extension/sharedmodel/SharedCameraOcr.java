@@ -27,6 +27,8 @@ public final class SharedCameraOcr {
         State(Object p,EditorSnapshot s){peer=p;snapshot=s;}
     }
     private SharedCameraOcr(){}
+    /** A late asynchronous native camera callback must not replace an image/result already chosen locally. */
+    public static boolean keepLocalResult(Object owner){State state=active;return state!=null && state.peer==owner && !state.cancelled;}
     public static boolean selected(Context context){return GboardSharedWritingRuntime.selected(context)||GboardOcrSettings.sharedImageOcr(context);}
     public static void bind(Object owner){
         if(owner==null)return;
@@ -34,13 +36,16 @@ public final class SharedCameraOcr {
             Context context=(Context)field(owner,"b");if(!selected(context))return;
             peer=new WeakReference<>(owner);
             TextView pick=(TextView)field(owner,"f");pick.setVisibility(View.VISIBLE);pick.setText("Choose an image");pick.setContentDescription("Choose an image for Local AI text scanning");
-            pick.setOnClickListener(v->choose(context));
+            pick.setEnabled(true);pick.setOnClickListener(v->choose(context));
+            ImageButton shutter=(ImageButton)field(owner,"h");shutter.setEnabled(true);shutter.setOnClickListener(v->capture(owner));
+            SharedWritingDiagnostics.event("ocr.controls bound");
             if(picking!=null)deliverChosen(picking);
         }catch(ReflectiveOperationException failure){SharedModelClient.noteFailure("NATIVE_OCR_UNAVAILABLE");}
     }
     public static void clear(Object owner){if(active!=null && active.peer==owner){State old=active;active=null;synchronized(old){old.cancelled=true;if(old.work!=null)old.work.cancel(true);if(!old.started && old.image!=null && !old.image.isRecycled())old.image.recycle();}}if(peer.get()==owner)peer.clear();}
     public static boolean capture(Object owner){
         if(owner==null)return false;
+        SharedWritingDiagnostics.event("ocr.shutter clicked");
         try{
             Context context=(Context)field(owner,"b");if(!selected(context))return false;
             EditorSnapshot snapshot=GboardSharedWritingRuntime.captureEditor();if(snapshot==null){message(context,"Text scanning is unavailable in this private or changed editor.");return true;}
@@ -55,6 +60,7 @@ public final class SharedCameraOcr {
         return true;
     }
     private static void choose(Context context){
+        SharedWritingDiagnostics.event("ocr.picker clicked");
         if(picking!=null){message(context,"An image choice is already in progress.");return;}
         EditorSnapshot snapshot=GboardSharedWritingRuntime.captureEditor();if(snapshot==null){message(context,"This editor cannot receive recognised text.");return;}
         Pick request=new Pick(snapshot.handoff());picking=request;
@@ -70,7 +76,7 @@ public final class SharedCameraOcr {
         if(remaining==0 || android.os.SystemClock.uptimeMillis()>request.expires){discardChosen(request);message(context,"The original editor changed or did not return. Choose the image again in the intended field.");return;}
         // requestShowSelf restores normal typing, not the OCR keyboard. Wait for the original live
         // editor before dispatching the stock OCR transition; never adopt the picker's editor.
-        if(request.editor.resume()!=null){
+        if(request.editor.resumeForPreview()!=null){
             Object owner=peer.get();
             if(owner!=null && shown(owner))deliverChosen(request);
             else if(!request.reopening){
@@ -85,14 +91,15 @@ public final class SharedCameraOcr {
     private static void deliverChosen(Pick request){
         if(picking!=request || request.image==null)return;
         Object owner=peer.get();if(owner==null || !shown(owner))return;
-        EditorSnapshot snapshot=request.editor.resume();
+        EditorSnapshot snapshot=request.editor.resumeForPreview();
         if(android.os.SystemClock.uptimeMillis()>request.expires || snapshot==null)return;
         Bitmap bitmap=request.image;request.image=null;picking=null;recognize(owner,bitmap,snapshot);
     }
     private static void recognize(Object owner,Bitmap image,EditorSnapshot snapshot){
         State state=null;
         try{
-            clear(owner);peer=new WeakReference<>(owner);state=new State(owner,snapshot);state.image=image;active=state;
+            clear(owner);peer=new WeakReference<>(owner);markCaptured(owner);state=new State(owner,snapshot);state.image=image;active=state;
+            SharedWritingDiagnostics.event("ocr.image captured");
             Object camera=field(owner,"r");if(camera!=null)invoke(camera,"c");
             ((View)field(owner,"f")).setVisibility(View.GONE);((View)field(owner,"h")).setVisibility(View.GONE);
             ((View)field(owner,"g")).setVisibility(View.GONE);((View)field(owner,"C")).setVisibility(View.GONE);
@@ -131,6 +138,8 @@ public final class SharedCameraOcr {
         }catch(Exception failure){state.text.setText("Could not open the text insertion controls.");}
     }
     static String selection(String text,int start,int end){if(start==-1&&end==-1)return text;if(start<0||end<0||start>text.length()||end>text.length())return "";return start==end?text:text.substring(Math.min(start,end),Math.max(start,end));}
+    /** Native restartCamera rejects preview state2; local capture must enter captured state3 too. */
+    static void markCaptured(Object owner)throws ReflectiveOperationException{Field state=owner.getClass().getDeclaredField("x");state.setAccessible(true);state.setInt(owner,3);}
     private static boolean valid(State state){return active==state&&!state.cancelled&&shown(state.peer)&&state.snapshot.isCurrent(GboardSharedWritingRuntime.currentRevision());}
     private static boolean shown(Object owner){try{return Boolean.TRUE.equals(field(owner,"u"))&&((View)field(owner,"c")).isAttachedToWindow();}catch(Exception unavailable){return false;}}
     private static View child(View root,Class<?> type){if(type.isInstance(root))return root;if(root instanceof ViewGroup){ViewGroup group=(ViewGroup)root;for(int i=0;i<group.getChildCount();i++){View found=child(group.getChildAt(i),type);if(found!=null)return found;}}return null;}

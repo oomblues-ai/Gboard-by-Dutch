@@ -27,7 +27,7 @@ public final class SharedScreenContext {
     private static void resume(Pending request,int remaining){
         if(pending!=request)return;
         if(SystemClock.uptimeMillis()>request.expires || remaining==0){SharedWritingDiagnostics.event("screen.context editor-handoff-unavailable");cancel(request);message(request.context,"Return to the original conversation and try again. Nothing was changed.");return;}
-        EditorSnapshot resumed=request.editor.resume();
+        EditorSnapshot resumed=request.editor.resumeForPreview();
         if(resumed==null){MAIN.postDelayed(()->resume(request,remaining-1),100);return;}
         SharedWritingDiagnostics.event("screen.context editor-resumed");
         SharedWritingActivation.ensure(request.context,resumed,()->SharedKeyboardSurface.whenAvailable(request.context,resumed,()->{
@@ -39,6 +39,7 @@ public final class SharedScreenContext {
                 if(!GboardSharedWritingRuntime.isCurrent(resumed)){cancel(request);message(request.context,"The editor changed. Nothing was changed.");return;}
                 request.snapshot=resumed;
                 SharedKeyboardSurface.Panel panel=confirmation(request.image,()->{
+                    SharedWritingDiagnostics.event("screen.context read-confirmed");
                     if(pending!=request || !GboardSharedWritingRuntime.isCurrent(request.snapshot)){cancel(request);if(request.panel!=null)request.panel.dismiss();message(request.context,"The editor changed. Nothing was changed.");return;}
                     request.panel.replaceContent();request.panel.label("Reading the conversation on your device…");request.panel.button("Cancel",request.panel::dismiss);
                     request.work=WORK.submit(()->read(request));

@@ -5,7 +5,6 @@ import android.os.*;
 import android.widget.LinearLayout;
 import app.johninnl.modelhost.api.TextRequest;
 import java.util.concurrent.CompletableFuture;
-import org.json.JSONArray;
 
 /** Extra operations use native-themed body content and the original GenAiEditHandler apply/undo path. */
 public final class SharedTextActions {
@@ -55,13 +54,13 @@ public final class SharedTextActions {
   return "Working on your text…";
  }
  private static void showInstructions(Context context,SharedKeyboardSurface.Panel panel,String result,String original,EditorSnapshot snapshot){
-  try{
-   JSONArray suggestions=new JSONArray(result);if(suggestions.length()<1||suggestions.length()>3)throw new IllegalArgumentException();
-   String[] instructions=new String[suggestions.length()];for(int i=0;i<instructions.length;i++){instructions[i]=suggestions.getString(i);if(instructions[i].length()>160)throw new IllegalArgumentException();}
-   panel.replaceContent();panel.label("Suggested changes");
-   for(String instruction:instructions)panel.button(instruction,()->{if(GboardSharedWritingRuntime.isCurrent(snapshot))request(context,"edit",original,instruction,null,null,snapshot,panel);else{panel.dismiss();message(context,"The editor changed. Nothing was applied.");}});
-   panel.button("Back",panel::dismiss);
-  }catch(Exception unusable){showFailure(context,panel,"NO_USABLE_SUGGESTIONS");}
+  final String[] instructions;
+  try{instructions=SharedInstructionSuggestions.parse(result);}
+  catch(IllegalArgumentException unusable){SharedWritingDiagnostics.event("suggestions.rejected "+unusable.getMessage());showFailure(context,panel,"NO_USABLE_SUGGESTIONS");return;}
+  if(SharedWritingDiagnostics.enabled())SharedWritingDiagnostics.event("suggestions.accepted count="+instructions.length);
+  panel.replaceContent();panel.label(instructions.length==0?"No editing changes were suggested. Your draft is unchanged.":"Suggested changes");
+  for(String instruction:instructions)panel.button(instruction,()->{if(GboardSharedWritingRuntime.isCurrent(snapshot))request(context,"edit",original,instruction,null,null,snapshot,panel);else{panel.dismiss();message(context,"The editor changed. Nothing was applied.");}});
+  panel.button("Back",panel::dismiss);
  }
  private static void preview(Context context,SharedKeyboardSurface.Panel panel,String result,String operation,EditorSnapshot snapshot){
   if(result==null || result.isEmpty()){showFailure(context,panel,"NO_OR_EMPTY_RESPONSE");return;}

@@ -15,8 +15,8 @@ public class SharedCameraOcrTest {
   @Override public android.view.inputmethod.InputConnection getCurrentInputConnection(){return input;}
  }
  private static final class Camera {
-  final android.content.Context b;final android.widget.TextView f;
-  Camera(android.content.Context context){b=context;f=new android.widget.TextView(context);}
+  final android.content.Context b;final android.widget.TextView f;final android.widget.ImageButton h;int x=2;
+  Camera(android.content.Context context){b=context;f=new android.widget.TextView(context);h=new android.widget.ImageButton(context);}
  }
  @Test public void insertionUsesOnlyTheChosenTextRange(){assertEquals("12.34",SharedCameraOcr.selection("Total 12.34 EUR",6,11));}
  @Test public void absentOrCollapsedSelectionInsertsTheWholeText(){assertEquals("line one\nline two",SharedCameraOcr.selection("line one\nline two",-1,-1));assertEquals("abc",SharedCameraOcr.selection("abc",2,2));}
@@ -24,6 +24,11 @@ public class SharedCameraOcrTest {
  @Test public void memoryPauseIsNotMisreportedAsDisabledImageSupport(){String message=SharedCameraOcr.failureMessage("MEMORY_PAUSED");assertTrue(message.contains("memory"));assertTrue(message.contains("Model setup"));assertFalse(message.contains("Image support is OFF"));}
  @Test public void disabledVisionAndStoppedHostHaveDifferentRecoveryInstructions(){assertTrue(SharedCameraOcr.failureMessage("ENABLE_OCR_IN_PROVIDER").contains("Image support is OFF"));assertTrue(SharedCameraOcr.failureMessage("PROVIDER_STOPPED").contains("Provider OFF"));}
  @Test public void unknownFailureNeverExposesPrivateExceptionText(){assertFalse(SharedCameraOcr.failureMessage("private image text").contains("private image text"));}
+ @Test public void localCaptureEntersTheNativeStateRequiredForRetry()throws Exception{Camera camera=new Camera(org.robolectric.RuntimeEnvironment.getApplication());assertEquals(2,camera.x);SharedCameraOcr.markCaptured(camera);assertEquals(3,camera.x);}
+ @Test public void lateNativeCameraInitializationCannotReplaceALocalImageResult()throws Exception{
+  Camera camera=new Camera(org.robolectric.RuntimeEnvironment.getApplication());Class<?> state=Class.forName(SharedCameraOcr.class.getName()+"$State");java.lang.reflect.Constructor<?> constructor=state.getDeclaredConstructor(Object.class,EditorSnapshot.class);constructor.setAccessible(true);Object local=constructor.newInstance(camera,null);
+  org.robolectric.util.ReflectionHelpers.setStaticField(SharedCameraOcr.class,"active",local);assertTrue(SharedCameraOcr.keepLocalResult(camera));assertFalse(SharedCameraOcr.keepLocalResult(new Camera(camera.b)));SharedCameraOcr.clear(camera);assertFalse(SharedCameraOcr.keepLocalResult(camera));
+ }
  @Test public void imageChoiceIsNotBlockedByAnUnreadyModel(){
   android.content.Context app=org.robolectric.RuntimeEnvironment.getApplication();
   dev.jason.gboardpatches.extension.writingtools.GboardAiWritingToolsSettings.preferences(app).edit().clear().commit();

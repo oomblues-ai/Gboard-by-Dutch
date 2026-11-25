@@ -55,3 +55,22 @@ Het schrijfbeleid heeft een basisset van 38 talen. Extra talen blijven beschikba
 Tekst-, beeld- en spraakinferentie blijven op het toestel. Voor APK- en modelinstellingen zijn downloads nodig. Search tools gebruiken het netwerk alleen als jij ze aanzet en de client-app ze toestaat. Controleer iedere gegenereerde bewerking vóór toepassing.
 
 [Alle Gboard-patches](gboard.md) · [Integratie voor ontwikkelaars](../developers/local-ai/index.md)
+
+## Een mislukte lokale actie onderzoeken
+
+**Suggest Changes** geeft bewerkingsinstructies waaruit je kiest; je tekst wordt niet meteen herschreven. “No editing changes were suggested” is een geldig resultaat. Een onleesbaar antwoordformaat wordt apart van de modelstatus gemeld.
+
+Reply en My Style vragen eerst toestemming voor één schermopname en tonen daarna **Read this screen** vóór de lokale analyse. Android kan na de toestemmingsdialoog of afbeeldingskiezer de invoerverbinding opnieuw maken. Het voorbeeld moet bij dezelfde app, hetzelfde veld en de ongewijzigde tekst horen. **Apply/Insert** controleert opnieuw een actuele momentopname. Een gewijzigd invoerveld of gewijzigde tekst annuleert een laat resultaat.
+
+Schakel voor een bruikbaar foutrapport de optionele logtags in, reproduceer het probleem eenmaal en schakel ze weer uit:
+
+```sh
+adb shell setprop log.tag.LocalModelHost DEBUG
+adb shell setprop log.tag.GboardLocalAi DEBUG
+adb logcat -v threadtime -s LocalModelHost:D GboardLocalAi:D '*:S'
+# Stop logcat met Ctrl-C en schakel de logging uit.
+adb shell setprop log.tag.LocalModelHost INFO
+adb shell setprop log.tag.GboardLocalAi INFO
+```
+
+De hosttag vereist een versie van de companion met verzoekdiagnostiek. De logs bevatten de bewerking, correlatie-ID, afbeeldingsstappen, tijden en foutcodes; niet je tekst, prompt, afbeeldingsinhoud of sleutels. Publiceer geen volledige apparaatlogs: vermeld de relevante foutcode en stappen.

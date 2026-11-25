@@ -35,11 +35,23 @@ public final class EditorSnapshot {
         private final EditorSnapshot original;private final String packageName,fieldName;private final int fieldId,inputType,imeOptions;
         private Handoff(EditorSnapshot snapshot){original=snapshot;EditorInfo info=snapshot.editor;packageName=info.packageName;fieldName=info.fieldName;fieldId=info.fieldId;inputType=info.inputType;imeOptions=info.imeOptions;}
         public EditorSnapshot resume(){return resume(GboardSharedWritingRuntime.currentService(),GboardSharedWritingRuntime.currentRevision());}
+        /** Revive a preview after explicit image input; never authorize an automatic editor write.
+         * Android may replace EditorInfo/InputConnection while a permission or document UI owns focus.
+         * Read/Apply/Insert must still be confirmed against the returned fresh snapshot.
+         */
+        EditorSnapshot resumeForPreview(){return resumeForPreview(GboardSharedWritingRuntime.currentService(),GboardSharedWritingRuntime.currentRevision());}
+        EditorSnapshot resumeForPreview(InputMethodService ime,long revision){return resume(ime,revision,true);}
         EditorSnapshot resume(InputMethodService ime,long revision){
-            if(ime==null || original.service.get()!=ime || ime.getCurrentInputConnection()!=original.connection || ime.getCurrentInputEditorInfo()!=original.editor || !allowed(ime.getCurrentInputEditorInfo()))return null;
+            return resume(ime,revision,false);
+        }
+        private EditorSnapshot resume(InputMethodService ime,long revision,boolean preview){
+            if(ime==null || original.service.get()!=ime || !allowed(ime.getCurrentInputEditorInfo()))return null;
+            if(!preview && (ime.getCurrentInputConnection()!=original.connection || ime.getCurrentInputEditorInfo()!=original.editor))return null;
+            if(preview && (packageName==null || packageName.isEmpty()))return null;
             EditorInfo info=ime.getCurrentInputEditorInfo();if(!Objects.equals(packageName,info.packageName)||!Objects.equals(fieldName,info.fieldName)||fieldId!=info.fieldId||inputType!=info.inputType||imeOptions!=info.imeOptions)return null;
             EditorSnapshot now=capture(ime,revision);
-            return now!=null && original.start==now.start && original.end==now.end && original.offset==now.offset && original.composingStart==now.composingStart && original.composingEnd==now.composingEnd && original.text.equals(now.text)?now:null;
+            boolean compositionMatches=now!=null && (original.composingStart==now.composingStart && original.composingEnd==now.composingEnd || preview && now.composingStart==-1 && now.composingEnd==-1);
+            return now!=null && original.start==now.start && original.end==now.end && original.offset==now.offset && compositionMatches && original.text.equals(now.text)?now:null;
         }
     }
     public String completionPrefix(){return start==end && end==text.length() && offset==0?text:null;}

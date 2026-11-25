@@ -60,8 +60,9 @@ public final class SharedModelClient {
             if(activeSession==null){future.completeExceptionally(new IllegalStateException(active?"SESSION_UNAVAILABLE":"SESSION_INACTIVE"));return;}
             try {
                 RequestHandle made=activeSession.submitText(request,json->{
-                    try{JSONObject o=new JSONObject(json);if(!o.optBoolean("terminal"))return;if("ok".equals(o.optString("status")))future.complete(o.getString("text"));else future.completeExceptionally(new IllegalStateException(o.optString("code","INFERENCE_FAILED")));}catch(Exception e){future.completeExceptionally(new IllegalStateException("PROTOCOL_ERROR"));}
+                    try{JSONObject o=new JSONObject(json);if(!o.optBoolean("terminal"))return;SharedWritingDiagnostics.clientEvent("terminal",o.optString("clientRequestId"),request.operation,o.optString("code","ok".equals(o.optString("status"))?"OK":"INFERENCE_FAILED"),o.optString("text").length());if("ok".equals(o.optString("status")))future.complete(o.getString("text"));else future.completeExceptionally(new IllegalStateException(o.optString("code","INFERENCE_FAILED")));}catch(Exception e){future.completeExceptionally(new IllegalStateException("PROTOCOL_ERROR"));}
                 });
+                SharedWritingDiagnostics.clientEvent("submit",made.clientRequestId,request.operation,"QUEUED",0);
                 handle.set(made);if(future.isCancelled())made.cancel();
             }catch(Exception e){future.completeExceptionally(new IllegalStateException(SharedLocalAiState.failureCode(e)));}
         });return future;

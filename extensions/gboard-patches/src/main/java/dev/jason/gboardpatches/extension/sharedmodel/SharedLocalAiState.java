@@ -89,6 +89,7 @@ public final class SharedLocalAiState {
             case "NATIVE_THEME_UNAVAILABLE":return "Gboard’s themed writing surface is not ready. Close and reopen Writing Tools.";
             case "NATIVE_WRITING_ACTIVATION_FAILED":return "Gboard could not open its writing session in this editor. Nothing was applied.";
             case "NATIVE_EDITOR_UNAVAILABLE":return "Gboard’s writing session is not active. Open Writing tools for this draft, then retry Local AI.";
+            case "NO_USABLE_SUGGESTIONS":case "SUGGESTIONS_INVALID_OUTPUT":return "The model returned suggestions in an unreadable format. Nothing was applied. Try Suggest Changes again.";
             case "EDITOR_UNAVAILABLE":return "Writing tools are unavailable in this editor. Try a normal editable draft.";
             case "SHARED_BACKEND_NOT_SELECTED":return "Local AI is OFF for Gboard. Enable it in Local AI settings.";
             default:return "The local request could not finish. Nothing was applied. Check the model status or try again.";

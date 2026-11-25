@@ -40,4 +40,23 @@ public class EditorSnapshotTest {
  @Test public void handoffRequiresTheSameLiveConnectionEvenForViewNoId(){Ime ime=new Ime();ime.info.fieldId=-1;ime.info.fieldName="message";EditorSnapshot.Handoff handoff=EditorSnapshot.capture(ime,4).handoff();ime.connection=new Connection();assertNull(handoff.resume(ime,5));}
  @Test public void unchangedLiveEditorCanResumeAcrossTheExplicitHandoffRevision(){Ime ime=new Ime();EditorSnapshot.Handoff handoff=EditorSnapshot.capture(ime,4).handoff();assertNotNull(handoff.resume(ime,5));}
  @Test public void handoffRejectsAChangedComposingRange(){Ime ime=new Ime();EditorSnapshot.Handoff handoff=EditorSnapshot.capture(ime,4).handoff();android.text.SpannableStringBuilder text=new android.text.SpannableStringBuilder(ime.connection.text);BaseInputConnection.setComposingSpans(text);ime.connection.text=text;assertNull(handoff.resume(ime,5));}
+ @Test public void anApprovedImageCanResumeOnlyAFreshPreviewAfterAndroidRebindsTheEditor(){
+  Ime ime=new Ime();ime.info.packageName="test.chat";ime.info.fieldId=42;
+  EditorSnapshot old=EditorSnapshot.capture(ime,4);EditorSnapshot.Handoff handoff=old.handoff();
+  ime.connection=new Connection();ime.info=new EditorInfo();ime.info.packageName="test.chat";ime.info.fieldId=42;
+  assertNull(handoff.resume(ime,5));EditorSnapshot preview=handoff.resumeForPreview(ime,5);
+  assertNotNull(preview);assertTrue(preview.isCurrent(5));assertFalse(old.isCurrent(5));
+  ime.connection=new Connection();assertFalse(preview.isCurrent(5));
+ }
+ @Test public void previewHandoffStillRejectsAnotherAppFieldDraftOrPrivateInput(){
+  Ime ime=new Ime();ime.info.packageName="test.chat";ime.info.fieldId=42;EditorSnapshot.Handoff handoff=EditorSnapshot.capture(ime,4).handoff();
+  ime.connection=new Connection();ime.info.packageName="other.chat";assertNull(handoff.resumeForPreview(ime,5));
+  ime.info.packageName="test.chat";ime.info.fieldId=43;assertNull(handoff.resumeForPreview(ime,5));
+  ime.info.fieldId=42;ime.connection.text="I have 13 messages.";assertNull(handoff.resumeForPreview(ime,5));
+  ime.connection.text="I have 12 messages.";ime.info.inputType=InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD;assertNull(handoff.resumeForPreview(ime,5));
+ }
+ @Test public void previewAllowsOnlyFinalizingTheSameDraftComposition(){
+  Ime ime=new Ime();ime.info.packageName="test.chat";android.text.SpannableStringBuilder text=new android.text.SpannableStringBuilder(ime.connection.text);BaseInputConnection.setComposingSpans(text);ime.connection.text=text;
+  EditorSnapshot.Handoff handoff=EditorSnapshot.capture(ime,4).handoff();ime.connection=new Connection();assertNotNull(handoff.resumeForPreview(ime,5));
+ }
 }
