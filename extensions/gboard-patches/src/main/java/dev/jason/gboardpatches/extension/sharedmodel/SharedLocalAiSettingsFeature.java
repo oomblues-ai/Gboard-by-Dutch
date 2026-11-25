@@ -77,9 +77,12 @@ public final class SharedLocalAiSettingsFeature implements GboardPatchesSettings
             List<GboardPatchesSettingsContract.Row> rows=new ArrayList<>();
             textRow(host,rows,"Your style","style","Add your own examples and preferences.");
             textRow(host,rows,"Saved instruction","instruction","Choose how Local AI should edit your draft.");
-            String[] languages={"English","French","German","Spanish","Italian","Portuguese","Dutch"},codes={"en","fr","de","es","it","pt","nl"};
+            List<String> destinations=new ArrayList<>(SharedLanguageCoverage.baselineCodes());
+            destinations.sort(Comparator.comparing(code->new Locale(code).getDisplayLanguage(Locale.ENGLISH)));
+            String[] codes=destinations.toArray(new String[0]),languages=new String[codes.length];
+            for(int i=0;i<codes.length;i++)languages[i]=new Locale(codes[i]).getDisplayLanguage(Locale.ENGLISH);
             String selected=SharedWritingPreferences.language(context);int index=java.util.Arrays.asList(codes).indexOf(selected);
-            rows.add(new GboardPatchesSettingsContract.SelectorRow("Translation language","Used by the AI Translate keyboard shortcut.",languages[Math.max(0,index)],true,()->GboardPatchesSettingsContract.showChoiceDialog(host,"Translate to",languages,codes,selected,"__unused__",()->{},value->{try{SharedWritingPreferences.writeLanguage(context,value);error="";}catch(Exception invalid){error="Could not save the translation language.";}GboardPatchesSettingsContract.refresh(host);})));
+            rows.add(new GboardPatchesSettingsContract.SelectorRow("Translation language","38 baseline languages for AI Translate. Quality varies; review translations.",languages[Math.max(0,index)],true,()->GboardPatchesSettingsContract.showChoiceDialog(host,"Translate to",languages,codes,selected,"__unused__",()->{},value->{try{SharedWritingPreferences.writeLanguage(context,value);error="";}catch(Exception invalid){error="Could not save the translation language.";}GboardPatchesSettingsContract.refresh(host);})));
 
             rows.add(new GboardPatchesSettingsContract.ToggleRow("Smart Compose","Experimental · Offer a short continuation while typing.",true,"true".equals(SharedWritingPreferences.read(context,"compose")),value->save(host,"compose",Boolean.toString(value))));
             rows.add(new GboardPatchesSettingsContract.ToggleRow("Inline grammar","Experimental · Suggest corrections without replacing your draft.",true,"true".equals(SharedWritingPreferences.read(context,"grammar")),value->save(host,"grammar",Boolean.toString(value))));

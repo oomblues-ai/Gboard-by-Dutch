@@ -22,7 +22,7 @@ Open **Writing Tools** via de werkbalk. Lokale acties volgen het toegepaste toet
 
 Waar aangeboden zijn er ook verkorten, samenvatten, antwoorden, stijlvoorbeelden en een opgeslagen instructie. Een antwoord heeft aangeleverde gesprekscontext nodig; een andere app wordt niet automatisch uitgelezen. Gebruik **Read this screen** expliciet en bevestig Androids schermopnametoestemming. Apps die opname blokkeren kunnen zo niet worden gelezen. Er wordt geen bericht namens jou verstuurd.
 
-**AI Translate** gebruikt de doeltaal onder **Writing preferences → Translation language**. Kies die eerst. Experimentele Smart Compose en inline grammatica hebben eigen schakelaars onder Writing preferences; controleer suggesties nog steeds.
+**AI Translate** gebruikt de doeltaal onder **Writing preferences → Translation language**. Kies die eerst. Experimentele Smart Compose en inline grammatica hebben eigen schakelaars onder Writing preferences; controleer suggesties nog steeds. De keuzelijst bevat alle 38 basistalen; de brontaal wordt uit je tekst afgeleid. Dit zijn beschikbare doeltalen, geen claim dat de vertaalkwaliteit voor iedere taal is geverifieerd.
 
 ## Tekst uit een afbeelding lezen
 

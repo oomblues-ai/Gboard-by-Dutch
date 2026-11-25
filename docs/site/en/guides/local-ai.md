@@ -22,7 +22,7 @@ Open Gboard's **Writing Tools** from the toolbar. Local actions use the keyboard
 
 Additional actions include shortening, summaries, replies, style examples and a saved instruction where offered. A reply needs supplied conversation context; it does not read another app automatically. Use **Read this screen** explicitly and approve Android's screen-capture consent when asked. Apps that block capture cannot be read through that workflow. Nothing is sent as a message for you.
 
-**AI Translate** uses the destination selected under Local AI's **Writing preferences → Translation language**. Choose that destination first. Experimental Smart Compose and inline grammar have their own Writing preferences switches; suggestions still need review.
+**AI Translate** uses the destination selected under Local AI's **Writing preferences → Translation language**. Choose that destination first. Experimental Smart Compose and inline grammar have their own Writing preferences switches; suggestions still need review. The picker offers all 38 baseline languages; the source language is inferred from your draft. These are destination choices, not a claim that translation quality has been verified in every language.
 
 ## Read text from an image
 
