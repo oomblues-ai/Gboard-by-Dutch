@@ -23,22 +23,24 @@ public final class GboardSharedWritingRuntime {
     public static EditorSnapshot captureEditor(){return EditorSnapshot.capture(service.get(),revision.get());}
     public static boolean isCurrent(EditorSnapshot snapshot){return snapshot!=null && snapshot.isCurrent(revision.get());}
     public static Context context(){return GboardAiWritingToolsRuntime.sharedBackendContext();}
-    public static void onInputStarting(Object receiver,EditorInfo info){SharedWritingActivation.cancel();SharedKeyboardSurface.clear();NativeEditBridge.invalidate();SharedVoiceEditController.cancel();revision.incrementAndGet();SharedModelClient.cancelRequests();if(receiver instanceof InputMethodService){service=new WeakReference<>((InputMethodService)receiver);Context c=((InputMethodService)receiver).getApplicationContext();SharedInlineSettings.refresh(c);if(selected(c))SharedModelClient.activate(c);}}
-    public static void onSelectionUpdated(Object receiver,int oldStart,int oldEnd,int newStart,int newEnd,int candidateStart,int candidateEnd){if(oldStart!=newStart || oldEnd!=newEnd || composingStart!=candidateStart || composingEnd!=candidateEnd){revision.incrementAndGet();SharedModelClient.cancelRequests();}composingStart=candidateStart;composingEnd=candidateEnd;SharedCompletionController.changed();}
-    public static void onInputHidden(Object receiver){SharedWritingActivation.cancel();SharedKeyboardSurface.clear();NativeEditBridge.invalidate();SharedCompletionController.reset();SharedVoiceEditController.cancel();revision.incrementAndGet();SharedModelClient.releaseSession();service.clear();}
+    public static void onInputStarting(Object receiver,EditorInfo info){if(SharedWritingDiagnostics.enabled())SharedWritingDiagnostics.event("input.start service="+(receiver instanceof InputMethodService));SharedWritingActivation.cancel();SharedKeyboardSurface.clear();NativeEditBridge.invalidate();SharedVoiceEditController.cancel();revision.incrementAndGet();SharedModelClient.cancelRequests();if(receiver instanceof InputMethodService){service=new WeakReference<>((InputMethodService)receiver);Context c=((InputMethodService)receiver).getApplicationContext();SharedInlineSettings.refresh(c);if(selected(c))SharedModelClient.activate(c);}}
+    public static void onSelectionUpdated(Object receiver,int oldStart,int oldEnd,int newStart,int newEnd,int candidateStart,int candidateEnd){if(oldStart!=newStart || oldEnd!=newEnd || composingStart!=candidateStart || composingEnd!=candidateEnd){if(SharedWritingDiagnostics.enabled())SharedWritingDiagnostics.event("input.selection changed="+(oldStart!=newStart||oldEnd!=newEnd)+" composing="+(composingStart!=candidateStart||composingEnd!=candidateEnd));revision.incrementAndGet();SharedModelClient.cancelRequests();}composingStart=candidateStart;composingEnd=candidateEnd;SharedCompletionController.changed();}
+    public static void onInputHidden(Object receiver){if(SharedWritingDiagnostics.enabled())SharedWritingDiagnostics.event("input.hidden revision="+revision.get());SharedWritingActivation.cancel();SharedKeyboardSurface.clear();NativeEditBridge.invalidate();SharedCompletionController.reset();SharedVoiceEditController.cancel();revision.incrementAndGet();SharedModelClient.releaseSession();service.clear();}
     public static CompletableFuture<String> request(Context context,String operation,String text,String instruction){
         CompletableFuture<String> result=new CompletableFuture<>();
         result.whenComplete((value,error)->{if(error!=null && !result.isCancelled())SharedModelClient.noteFailure(SharedLocalAiState.failureCode(error));});
         long requestedRevision=revision.get();
+        if(SharedWritingDiagnostics.enabled())SharedWritingDiagnostics.event("request.queued operation="+operation+" revision="+requestedRevision);
         MAIN.post(()->{
             if(result.isCancelled())return;
             if(!selected(context)){result.completeExceptionally(new IllegalStateException("SHARED_BACKEND_NOT_SELECTED"));return;}
-            if(requestedRevision!=revision.get()){result.cancel(false);return;}
+            if(requestedRevision!=revision.get()){if(SharedWritingDiagnostics.enabled())SharedWritingDiagnostics.event("request.cancel before-capture revision-changed");result.cancel(false);return;}
             EditorSnapshot snapshot=EditorSnapshot.capture(service.get(),requestedRevision);
-            if(snapshot==null){result.completeExceptionally(new IllegalStateException("EDITOR_UNAVAILABLE"));return;}
+            if(snapshot==null){if(SharedWritingDiagnostics.enabled())SharedWritingDiagnostics.event("request.reject editor-unavailable");result.completeExceptionally(new IllegalStateException("EDITOR_UNAVAILABLE"));return;}
+            if(SharedWritingDiagnostics.enabled())SharedWritingDiagnostics.event("request.submit operation="+operation+" revision="+requestedRevision);
             CompletableFuture<String> pending=SharedModelClient.request(context,operation,text,instruction);
             result.whenComplete((value,error)->{if(result.isCancelled())pending.cancel(false);});
-            pending.whenComplete((value,error)->MAIN.post(()->{if(result.isDone())return;if(error instanceof java.util.concurrent.CancellationException || !snapshot.isCurrent(revision.get())){result.cancel(false);return;}if(error!=null)result.completeExceptionally(error);else result.complete(value);}));
+            pending.whenComplete((value,error)->MAIN.post(()->{if(result.isDone())return;if(error instanceof java.util.concurrent.CancellationException || !snapshot.isCurrent(revision.get())){if(SharedWritingDiagnostics.enabled())SharedWritingDiagnostics.event("request.cancel result-stale-or-cancelled");result.cancel(false);return;}if(SharedWritingDiagnostics.enabled())SharedWritingDiagnostics.event(error==null?"request.terminal ok":"request.terminal error="+error.getClass().getSimpleName());if(error!=null)result.completeExceptionally(error);else result.complete(value);}));
         });
         return result;
     }

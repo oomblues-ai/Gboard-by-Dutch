@@ -36,10 +36,10 @@ public final class SharedModelClient {
         if(poll!=null)poll.cancel(false);
         poll=worker.scheduleWithFixedDelay(()->{if(!connected)return;try{HostStatus status=client.status();acceptStatus(status);}catch(Exception e){ready=false;lastStatus=null;error="PROVIDER_UNAVAILABLE";SharedNativeReadiness.sync();}},1,2,TimeUnit.SECONDS);
     }
-    private static void acceptStatus(HostStatus status){lastStatus=status;ready=status.enabled && status.isReady();error=status.state;SharedNativeReadiness.sync();}
+    private static void acceptStatus(HostStatus status){boolean changed=ready!=(status.enabled && status.isReady()) || !status.state.equals(error);lastStatus=status;ready=status.enabled && status.isReady();error=status.state;if(changed)if(SharedWritingDiagnostics.enabled())SharedWritingDiagnostics.event("provider.state ready="+ready+" enabled="+status.enabled+" state="+SharedLocalAiState.safeCode(status.state));SharedNativeReadiness.sync();}
     public static HostStatus lastStatus(){return lastStatus;}
     public static String lastRequestError(){return lastRequestError;}
-    public static void noteFailure(String code){lastRequestError=SharedLocalAiState.safeCode(code);}
+    public static void noteFailure(String code){lastRequestError=SharedLocalAiState.safeCode(code);if(SharedWritingDiagnostics.enabled())SharedWritingDiagnostics.event("failure.code="+lastRequestError);}
     public static synchronized void reconnect(Context context){if(client!=null && !connected){client.close();client=null;}connect(context);}
     public static String readinessMessage(Context context){connect(context);return SharedLocalAiState.providerSummary(lastStatus,error);}
     private static void openSession(){if(!active || !connected || session!=null)return;try{session=client.openSession(new SessionOptions("Gboard",null,4096));}catch(Exception e){error="SESSION_UNAVAILABLE";}}

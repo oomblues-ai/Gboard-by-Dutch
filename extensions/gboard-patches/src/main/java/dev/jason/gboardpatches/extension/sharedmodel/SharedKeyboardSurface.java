@@ -24,8 +24,10 @@ public final class SharedKeyboardSurface {
     private SharedKeyboardSurface() {}
 
     public static void bind(Object owner,Object root){
+        if(SharedWritingDiagnostics.enabled())SharedWritingDiagnostics.event("surface.bind root="+(root instanceof ViewGroup));
         if(!(root instanceof ViewGroup))return;
         View candidate=((ViewGroup)root).findViewById(BODY_SWITCHER),currentBody=((ViewGroup)root).findViewById(MODERN_BODY);
+        if(SharedWritingDiagnostics.enabled())SharedWritingDiagnostics.event("surface.bind switcher="+(candidate instanceof ViewSwitcher)+" modern="+(currentBody instanceof ViewGroup));
         if(!(candidate instanceof ViewSwitcher) && !(currentBody instanceof ViewGroup))return;
         clear();
         keyboard=new WeakReference<>((ViewGroup)root);
@@ -33,7 +35,7 @@ public final class SharedKeyboardSurface {
         modern=new WeakReference<>(currentBody instanceof ViewGroup?(ViewGroup)currentBody:null);
         if(((ViewGroup)root).getViewTreeObserver().isAlive()){((ViewGroup)root).getViewTreeObserver().removeOnGlobalLayoutListener(LAYOUT);((ViewGroup)root).getViewTreeObserver().addOnGlobalLayoutListener(LAYOUT);}((ViewGroup)root).post(SharedWritingActivation::nativeReady);
     }
-    public static void clear(){Panel old=current;current=null;if(old!=null)old.detach();ViewGroup root=keyboard.get();if(root!=null&&root.getViewTreeObserver().isAlive())root.getViewTreeObserver().removeOnGlobalLayoutListener(LAYOUT);keyboard.clear();switcher.clear();modern.clear();}
+    public static void clear(){if(SharedWritingDiagnostics.enabled())SharedWritingDiagnostics.event("surface.clear");Panel old=current;current=null;if(old!=null)old.detach();ViewGroup root=keyboard.get();if(root!=null&&root.getViewTreeObserver().isAlive())root.getViewTreeObserver().removeOnGlobalLayoutListener(LAYOUT);keyboard.clear();switcher.clear();modern.clear();}
     static boolean available(){
         ViewGroup root=keyboard.get();if(root==null || !root.isAttachedToWindow() || !root.isShown())return false;
         if(switcher.get()!=null)return switcher.get().getCurrentView() instanceof FrameLayout;
