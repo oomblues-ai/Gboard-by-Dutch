@@ -152,7 +152,12 @@ public final class SharedKeyboardSurface {
         private void detach(){
             if(detached)return;detached=true;
             if(wrapper!=null && parent!=null)parent.removeView(wrapper);
-            for(java.util.Map.Entry<View,Integer> original:hidden.entrySet())original.getKey().setVisibility(original.getValue());hidden.clear();
+            // Native lifecycle transitions own visibility once a keyboard is deactivated.
+            // Never resurrect a recycled writing/menu body above the current prime keyboard.
+            for(java.util.Map.Entry<View,Integer> original:hidden.entrySet()){
+                View view=original.getKey();if(view.getParent()==parent && view.getVisibility()==View.INVISIBLE)view.setVisibility(original.getValue());
+            }
+            hidden.clear();
             if(onDismiss!=null)onDismiss.run();
         }
     }

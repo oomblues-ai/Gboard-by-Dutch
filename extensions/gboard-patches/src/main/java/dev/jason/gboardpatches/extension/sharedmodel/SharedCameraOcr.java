@@ -90,10 +90,10 @@ public final class SharedCameraOcr {
     private static void discardChosen(Pick request){if(picking==request)picking=null;if(request.image!=null){if(!request.image.isRecycled())request.image.recycle();request.image=null;}}
     private static void deliverChosen(Pick request){
         if(picking!=request || request.image==null)return;
-        Object owner=peer.get();if(owner==null || !shown(owner))return;
+        Object owner=peer.get();if(owner==null || !shown(owner) || !NativeEditBridge.readyForTransition(GboardSharedWritingRuntime.currentService()))return;
         EditorSnapshot snapshot=request.editor.resumeForPreview();
         if(android.os.SystemClock.uptimeMillis()>request.expires || snapshot==null)return;
-        Bitmap bitmap=request.image;request.image=null;picking=null;recognize(owner,bitmap,snapshot);
+        SharedWritingDiagnostics.event("ocr.picker delivered-visible");Bitmap bitmap=request.image;request.image=null;picking=null;recognize(owner,bitmap,snapshot);
     }
     private static void recognize(Object owner,Bitmap image,EditorSnapshot snapshot){
         State state=null;
@@ -147,7 +147,7 @@ public final class SharedCameraOcr {
     /** Native restartCamera rejects preview state2; local capture must enter captured state3 too. */
     static void markCaptured(Object owner)throws ReflectiveOperationException{Field state=owner.getClass().getDeclaredField("x");state.setAccessible(true);state.setInt(owner,3);}
     private static boolean valid(State state){return active==state&&!state.cancelled&&shown(state.peer)&&state.snapshot.isCurrent(GboardSharedWritingRuntime.currentRevision());}
-    private static boolean shown(Object owner){try{return Boolean.TRUE.equals(field(owner,"u"))&&((View)field(owner,"c")).isAttachedToWindow();}catch(Exception unavailable){return false;}}
+    static boolean shown(Object owner){try{View preview=(View)field(owner,"c");return Boolean.TRUE.equals(field(owner,"u"))&&preview.isAttachedToWindow()&&preview.isShown();}catch(Exception unavailable){return false;}}
     private static View child(View root,Class<?> type){if(type.isInstance(root))return root;if(root instanceof ViewGroup){ViewGroup group=(ViewGroup)root;for(int i=0;i<group.getChildCount();i++){View found=child(group.getChildAt(i),type);if(found!=null)return found;}}return null;}
     private static Object field(Object owner,String name)throws ReflectiveOperationException{Field f=owner.getClass().getDeclaredField(name);f.setAccessible(true);return f.get(owner);}
     private static Object invoke(Object owner,String name)throws ReflectiveOperationException{return invoke(owner,name,new Class<?>[0]);}

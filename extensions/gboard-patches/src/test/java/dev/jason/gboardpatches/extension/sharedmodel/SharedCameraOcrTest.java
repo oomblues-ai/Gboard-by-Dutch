@@ -18,6 +18,12 @@ public class SharedCameraOcrTest {
   final android.content.Context b;final android.widget.TextView f;final android.widget.ImageButton h;int x=2;
   Camera(android.content.Context context){b=context;f=new android.widget.TextView(context);h=new android.widget.ImageButton(context);}
  }
+ private static final class PreviewOwner {
+  final android.view.View c;boolean u=true;PreviewOwner(android.view.View view){c=view;}
+ }
+ @Test public void attachedButHiddenCameraCannotReceiveAnImagePickerResult(){
+  android.app.Activity activity=org.robolectric.Robolectric.buildActivity(android.app.Activity.class).setup().get();android.widget.FrameLayout root=new android.widget.FrameLayout(activity);android.view.View preview=new android.view.View(activity);root.addView(preview);activity.setContentView(root);PreviewOwner owner=new PreviewOwner(preview);assertTrue(preview.isAttachedToWindow());assertTrue(SharedCameraOcr.shown(owner));root.setVisibility(android.view.View.GONE);assertFalse(SharedCameraOcr.shown(owner));root.setVisibility(android.view.View.VISIBLE);owner.u=false;assertFalse(SharedCameraOcr.shown(owner));activity.finish();
+ }
  private static final class ResultControls {
   final android.view.View d,z;
   ResultControls(android.content.Context context){d=new android.view.View(context);z=new android.view.View(context);}
