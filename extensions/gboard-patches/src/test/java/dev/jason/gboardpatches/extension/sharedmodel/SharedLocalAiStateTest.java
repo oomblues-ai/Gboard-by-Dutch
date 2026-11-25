@@ -22,6 +22,26 @@ public class SharedLocalAiStateTest {
         assertTrue(SharedLocalAiState.select(preferences,true));
         assertTrue(SharedLocalAiState.select(preferences,false));assertFalse(SharedLocalAiState.selected(preferences));
         assertEquals(GboardAiWritingToolsSettings.BACKEND_PRIVATE_INFERENCE_ASTREA,GboardAiWritingToolsSettings.readBackendType(preferences));
+        assertTrue(GboardAiWritingToolsSettings.readEnabled(preferences));
+    }
+    @Test public void repeatedLocalAiEnableRestoresDisabledGoogleOverride(){
+        GboardAiWritingToolsSettings.writeEnabled(preferences,false);
+        assertTrue(SharedLocalAiState.select(preferences,true));
+        assertTrue(SharedLocalAiState.selected(preferences));
+        assertTrue(SharedLocalAiState.select(preferences,true));
+        assertTrue(SharedLocalAiState.select(preferences,false));
+        assertEquals(GboardAiWritingToolsSettings.BACKEND_GBOARD_SERVER,GboardAiWritingToolsSettings.readBackendType(preferences));
+        assertFalse(GboardAiWritingToolsSettings.readEnabled(preferences));
+    }
+    @Test public void legacySavedBackendDoesNotEnableAnUnknownPreviousOverride(){
+        preferences.edit()
+            .putString(GboardAiWritingToolsSettings.PREF_KEY_BACKEND_TYPE,GboardAiWritingToolsSettings.BACKEND_SHARED_LOCAL)
+            .putBoolean(GboardAiWritingToolsSettings.PREF_KEY_ENABLED,true)
+            .putString("pref_shared_previous_backend",GboardAiWritingToolsSettings.BACKEND_PRIVATE_INFERENCE_AICORE)
+            .commit();
+        assertTrue(SharedLocalAiState.select(preferences,false));
+        assertEquals(GboardAiWritingToolsSettings.BACKEND_PRIVATE_INFERENCE_AICORE,GboardAiWritingToolsSettings.readBackendType(preferences));
+        assertFalse(GboardAiWritingToolsSettings.readEnabled(preferences));
     }
     @Test public void turningOffDoesNotChangeAnAlreadySelectedGoogleBackend(){
         GboardAiWritingToolsSettings.writeBackendType(preferences,GboardAiWritingToolsSettings.BACKEND_PRIVATE_INFERENCE_AICORE);

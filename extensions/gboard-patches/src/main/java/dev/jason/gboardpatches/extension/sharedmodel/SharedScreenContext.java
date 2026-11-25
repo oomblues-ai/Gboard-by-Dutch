@@ -17,8 +17,8 @@ public final class SharedScreenContext {
         Pending(Context c,EditorSnapshot.Handoff e,boolean s){context=c.getApplicationContext();editor=e;style=s;}
     }
     private SharedScreenContext(){}
-    public static void reply(Context context,boolean useStyle){
-        EditorSnapshot snapshot=GboardSharedWritingRuntime.captureEditor();if(snapshot==null){message(context,"Screen context is unavailable in this private or changed editor.");return;}
+    static void reply(Context context,boolean useStyle,EditorSnapshot snapshot){
+        if(!GboardSharedWritingRuntime.isCurrent(snapshot)){message(context,"Screen context is unavailable in this private or changed editor.");return;}
         if(pending!=null){message(context,"A screen-context request is already in progress.");return;}
         Pending request=new Pending(context,snapshot.handoff(),useStyle);pending=request;MAIN.postDelayed(()->{if(pending==request){if(request.panel!=null)request.panel.dismiss();cancel(request);message(context,"The screen-context request expired. Nothing was changed.");}},150000);
         try{SharedScreenCaptureActivity.capture(context,image->{if(pending!=request){if(image!=null)image.recycle();return;}if(image==null){pending=null;message(context,"Screen capture was cancelled or unavailable. Nothing was changed.");return;}request.image=image;resume(request,100);});}
@@ -29,14 +29,14 @@ public final class SharedScreenContext {
         if(SystemClock.uptimeMillis()>request.expires || remaining==0){cancel(request);message(request.context,"Return to the original conversation and try again. Nothing was changed.");return;}
         EditorSnapshot resumed=request.editor.resume();
         if(resumed==null){MAIN.postDelayed(()->resume(request,remaining-1),100);return;}
-        SharedWritingActivation.ensure(request.context,()->SharedKeyboardSurface.whenAvailable(request.context,()->{
+        SharedWritingActivation.ensure(request.context,resumed,()->SharedKeyboardSurface.whenAvailable(request.context,resumed,()->{
             if(pending!=request)return;
             try{
                 if(!GboardSharedWritingRuntime.isCurrent(resumed)){cancel(request);message(request.context,"The editor changed. Nothing was changed.");return;}
                 SharedModelClient.cancelRequests();
                 NativeEditBridge.prepare();
                 if(!GboardSharedWritingRuntime.isCurrent(resumed)){cancel(request);message(request.context,"The editor changed. Nothing was changed.");return;}
-                request.snapshot=GboardSharedWritingRuntime.captureEditor();if(request.snapshot==null){cancel(request);return;}
+                request.snapshot=resumed;
                 SharedKeyboardSurface.Panel panel=confirmation(request.image,()->{
                     if(pending!=request || !GboardSharedWritingRuntime.isCurrent(request.snapshot)){cancel(request);if(request.panel!=null)request.panel.dismiss();message(request.context,"The editor changed. Nothing was changed.");return;}
                     request.panel.replaceContent();request.panel.label("Reading the conversation on your device…");request.panel.button("Cancel",request.panel::dismiss);
@@ -61,7 +61,7 @@ public final class SharedScreenContext {
         if(!GboardSharedWritingRuntime.isCurrent(request.snapshot)){request.panel.dismiss();message(request.context,"The editor changed. Nothing was applied.");return;}
         String style=request.style?SharedWritingPreferences.read(request.context,"style"):"";
         String supplied=conversation(screen,style);
-        try{String original=NativeEditBridge.prepare();if(!GboardSharedWritingRuntime.isCurrent(request.snapshot))throw new IllegalStateException();EditorSnapshot snapshot=GboardSharedWritingRuntime.captureEditor();if(snapshot==null||original==null)throw new IllegalStateException();request.transferred=true;pending=null;SharedTextActions.request(request.context,"reply",original,null,supplied,null,snapshot,request.panel);}
+        try{String original=NativeEditBridge.prepare();if(original==null || !GboardSharedWritingRuntime.isCurrent(request.snapshot))throw new IllegalStateException();request.transferred=true;pending=null;SharedTextActions.request(request.context,"reply",original,null,supplied,null,request.snapshot,request.panel);}
         catch(Exception unavailable){request.transferred=false;cancel(request);if(request.panel!=null)request.panel.dismiss();message(request.context,"The editor changed. Nothing was applied.");}
     }
     static SharedKeyboardSurface.Panel confirmation(Bitmap image,Runnable confirm){

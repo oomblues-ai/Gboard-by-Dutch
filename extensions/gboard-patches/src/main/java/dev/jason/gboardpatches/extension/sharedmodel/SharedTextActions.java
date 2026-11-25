@@ -11,19 +11,20 @@ import org.json.JSONArray;
 public final class SharedTextActions {
  private static final Handler MAIN=new Handler(Looper.getMainLooper());
  private SharedTextActions(){}
- public static void run(Context context,String operation,String instruction,String explicitContext,String language){
+ static void run(Context context,String operation,String instruction,String language,EditorSnapshot snapshot){
   try{
-   String original=NativeEditBridge.prepare();EditorSnapshot snapshot=GboardSharedWritingRuntime.captureEditor();
+   if(!GboardSharedWritingRuntime.isCurrent(snapshot))return;
+   String original=NativeEditBridge.prepare();
    if(original==null){failure(context,"NATIVE_EDITOR_UNAVAILABLE");return;}
-   if(snapshot==null){failure(context,"EDITOR_UNAVAILABLE");return;}
    if(original.trim().isEmpty()&&!"reply".equals(operation)){message(context,"Select text or place the cursor in an editable draft.");return;}
-   request(context,operation,original,instruction,explicitContext,language,snapshot);
+   request(context,operation,original,instruction,null,language,snapshot);
   }catch(Exception error){failure(context,SharedLocalAiState.failureCode(error));}
  }
  static void request(Context context,String operation,String original,String instruction,String explicitContext,String language,EditorSnapshot snapshot){
   request(context,operation,original,instruction,explicitContext,language,snapshot,null);
  }
  static void request(Context context,String operation,String original,String instruction,String explicitContext,String language,EditorSnapshot snapshot,SharedKeyboardSurface.Panel existing){
+  if(!GboardSharedWritingRuntime.isCurrent(snapshot)){if(existing!=null)existing.dismiss();return;}
   TextRequest request=new TextRequest(operation,"reply".equals(operation)&&original.trim().isEmpty()?"Draft a brief, relevant reply to the visible messages. Do not invent facts, excuses, promises or commitments. Ask for missing information when needed.":original,instruction,explicitContext,language,null,512,30000);
   final SharedKeyboardSurface.Panel working;
   java.util.concurrent.atomic.AtomicReference<CompletableFuture<String>> active=new java.util.concurrent.atomic.AtomicReference<>();
@@ -35,6 +36,7 @@ public final class SharedTextActions {
   }
   working.setOnDismissListener(()->{CompletableFuture<String> task=active.get();if(task!=null&&!task.isDone())task.cancel(false);});
   if(existing==null&&!working.show()){failure(context,"NATIVE_THEME_UNAVAILABLE");return;}
+  if(!GboardSharedWritingRuntime.isCurrent(snapshot)){working.dismiss();return;}
   final CompletableFuture<String> pending;
   try{pending=SharedModelClient.request(context,request);active.set(pending);}
   catch(RuntimeException unavailable){showFailure(context,working,SharedLocalAiState.failureCode(unavailable));return;}
@@ -58,7 +60,7 @@ public final class SharedTextActions {
  private static void preview(Context context,SharedKeyboardSurface.Panel panel,String result,String operation,EditorSnapshot snapshot){
   if(result==null || result.isEmpty()){showFailure(context,panel,"NO_OR_EMPTY_RESPONSE");return;}
   panel.replaceContent();panel.label(result);
-  panel.button("Apply",()->{if(!GboardSharedWritingRuntime.isCurrent(snapshot)){panel.dismiss();message(context,"The editor changed. Nothing was applied.");return;}panel.dismiss();try{if(!NativeEditBridge.apply(result,operation))failure(context,"EDITOR_UNAVAILABLE");}catch(Exception unavailable){failure(context,"EDITOR_UNAVAILABLE");}});
+  panel.button("Apply",()->{panel.dismiss();if(!GboardSharedWritingRuntime.isCurrent(snapshot)){message(context,"The editor changed. Nothing was applied.");return;}try{if(!NativeEditBridge.apply(result,operation))failure(context,"EDITOR_UNAVAILABLE");}catch(Exception unavailable){failure(context,"EDITOR_UNAVAILABLE");}});
   panel.button("Cancel",panel::dismiss);
  }
  private static void showFailure(Context context,SharedKeyboardSurface.Panel panel,String code){

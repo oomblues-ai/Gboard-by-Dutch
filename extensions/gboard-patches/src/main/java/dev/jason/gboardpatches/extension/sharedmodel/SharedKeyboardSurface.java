@@ -39,12 +39,12 @@ public final class SharedKeyboardSurface {
         if(switcher.get()!=null)return switcher.get().getCurrentView() instanceof FrameLayout;
         FrameLayout card=nativeCard();TextView action=primaryTemplate(),footer=footerTemplate();return card!=null && card.getWidth()>0 && card.getHeight()>0 && stableModernParent()!=null && action!=null && footer!=null && footer.getHeight()>0;
     }
-    static void whenAvailable(Context context,Runnable show){await(context,show,20);}
-    private static void await(Context context,Runnable show,int remaining){
+    static void whenAvailable(Context context,EditorSnapshot snapshot,Runnable show){await(context,snapshot,show,20);}
+    private static void await(Context context,EditorSnapshot snapshot,Runnable show,int remaining){
+        if(!GboardSharedWritingRuntime.isCurrent(snapshot))return;
         if(available()){show.run();return;}
         if(remaining==0){SharedModelClient.noteFailure("NATIVE_THEME_UNAVAILABLE");SharedTextActions.message(context,"Gboard’s writing surface is not available in this editor.");return;}
-        long revision=GboardSharedWritingRuntime.currentRevision();
-        MAIN.postDelayed(()->{if(revision==GboardSharedWritingRuntime.currentRevision() && GboardSharedWritingRuntime.currentService()!=null)await(context,show,remaining-1);},100);
+        MAIN.postDelayed(()->await(context,snapshot,show,remaining-1),100);
     }
     private static ViewGroup root(){ViewGroup root=keyboard.get();if(root==null)throw new IllegalStateException("NATIVE_THEME_UNAVAILABLE");return root;}
     private static ViewGroup templateRoot(){ViewSwitcher body=switcher.get();View current=body==null?modern.get():body.getCurrentView();if(!(current instanceof ViewGroup))throw new IllegalStateException("NATIVE_THEME_UNAVAILABLE");return (ViewGroup)current;}

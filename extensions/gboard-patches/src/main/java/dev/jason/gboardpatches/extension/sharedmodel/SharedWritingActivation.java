@@ -14,30 +14,32 @@ public final class SharedWritingActivation {
     private static Runnable readyCheck;
     private SharedWritingActivation() {}
 
-    public static void ensure(Context context,Runnable showMenu) {
+    static void ensure(Context context,EditorSnapshot snapshot,Runnable onReady) {
         InputMethodService ime=GboardSharedWritingRuntime.currentService();
-        EditorSnapshot snapshot=GboardSharedWritingRuntime.captureEditor();
         if(ime==null || snapshot==null){SharedTextActions.failure(context,"EDITOR_UNAVAILABLE");return;}
         CompletableFuture<Void> result=start(snapshot,new Entry(){
             public boolean available(){return NativeEditBridge.available() && SharedKeyboardSurface.available();}
             public void open()throws Exception{NativeEditBridge.activate(ime);}
         });
+        whenReady(context,snapshot,result,onReady);
+    }
+    static void whenReady(Context context,EditorSnapshot snapshot,CompletableFuture<Void> result,Runnable onReady) {
         result.whenComplete((ignored,error)->MAIN.post(()->{
-            if(result.isCancelled())return;
+            if(result.isCancelled() || !GboardSharedWritingRuntime.isCurrent(snapshot))return;
             if(error!=null)SharedTextActions.failure(context,"NATIVE_WRITING_ACTIVATION_FAILED");
-            else showMenu.run();
+            else onReady.run();
         }));
     }
     static CompletableFuture<Void> start(EditorSnapshot snapshot,Entry entry) {
         cancel();
         CompletableFuture<Void> result=new CompletableFuture<>();
         if(snapshot==null){result.completeExceptionally(new IllegalStateException("EDITOR_UNAVAILABLE"));return result;}
-        long revision=GboardSharedWritingRuntime.currentRevision();
+        if(!GboardSharedWritingRuntime.isCurrent(snapshot)){result.cancel(false);return result;}
         if(entry.available()){result.complete(null);return result;}
         pending=result;
         readyCheck=()->{
             if(result.isDone())return;
-            if(!snapshot.isCurrent(GboardSharedWritingRuntime.currentRevision()) || revision!=GboardSharedWritingRuntime.currentRevision()){result.cancel(false);return;}
+            if(!GboardSharedWritingRuntime.isCurrent(snapshot)){result.cancel(false);return;}
             if(entry.available())result.complete(null);
         };
         Runnable timeout=()->{if(!result.isDone())result.completeExceptionally(new IllegalStateException("NATIVE_WRITING_ACTIVATION_FAILED"));};

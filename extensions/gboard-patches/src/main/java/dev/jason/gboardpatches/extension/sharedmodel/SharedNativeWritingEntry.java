@@ -19,7 +19,7 @@ public final class SharedNativeWritingEntry {
         Context context=GboardSharedWritingRuntime.context();if(!GboardSharedWritingRuntime.selected(context))return false;
         if(!SharedModelClient.isReadyCached()){SharedModelSetupActivity.open(context);return true;}
         EditorSnapshot snapshot=GboardSharedWritingRuntime.captureEditor();
-        if(snapshot!=null && snapshot.isEmpty()){SharedScreenContext.reply(context,true);return true;}
+        if(snapshot!=null && snapshot.isEmpty()){SharedScreenContext.reply(context,true,snapshot);return true;}
         return false;
     }
     static int resolve(int original,boolean selected,boolean ready,boolean editorAllowed){

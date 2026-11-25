@@ -42,4 +42,18 @@ public class SharedKeyboardSurfaceTest {
  @Test public void materialCheckedFillStateSurvivesOnAnAccessibleActionButton(){installModern();nativeFrame.removeView(nativeFrame.findViewById(0x7f0b0458));CheckedTextView source=new CheckedTextView(activity);source.setId(0x7f0b0458);source.setText("Native filled action");source.setClickable(true);source.setCheckMarkDrawable((android.graphics.drawable.Drawable)null);source.setChecked(true);android.content.res.ColorStateList fill=new android.content.res.ColorStateList(new int[][]{new int[]{android.R.attr.state_checked},new int[]{}},new int[]{0xff55ccff,0xff123456});source.setTextColor(fill);GradientDrawable shape=new GradientDrawable();shape.setColor(0xff123456);shape.setCornerRadius(42);source.setBackground(shape);source.setBackgroundTintList(fill);nativeFrame.addView(source);LinearLayout body=SharedKeyboardSurface.body();SharedKeyboardSurface.button(body,"Apply",()->{});TextView copy=(TextView)body.getChildAt(0);assertTrue(copy instanceof Button);assertEquals(source.getCurrentTextColor(),copy.getCurrentTextColor());assertEquals(0xff55ccff,copy.getBackgroundTintList().getColorForState(copy.getDrawableState(),copy.getBackgroundTintList().getDefaultColor()));}
  @Test public void primaryActionsBorrowUseThisInsteadOfASecondaryFooterChip(){installModern();TextView primary=(TextView)nativeFrame.findViewById(0x7f0b0458);primary.setTextColor(0xff112233);primary.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xff66ccff));TextView footer=(TextView)((ViewGroup)root.findViewById(0x7f0b045e)).getChildAt(0);footer.setTextColor(0xffccddee);LinearLayout body=SharedKeyboardSurface.body();SharedKeyboardSurface.button(body,"Apply",()->{});TextView copy=(TextView)body.getChildAt(0);assertEquals(primary.getCurrentTextColor(),copy.getCurrentTextColor());assertNotEquals(footer.getCurrentTextColor(),copy.getCurrentTextColor());assertEquals(primary.getBackgroundTintList(),copy.getBackgroundTintList());assertEquals(View.GONE,primary.getVisibility());assertEquals(0,primary.getHeight());assertTrue(copy.getMinHeight()>=52);}
  @Test public void capturedScreenNeedsAnExplicitReadActionBeforeAnalysis(){android.graphics.Bitmap image=android.graphics.Bitmap.createBitmap(2,2,android.graphics.Bitmap.Config.ARGB_8888);int[] reads={0};SharedKeyboardSurface.Panel panel=SharedScreenContext.confirmation(image,()->reads[0]++);assertTrue(panel.show());assertEquals(0,reads[0]);assertTrue(panel.content.getChildAt(2).performClick());assertEquals(1,reads[0]);panel.dismiss();image.recycle();}
+
+ @Test public void staleSelectionCannotStartAnActionWhenTheSurfaceBecomesAvailable(){
+  SharedWritingActivationTest.Ime ime=new SharedWritingActivationTest.Ime();
+  EditorSnapshot snapshot=EditorSnapshot.capture(ime,GboardSharedWritingRuntime.currentRevision());
+  assertNotNull(snapshot);
+  SharedKeyboardSurface.clear();
+  int[] actions={0};
+  SharedKeyboardSurface.whenAvailable(activity,snapshot,()->actions[0]++);
+  ime.connection.selection=0;
+  installModern();
+  assertTrue(SharedKeyboardSurface.available());
+  Shadows.shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(100));
+  assertEquals(0,actions[0]);
+ }
 }

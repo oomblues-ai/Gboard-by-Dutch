@@ -16,11 +16,12 @@ import static org.junit.Assert.*;
 public class SharedWritingActivationTest {
     static final class Connection extends BaseInputConnection {
         String text="This are a test.";
+        int selection=-1;
         Connection(){super(new View(RuntimeEnvironment.getApplication()),true);}
-        @Override public ExtractedText getExtractedText(ExtractedTextRequest r,int flags){ExtractedText e=new ExtractedText();e.text=text;e.selectionStart=e.selectionEnd=text.length();return e;}
+        @Override public ExtractedText getExtractedText(ExtractedTextRequest r,int flags){ExtractedText e=new ExtractedText();e.text=text;e.selectionStart=e.selectionEnd=selection<0?text.length():selection;return e;}
     }
     static final class Ime extends InputMethodService {
-        final Connection connection=new Connection();final EditorInfo info=new EditorInfo();
+        Connection connection=new Connection();final EditorInfo info=new EditorInfo();
         @Override public InputConnection getCurrentInputConnection(){return connection;}
         @Override public EditorInfo getCurrentInputEditorInfo(){return info;}
     }
@@ -37,4 +38,39 @@ public class SharedWritingActivationTest {
     @Test public void changedDraftDiscardsALateNativeActivation(){Ime ime=new Ime();Entry entry=new Entry();CompletableFuture<Void> result=SharedWritingActivation.start(snapshot(ime),entry);ime.connection.text="A different draft";entry.ready=true;SharedWritingActivation.nativeReady();Shadows.shadowOf(Looper.getMainLooper()).idle();assertTrue(result.isCancelled());}
     @Test public void hiddenInputCannotOpenALateMenu(){Entry entry=new Entry();CompletableFuture<Void> result=SharedWritingActivation.start(snapshot(new Ime()),entry);SharedWritingActivation.cancel();entry.ready=true;SharedWritingActivation.nativeReady();Shadows.shadowOf(Looper.getMainLooper()).idle();assertTrue(result.isCancelled());}
     @Test public void missingEditorNeverActivatesNativeWriting(){Entry entry=new Entry();assertTrue(SharedWritingActivation.start(null,entry).isCompletedExceptionally());assertEquals(0,entry.opens);}
+
+    @Test public void readyActionKeepsTheInitiatingEditorUntilItRuns(){
+        Ime ime=new Ime();
+        EditorSnapshot snapshot=snapshot(ime);
+        Entry entry=new Entry();entry.ready=true;
+        int[] actions={0};
+        SharedWritingActivation.whenReady(RuntimeEnvironment.getApplication(),snapshot,
+            SharedWritingActivation.start(snapshot,entry),()->actions[0]++);
+        ime.connection=new Connection();
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        assertEquals(0,actions[0]);
+    }
+
+    @Test public void readyActionRechecksSelectionAfterPosting(){
+        Ime ime=new Ime();
+        EditorSnapshot snapshot=snapshot(ime);
+        Entry entry=new Entry();entry.ready=true;
+        int[] actions={0};
+        SharedWritingActivation.whenReady(RuntimeEnvironment.getApplication(),snapshot,
+            SharedWritingActivation.start(snapshot,entry),()->actions[0]++);
+        ime.connection.selection=0;
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        assertEquals(0,actions[0]);
+    }
+
+    @Test public void readyActionRunsForTheUnchangedEditor(){
+        Ime ime=new Ime();
+        EditorSnapshot snapshot=snapshot(ime);
+        Entry entry=new Entry();entry.ready=true;
+        int[] actions={0};
+        SharedWritingActivation.whenReady(RuntimeEnvironment.getApplication(),snapshot,
+            SharedWritingActivation.start(snapshot,entry),()->actions[0]++);
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        assertEquals(1,actions[0]);
+    }
 }

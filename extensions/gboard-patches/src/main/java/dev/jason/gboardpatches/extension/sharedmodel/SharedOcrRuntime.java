@@ -18,13 +18,14 @@ public final class SharedOcrRuntime {
         Context app=context.getApplicationContext();SharedProviderIdentity.verify(app);CountDownLatch connected=new CountDownLatch(1);
         AtomicReference<HostCapabilities> capabilities=new AtomicReference<>();AtomicReference<HostStatus> status=new AtomicReference<>();AtomicReference<String> failure=new AtomicReference<>();
         ModelHostClient client=new ModelHostClient(new ComponentName(ModelHostClient.DEFAULT_PACKAGE,ModelHostClient.SERVICE_CLASS),Runnable::run);
-        new Handler(Looper.getMainLooper()).post(()->client.connect(app,new ConnectionListener(){
-            public void onConnected(HostStatus s,HostCapabilities c){status.set(s);capabilities.set(c);connected.countDown();}
+        FutureTask<Void> binding=connectionTask(()->client.connect(app,new ConnectionListener(){
+            public void onConnected(HostStatus s,HostCapabilities c){capabilities.set(c);status.set(s);connected.countDown();}
             public void onDisconnected(HostException e){failure.set(e.code);connected.countDown();}
-        }));
+        }),()->{failure.set("PROVIDER_UNAVAILABLE");connected.countDown();});
         File image=null;HostSession session=null;RequestHandle handle=null;
         try {
-            if(!connected.await(5,TimeUnit.SECONDS) || status.get()==null)throw new IllegalStateException(failure.get()==null?"PROVIDER_UNAVAILABLE":failure.get());
+            if(!new Handler(Looper.getMainLooper()).post(binding))throw new IllegalStateException("PROVIDER_UNAVAILABLE");
+            if(!connected.await(5,TimeUnit.SECONDS) || failure.get()!=null || status.get()==null)throw new IllegalStateException(failure.get()==null?"PROVIDER_UNAVAILABLE":failure.get());
             if(!status.get().enabled)throw new IllegalStateException("PROVIDER_STOPPED");
             if(!status.get().isReady())throw new IllegalStateException(SharedLocalAiState.safeCode(status.get().state));
             if(!capabilities.get().supports("ocr"))throw new IllegalStateException("ENABLE_OCR_IN_PROVIDER");
@@ -38,6 +39,24 @@ public final class SharedOcrRuntime {
             if(!done.await(65,TimeUnit.SECONDS))throw new IllegalStateException("OCR_TIMEOUT");
             if(failure.get()!=null)throw new IllegalStateException(failure.get());
             if(result.get()==null)throw new IllegalStateException("OCR_FAILED");return result.get();
-        }finally{if(handle!=null && !handle.isComplete())handle.cancel();if(session!=null)session.close();client.close();if(image!=null)image.delete();}
+        }finally{
+            // Skip a queued bind. If it has started, the SDK serializes connect and close.
+            binding.cancel(false);
+            try {
+                if(handle!=null && !handle.isComplete())handle.cancel();
+                if(session!=null)session.close();
+            }finally{
+                try{client.close();}finally{if(image!=null)image.delete();}
+            }
+        }
+    }
+
+    static FutureTask<Void> connectionTask(Runnable connect,Runnable failed){
+        return new FutureTask<Void>(connect,null){
+            @Override protected void setException(Throwable failure){
+                failed.run();
+                super.setException(failure);
+            }
+        };
     }
 }

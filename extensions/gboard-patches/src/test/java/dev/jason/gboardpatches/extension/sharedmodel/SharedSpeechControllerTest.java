@@ -1,8 +1,19 @@
 package dev.jason.gboardpatches.extension.sharedmodel;
+import android.os.ParcelFileDescriptor;
+import app.johninnl.modelhost.api.HostException;
+import app.johninnl.modelhost.api.ISpeechSession;
+import app.johninnl.modelhost.api.ITextResultCallback;
+import app.johninnl.modelhost.api.SpeechSession;
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import static org.junit.Assert.*;
 @RunWith(RobolectricTestRunner.class) @Config(sdk=34,manifest=Config.NONE)
@@ -10,4 +21,57 @@ public class SharedSpeechControllerTest {
     @Test public void speechReadinessDoesNotDependOnGemmaReadiness()throws Exception{JSONObject host=new JSONObject("{\"state\":\"MEMORY_PAUSED\",\"enabled\":true,\"speech\":{\"enabled\":true,\"engineLoaded\":true,\"state\":\"READY\"}}");assertTrue(SharedSpeechController.readyStatus(host.getJSONObject("speech")));}
     @Test public void transientReadySnapshotDuringReconfigurationCannotBeSelected()throws Exception{assertFalse(SharedSpeechController.readyStatus(new JSONObject("{\"enabled\":true,\"engineLoaded\":true,\"state\":\"READY\",\"reconfiguring\":true}")));}
     @Test public void stoppedOrUnloadedSpeechCannotBecomeSelectable()throws Exception{assertFalse(SharedSpeechController.readyStatus(null));assertFalse(SharedSpeechController.readyStatus(new JSONObject("{\"enabled\":false,\"engineLoaded\":true,\"state\":\"READY\"}")));assertFalse(SharedSpeechController.readyStatus(new JSONObject("{\"enabled\":true,\"engineLoaded\":false,\"state\":\"READY\"}")));assertFalse(SharedSpeechController.readyStatus(new JSONObject("{\"enabled\":true,\"engineLoaded\":true,\"state\":\"MEMORY_PAUSED\"}")));}
+
+    @Test public void stoppingWhileDecoderOpensClosesTheLateStreamWithoutFeedingIt()throws Exception {
+        ExecutorService workers=Executors.newFixedThreadPool(2);
+        CountDownLatch opening=new CountDownLatch(1);
+        CountDownLatch finishOpen=new CountDownLatch(1);
+        SpeechPeer vad=new SpeechPeer();
+        SpeechPeer decoder=new SpeechPeer();
+        SpeechSession late=newSession(decoder,workers);
+        SharedSpeechController.CaptureSession capture=new SharedSpeechController.CaptureSession(()->{
+            opening.countDown();
+            try{
+                if(!finishOpen.await(10,TimeUnit.SECONDS))throw new HostException("OPEN_TIMEOUT");
+            }catch(InterruptedException failure){
+                Thread.currentThread().interrupt();
+                throw new HostException("OPEN_INTERRUPTED",failure);
+            }
+            return late;
+        },newSession(vad,workers));
+        try{
+            Future<String> decoding=workers.submit(()->capture.transcribe(new float[]{0.1f},1,false));
+            assertTrue(opening.await(3,TimeUnit.SECONDS));
+            workers.submit(capture::close).get(3,TimeUnit.SECONDS);
+            assertEquals(1,vad.closes.get());
+            finishOpen.countDown();
+            ExecutionException failure=assertThrows(ExecutionException.class,()->decoding.get(3,TimeUnit.SECONDS));
+            assertTrue(failure.getCause() instanceof HostException);
+            assertEquals("SPEECH_SESSION_CLOSED",((HostException)failure.getCause()).code);
+            assertEquals(1,decoder.closes.get());
+            assertEquals(0,decoder.feeds.get());
+        }finally{
+            finishOpen.countDown();
+            capture.close();
+            workers.shutdownNow();
+        }
+    }
+
+    private static SpeechSession newSession(ISpeechSession remote,ExecutorService worker)throws Exception {
+        Constructor<SpeechSession> constructor=SpeechSession.class.getDeclaredConstructor(
+            ISpeechSession.class,ExecutorService.class,Executor.class,Executor.class,File.class,Consumer.class);
+        constructor.setAccessible(true);
+        Executor direct=Runnable::run;
+        Consumer<SpeechSession> onClose=session->{};
+        return constructor.newInstance(remote,worker,direct,direct,RuntimeEnvironment.getApplication().getCacheDir(),onClose);
+    }
+
+    private static final class SpeechPeer extends ISpeechSession.Stub {
+        final AtomicInteger feeds=new AtomicInteger();
+        final AtomicInteger closes=new AtomicInteger();
+        public long feed(String request,ParcelFileDescriptor pcm,ITextResultCallback callback){feeds.incrementAndGet();return 1;}
+        public void cancel(long id){}
+        public void close(){closes.incrementAndGet();}
+        public float voiceProbability(float[] window){return 0;}
+    }
 }

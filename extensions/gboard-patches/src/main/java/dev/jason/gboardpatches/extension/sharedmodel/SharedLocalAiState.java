@@ -9,6 +9,7 @@ import org.json.JSONObject;
 /** Selection is a user preference; readiness is a separate, current provider state. */
 public final class SharedLocalAiState {
     private static final String PREVIOUS_BACKEND="pref_shared_previous_backend";
+    private static final String PREVIOUS_OVERRIDE_ENABLED="pref_shared_previous_override_enabled";
     private SharedLocalAiState() {}
 
     public static boolean selected(SharedPreferences p) {
@@ -20,7 +21,10 @@ public final class SharedLocalAiState {
         SharedPreferences.Editor edit=p.edit();
         String current=GboardAiWritingToolsSettings.readBackendType(p);
         if(enabled){
-            if(!GboardAiWritingToolsSettings.BACKEND_SHARED_LOCAL.equals(current))edit.putString(PREVIOUS_BACKEND,current);
+            if(!GboardAiWritingToolsSettings.BACKEND_SHARED_LOCAL.equals(current)){
+                edit.putString(PREVIOUS_BACKEND,current)
+                    .putBoolean(PREVIOUS_OVERRIDE_ENABLED,GboardAiWritingToolsSettings.readEnabled(p));
+            }
             edit.putBoolean(GboardAiWritingToolsSettings.PREF_KEY_ENABLED,true)
                 .putString(GboardAiWritingToolsSettings.PREF_KEY_BACKEND_TYPE,GboardAiWritingToolsSettings.BACKEND_SHARED_LOCAL);
         }else if(GboardAiWritingToolsSettings.BACKEND_SHARED_LOCAL.equals(current)){
@@ -28,7 +32,13 @@ public final class SharedLocalAiState {
             try{previous=p.getString(PREVIOUS_BACKEND,GboardAiWritingToolsSettings.DEFAULT_BACKEND_TYPE);}catch(ClassCastException e){previous=null;}
             previous=GboardAiWritingToolsSettings.sanitizeBackendType(previous);
             if(GboardAiWritingToolsSettings.BACKEND_SHARED_LOCAL.equals(previous))previous=GboardAiWritingToolsSettings.DEFAULT_BACKEND_TYPE;
-            edit.putString(GboardAiWritingToolsSettings.PREF_KEY_BACKEND_TYPE,previous);
+            // Earlier versions only saved the backend. With no saved choice, leave the override off.
+            boolean previousEnabled;
+            try{previousEnabled=p.getBoolean(PREVIOUS_OVERRIDE_ENABLED,false);}catch(ClassCastException e){previousEnabled=false;}
+            edit.putString(GboardAiWritingToolsSettings.PREF_KEY_BACKEND_TYPE,previous)
+                .putBoolean(GboardAiWritingToolsSettings.PREF_KEY_ENABLED,previousEnabled)
+                .remove(PREVIOUS_BACKEND)
+                .remove(PREVIOUS_OVERRIDE_ENABLED);
         }
         return edit.commit();
     }

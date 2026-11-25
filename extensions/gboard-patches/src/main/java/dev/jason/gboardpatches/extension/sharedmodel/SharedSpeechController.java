@@ -44,28 +44,68 @@ public final class SharedSpeechController {
         }if(!ready(context))throw new HostException("SHARED_SPEECH_NOT_READY");return new CaptureSession(client,vad);}catch(Exception failure){vad.close();throw failure;}
     }
     public static final class CaptureSession implements AutoCloseable {
-        private final ModelHostClient connection;private final SpeechSession vad;
-        private SpeechSession decoder;private int sent;private final AtomicBoolean closed=new AtomicBoolean();
-        CaptureSession(ModelHostClient connection,SpeechSession vad){this.connection=connection;this.vad=vad;}
-        public float probability(float[] window)throws HostException{if(closed.get())throw new HostException("SPEECH_SESSION_CLOSED");return vad.voiceProbability(window);}
-        public void reset(){SpeechSession current=decoder;decoder=null;if(current!=null)current.close();sent=0;lastFeedEnded=false;}
+        interface DecoderOpener { SpeechSession open() throws HostException; }
+        private final DecoderOpener openDecoder;
+        private final SpeechSession vad;
+        private final Object lifecycle=new Object();
+        private SpeechSession decoder;
+        private volatile boolean closed;
+        private int sent;
+        private boolean lastFeedEnded;
+        CaptureSession(ModelHostClient connection,SpeechSession vad){this(()->connection.openSpeechSession("auto"),vad);}
+        CaptureSession(DecoderOpener openDecoder,SpeechSession vad){this.openDecoder=openDecoder;this.vad=vad;}
+        public float probability(float[] window)throws HostException{requireOpen();return vad.voiceProbability(window);}
+        public void reset(){
+            SpeechSession current;
+            synchronized(lifecycle){current=decoder;decoder=null;}
+            if(current!=null)current.close();
+            sent=0;
+            lastFeedEnded=false;
+        }
         public void releaseVad(){vad.close();}
         /** Decoder worker only: delta feeds preserve Nemotron caches and the other backend's stream merger. */
         public String transcribe(float[] all,int count,boolean end)throws Exception {
-            if(closed.get())throw new HostException("SPEECH_SESSION_CLOSED");if(count<sent)throw new IllegalArgumentException("Audio went backwards");
-            if(decoder==null)decoder=connection.openSpeechSession("auto");String text="";
-            while(sent<count){int next=Math.min(count,sent+16000);boolean finish=end&&next==count;text=feed(Arrays.copyOfRange(all,sent,next),finish);sent=next;}
+            requireOpen();
+            if(count<sent)throw new IllegalArgumentException("Audio went backwards");
+            SpeechSession current=decoder();
+            String text="";
+            while(sent<count){int next=Math.min(count,sent+16000);boolean finish=end&&next==count;text=feed(current,Arrays.copyOfRange(all,sent,next),finish);sent=next;}
             // An utterance may end with no new samples after its last partial.
-            if(end && !lastFeedEnded)text=feed(new float[0],true);
-            if(end){decoder.close();decoder=null;sent=0;lastFeedEnded=false;}return text;
+            if(end && !lastFeedEnded)text=feed(current,new float[0],true);
+            if(end)reset();
+            return text;
         }
-        private boolean lastFeedEnded;
-        private String feed(float[] samples,boolean end)throws Exception {
+        private SpeechSession decoder()throws HostException {
+            synchronized(lifecycle){
+                requireOpen();
+                if(decoder!=null)return decoder;
+            }
+            SpeechSession candidate=openDecoder.open();
+            synchronized(lifecycle){
+                if(!closed){decoder=candidate;return candidate;}
+            }
+            candidate.close();
+            throw new HostException("SPEECH_SESSION_CLOSED");
+        }
+        private void requireOpen()throws HostException {
+            if(closed)throw new HostException("SPEECH_SESSION_CLOSED");
+        }
+        private String feed(SpeechSession current,float[] samples,boolean end)throws Exception {
+            requireOpen();
             CountDownLatch done=new CountDownLatch(1);AtomicReference<String> result=new AtomicReference<>();AtomicReference<String> failure=new AtomicReference<>();
-            RequestHandle handle=decoder.feed(samples,end,json->{try{JSONObject value=new JSONObject(json);if(!value.optBoolean("terminal"))return;if("ok".equals(value.optString("status")))result.set(value.optString("text",""));else failure.set(value.optString("code","SPEECH_FAILED"));}catch(Exception error){failure.set("PROTOCOL_ERROR");}finally{done.countDown();}});
+            RequestHandle handle=current.feed(samples,end,json->{try{JSONObject value=new JSONObject(json);if(!value.optBoolean("terminal"))return;if("ok".equals(value.optString("status")))result.set(value.optString("text",""));else failure.set(value.optString("code","SPEECH_FAILED"));}catch(Exception error){failure.set("PROTOCOL_ERROR");}done.countDown();});
             try{if(!done.await(30,TimeUnit.SECONDS)){handle.cancel();throw new HostException("SPEECH_TIMEOUT");}}catch(InterruptedException error){handle.cancel();Thread.currentThread().interrupt();throw error;}
-            if(closed.get())throw new HostException("SPEECH_SESSION_CLOSED");if(failure.get()!=null)throw new HostException(failure.get());lastFeedEnded=end;return result.get()==null?"":result.get();
+            requireOpen();if(failure.get()!=null)throw new HostException(failure.get());lastFeedEnded=end;return result.get()==null?"":result.get();
         }
-        @Override public void close(){if(!closed.compareAndSet(false,true))return;vad.close();SpeechSession current=decoder;if(current!=null)current.close();}
+        @Override public void close(){
+            SpeechSession current;
+            synchronized(lifecycle){
+                if(closed)return;
+                closed=true;
+                current=decoder;
+                decoder=null;
+            }
+            try{vad.close();}finally{if(current!=null)current.close();}
+        }
     }
 }

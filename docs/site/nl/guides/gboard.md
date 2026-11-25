@@ -54,7 +54,7 @@ Voeg onder **Spraakinvoer → Spraakwoordenboek** een ongewone naam toe aan de l
 
 ### Rambler contact names
 
-Deze patch vult dezelfde lijst met spraakcorrecties aan. Zet **Contact names** aan in het spraakwoordenboek en geef Android toegang tot je contacten als je dit wilt gebruiken. Start een nieuwe dicteerbeurt en controleer of een bekende naam in de lijst staat. Namen die je verwijdert blijven verwijderd. Parakeet kan de lijst lokaal gebruiken. Met Rambler kan de lijst naar Google gaan. Houd alleen woorden in de lijst die de actieve herkenner mag zien.
+Deze patch vult dezelfde lijst met spraakcorrecties aan. Zet **Contact names** aan in het spraakwoordenboek en geef Android toegang tot je contacten als je dit wilt gebruiken. Start een nieuwe dicteerbeurt en controleer of een bekende naam in de lijst staat. Namen die je verwijdert blijven verwijderd. De oude ingebouwde Parakeet-decoder kon de lijst lokaal gebruiken. Met Rambler kan de lijst naar Google gaan. Houd alleen woorden in de lijst die de actieve herkenner mag zien.
 
 ### Parakeet personal dictionary
 
@@ -154,21 +154,15 @@ Open **Patches → AI & Voice → AI Writing Tools**. De bestaande backends **GB
 
 #### Optionele Local AI instellen
 
-Dit is een reviewversie. Geslaagde code- en buildcontroles bewijzen nog geen native inferentie, functiekwaliteit of werking op de telefoon.
-
-1. Neem **AI Writing Tools** op bij het patchen van Gboard in Morphe. Behoud de overige patchkeuzes en de bestaande APK-ondertekening van het toestel.
-2. Open **Patches → AI & Voice → Local AI**, open de instellingen en kies **Install from GitLab**. Gboard controleert pakketnaam, versie, SHA-256 en ondertekeningscertificaat voordat Android de normale installatiebevestiging toont. Android kan toestemming vragen om vanuit Gboard te installeren.
-3. Open **Local Model Host**. Download het vastgelegde **Gemma 4 E2B**-model (ongeveer 2,6 GB), of importeer via DriveDeck expliciet een overeenkomend bestaand model. De host controleert het model voor gebruik; Gboard bewaart geen tweede kopie.
-4. Kies **Start** in de provider. **Always ready** is na installatie de standaard en gebruikt een blijvende melding; **Session ready** is het alternatief met kortere verblijftijd in het geheugen. Wacht op **Model ready**.
-5. Keer terug naar Local AI in Gboard en kies **Use Local AI**. Via de backendkeuze blijven de bestaande diensten beschikbaar. Als de host gestopt of niet beschikbaar is, meldt Shared die toestand in plaats van de tekst ongemerkt elders heen te sturen.
+Neem **AI Writing Tools** op bij het patchen van Gboard in Morphe. Open **Patches → AI & Voice → Local AI** en kies **Get Local Model Host** of **Update Local Model Host**. Open na de installatie via Android **Model setup**, stel een tekstmodel in en wacht op **Model ready**. Zet daarna **Use Local AI** aan in Gboard. De lokale backend meldt wanneer de host gestopt of onbeschikbaar is. [Volledige Local AI-installatie](local-ai.md#de-companion-installeren)
 
 #### Lokaal schrijven en spraakbewerkingen
 
-Selecteer tekst of zet de cursor in een concept en open **Local AI** vanuit Gboard's bewerkingshulpmiddelen. Het menu bevat **Proofread / Auto Fix**, **Rephrase**, **Professional**, **Friendly**, **Emojify**, **Elaborate** en **Shorten**. Controleer het voorstel voor je het toepast. De tekstacties gebruiken Gboard's native bewerking; een gewijzigd tekstveld of gewijzigde selectie maakt een lopend resultaat ongeldig.
+Selecteer tekst of zet de cursor in een concept en open de oorspronkelijke **Writing Tools** via de werkbalk. Probeer **Proofread**, **Rephrase** of **Professional**. Controleer het voorstel in het huidige toetsenbordthema voordat je het toepast. Als je het tekstveld of de selectie wijzigt, vervalt het lopende resultaat.
 
-**Voice edit** is een expliciete modus met de bestaande Parakeet-spraakherkenner. Activeer die modus, gebruik de microfoon en spreek een instructie zoals “fix it” of “make this friendlier”. Gewoon dicteren blijft gewoon dicteren. De provider vervangt de spraakherkenning niet en initialiseert geen audio-encoder.
+Stel **Use shared local speech** in, kies **Voice Edit** in de werkbalk, tik op de microfoon en spreek een instructie uit, bijvoorbeeld “make this friendlier”. Gboard gebruikt het spraakmodel dat je in Local Model Host hebt gekozen. Pas de bewerking toe vanuit het voorbeeld. [Lokaal dicteren instellen](local-ai.md#lokaal-dicteren-instellen)
 
-**Local AI context settings** bevat alleen voorbeelden, antwoordcontext en instructies die de gebruiker zelf invoert. **Suggested reply** vereist een expliciet aangeleverd bericht; **My style** vereist eigen voorbeelden. Die context staat in Gboard's privéopslag buiten cloudback-up. Binnenkomende gesprekken en schermafbeeldingen worden niet verzameld.
+Geef voor **AI Reply** of **My Style** toestemming in Androids schermopnamevenster en ga terug naar het oorspronkelijke gesprek. Controleer de schermafbeelding en tik op **Read this screen** om die als context te gebruiken. Voeg voor **My Style** je eigen voorbeelden of voorkeuren toe onder **Local AI → Writing preferences → Your style**. Controleer het concept voordat je op **Apply** tikt. Verstuur het zelf vanuit het gesprek wanneer je klaar bent.
 
 #### Tekstaanvulling, grammatica en afbeeldingen
 

@@ -154,21 +154,15 @@ Open **Patches → AI & Voice → AI Writing Tools**. Existing **GBOARD_SERVER**
 
 #### Optional Local AI setup
 
-This is a review implementation. The code/build checks do not establish native inference, per-feature quality or phone acceptance yet.
-
-1. Include **AI Writing Tools** when patching Gboard in Morphe. Keep the other patch choices and APK signing identity already used on the device.
-2. Open **Patches → AI & Voice → Local AI**, then open setup and choose **Install from GitLab**. Gboard checks the pinned APK package, version, SHA-256 and signing certificate before opening Android's normal installer. Android may ask to allow installs from Gboard.
-3. Open **Local Model Host**. Download its pinned **Gemma 4 E2B** model (about 2.6 GB), or explicitly import a matching existing DriveDeck model through DriveDeck's setup. The host verifies the model before using it; Gboard does not keep a second copy.
-4. Choose **Start** in the provider. **Always ready** is the setup default and uses an ongoing notification; **Session ready** is the lower-residency option. Wait for **Model ready**.
-5. Return to Gboard's Local AI setup and choose **Use Local AI**. The existing backends remain available in the backend selector. If the host is stopped or unavailable, Shared mode reports that state instead of silently sending the text elsewhere.
+Include **AI Writing Tools** when patching Gboard in Morphe. Open **Patches → AI & Voice → Local AI** and choose **Get Local Model Host** or **Update Local Model Host**. After Android confirms the installation, open **Model setup**, prepare a text model and wait for **Model ready**. Then enable **Use Local AI** in Gboard. The local backend reports when the host is stopped or unavailable. [Full Local AI setup](local-ai.md#install-the-companion)
 
 #### Local writing and voice edits
 
-Select text or place the cursor in a draft, then open **Local AI** from Gboard's editing tools. The menu offers **Proofread / Auto Fix**, **Rephrase**, **Professional**, **Friendly**, **Emojify**, **Elaborate** and **Shorten**. Review the proposed result before applying it. Text actions use Gboard's native edit handling; changed editors/selections invalidate pending results.
+Select text or place the cursor in a draft, then open Gboard's original **Writing Tools** from the toolbar. Try **Proofread**, **Rephrase** or **Professional**. Review the result in the keyboard's current theme before applying it. Changing the editor or selection invalidates pending results.
 
-**Voice edit** is an explicit mode using the existing Parakeet recognizer. Arm it, use the microphone and speak an instruction such as “fix it” or “make this friendlier”. Ordinary dictation stays ordinary dictation. The provider does not replace speech recognition or initialize an audio encoder.
+After setting up **Use shared local speech**, choose **Voice Edit** in the toolbar, tap the microphone and speak an instruction such as “make this friendlier”. Gboard uses the speech model selected in Local Model Host. Review the suggested edit before tapping **Apply**. [Set up local dictation](local-ai.md#set-up-local-dictation)
 
-**Local AI context settings** contains only examples, reply context and instructions that the user enters. **Suggested reply** requires an explicitly supplied incoming message; **My style** requires user-authored examples. Context is kept in Gboard's private storage outside cloud backup. Incoming conversations and screenshots are not collected.
+For **AI Reply** or **My Style**, approve Android's screen-capture prompt, then return to the original conversation. Review the captured image and tap **Read this screen** to use it as context. For **My Style**, add your own examples or preferences under **Local AI → Writing preferences → Your style**. Review the draft before tapping **Apply**. Send it yourself from the conversation when you're ready.
 
 #### Completion, grammar and images
 
