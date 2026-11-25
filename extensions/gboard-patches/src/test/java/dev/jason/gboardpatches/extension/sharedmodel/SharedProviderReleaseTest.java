@@ -23,8 +23,11 @@ public class SharedProviderReleaseTest {
    try{new SharedProviderRelease(release().put("downloadUrl",url));fail("Untrusted release accepted");}catch(java.io.IOException expected){}
   }
  }
+ @Test public void acceptsTheCurrentHostSizeWithinTheSharedVerifierBound()throws Exception{
+  assertEquals(167502289L,new SharedProviderRelease(release().put("apkBytes",167502289L)).apkBytes);
+ }
  @Test public void rejectsInvalidIdentityAndExcessiveSize()throws Exception{
-  for(JSONObject value:new JSONObject[]{release().put("apkBytes",129L*1024*1024),release().put("versionCode",0),release().put("apkSha256","invalid"),release().put("packageName","other.package")}){
+  for(JSONObject value:new JSONObject[]{release().put("apkBytes",app.johninnl.modelhost.api.VerifiedApk.MAX_APK_BYTES+1),release().put("versionCode",0),release().put("apkSha256","invalid"),release().put("packageName","other.package")}){
    try{new SharedProviderRelease(value);fail("Invalid identity accepted");}catch(java.io.IOException expected){}
   }
  }

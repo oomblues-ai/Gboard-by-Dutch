@@ -10,6 +10,8 @@ import java.util.UUID;
 
 /** Immutable private copy of one APK checked against trusted package, digest and signer metadata. */
 public final class VerifiedApk {
+    /** Upper bound for a companion APK, including the host's bundled native runtimes. */
+    public static final long MAX_APK_BYTES=256L*1024*1024;
     final File file;
     public final String packageName,sha256,signerSha256;
     public final long versionCode;
@@ -17,12 +19,10 @@ public final class VerifiedApk {
     public static VerifiedApk verify(Context context,Uri selected,String expectedPackage,String expectedSha256,String expectedSigner)throws HostException {
         File directory=ProviderApkProvider.directory(context);File copy=new File(directory,UUID.randomUUID().toString()+".apk");boolean valid=false;
         try {
-            MessageDigest digest=MessageDigest.getInstance("SHA-256");long bytes=0;
+            String hash;
             try(InputStream input=context.getContentResolver().openInputStream(selected);FileOutputStream output=new FileOutputStream(copy)){
-                if(input==null)throw new HostException("APK_UNREADABLE");byte[] buffer=new byte[65536];int count;
-                while((count=input.read(buffer))!=-1){bytes+=count;if(bytes>128L*1024*1024)throw new HostException("APK_TOO_LARGE");digest.update(buffer,0,count);output.write(buffer,0,count);}output.getFD().sync();
+                if(input==null)throw new HostException("APK_UNREADABLE");hash=copyAndHash(input,output);output.getFD().sync();
             }
-            String hash=hex(digest.digest());
             int flags=Build.VERSION.SDK_INT>=28?PackageManager.GET_SIGNING_CERTIFICATES:PackageManager.GET_SIGNATURES;
             PackageInfo info=context.getPackageManager().getPackageArchiveInfo(copy.getPath(),flags);
             if(info==null)throw new HostException("INVALID_APK");
@@ -35,6 +35,14 @@ public final class VerifiedApk {
             if(!copy.setWritable(false,false))throw new HostException("APK_COPY_NOT_SEALED");valid=true;
             return new VerifiedApk(copy,info.packageName,hash,signer,version);
         }catch(HostException error){throw error;}catch(Exception error){throw new HostException("APK_VERIFICATION_FAILED",error);}finally{if(!valid)copy.delete();}
+    }
+    static String copyAndHash(InputStream input,OutputStream output)throws Exception {
+        MessageDigest digest=MessageDigest.getInstance("SHA-256");long bytes=0;byte[] buffer=new byte[65536];int count;
+        while((count=input.read(buffer))!=-1){
+            bytes+=count;if(bytes>MAX_APK_BYTES)throw new HostException("APK_TOO_LARGE");
+            digest.update(buffer,0,count);output.write(buffer,0,count);
+        }
+        return hex(digest.digest());
     }
     static String hex(byte[] value){StringBuilder b=new StringBuilder();for(byte v:value)b.append(String.format(java.util.Locale.ROOT,"%02x",v&255));return b.toString();}
 }

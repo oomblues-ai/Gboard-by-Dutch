@@ -10,7 +10,7 @@ public final class SharedProviderRelease {
     public final String packageName,apkSha256,signerSha256;
     public final long versionCode,apkBytes;
     public final URI download;
-    private static final long MAX_BYTES=128L*1024*1024;
+    private static final long MAX_BYTES=app.johninnl.modelhost.api.VerifiedApk.MAX_APK_BYTES;
     public SharedProviderRelease(JSONObject value)throws Exception {
         packageName=value.getString("packageName");apkSha256=value.getString("apkSha256");signerSha256=value.getString("signerSha256");
         versionCode=value.getLong("versionCode");apkBytes=value.optLong("apkBytes",0);

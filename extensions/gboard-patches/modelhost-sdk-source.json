@@ -1,7 +1,7 @@
 {
   "upstream": "https://gitlab.com/johninnld/local-model-host",
   "baseCommit": "421a9c056e4234d43025c6b79a5c36ade43a970d",
-  "status": "exact public client-api source from signed review checkpoint",
+  "status": "Public client snapshot with the verified APK transfer bound synchronized from the listed override commit",
   "sourceSha256": {
     "java/app/johninnl/modelhost/api/ApkIdentityVerifier.java": "9934e1c1a637ae04f48c3248eb5bfb5edc44f235f388d800b7b99de5965636b0",
     "java/app/johninnl/modelhost/api/ChatMessage.java": "854026b10e0af23fc19bc212c0e24ec3e66be34f78d2a6d127f6795decfe36fd",
@@ -23,10 +23,13 @@
     "java/app/johninnl/modelhost/api/ResultListener.java": "0d52f7ca478e81e1a765aca30faa766bec67e4aeedc1c6fd12c92c46aa03d0a3",
     "java/app/johninnl/modelhost/api/SessionOptions.java": "6a9400ef928265517402979f1a39af03b06e2ff874bb9c4c5aaa36a4d70fab6e",
     "java/app/johninnl/modelhost/api/TextRequest.java": "42a17d054c498414040257ebff0b1bd8af5af916f0a6fec5ce5a0a2df3baacbb",
-    "java/app/johninnl/modelhost/api/VerifiedApk.java": "6f0a97a164704fe580bda07d37ac52ce7c970a78b05094024e7134f73098e5ae",
+    "java/app/johninnl/modelhost/api/VerifiedApk.java": "cd32f852e10d87b97e1fba6aec03f128333c4d55bf6c477730a5239739737102",
     "aidl/app/johninnl/modelhost/api/IHostEvents.aidl": "695d98505990c814962cb1c40627e5469931359a58b7465e9962c6a7cb8df9ed",
     "aidl/app/johninnl/modelhost/api/IModelHost.aidl": "e00c48b6de793ccad8698bf8b39e54c509388d7beaae4643d2d17061474eb993",
     "aidl/app/johninnl/modelhost/api/IModelSession.aidl": "3851dda208158b599c92453343a9f3f8c953b6984157ec7db314e68cfdcee5ce",
     "aidl/app/johninnl/modelhost/api/ITextResultCallback.aidl": "0b41b6b6935daf74656e28ec20709121c7b16e9b8308363cf14c51813f4f83f5"
+  },
+  "fileOverrides": {
+    "java/app/johninnl/modelhost/api/VerifiedApk.java": "0361a5b03dd82d83f2d359d343361f4dd720ebfa"
   }
 }
