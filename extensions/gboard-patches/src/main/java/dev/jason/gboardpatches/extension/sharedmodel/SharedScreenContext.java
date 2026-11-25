@@ -26,9 +26,10 @@ public final class SharedScreenContext {
     }
     private static void resume(Pending request,int remaining){
         if(pending!=request)return;
-        if(SystemClock.uptimeMillis()>request.expires || remaining==0){cancel(request);message(request.context,"Return to the original conversation and try again. Nothing was changed.");return;}
+        if(SystemClock.uptimeMillis()>request.expires || remaining==0){SharedWritingDiagnostics.event("screen.context editor-handoff-unavailable");cancel(request);message(request.context,"Return to the original conversation and try again. Nothing was changed.");return;}
         EditorSnapshot resumed=request.editor.resume();
         if(resumed==null){MAIN.postDelayed(()->resume(request,remaining-1),100);return;}
+        SharedWritingDiagnostics.event("screen.context editor-resumed");
         SharedWritingActivation.ensure(request.context,resumed,()->SharedKeyboardSurface.whenAvailable(request.context,resumed,()->{
             if(pending!=request)return;
             try{
@@ -43,7 +44,8 @@ public final class SharedScreenContext {
                     request.work=WORK.submit(()->read(request));
                 });
                 request.panel=panel;panel.setOnDismissListener(()->{if(!request.transferred)cancel(request);});
-                if(!panel.show()){cancel(request);return;}
+                if(!panel.show()){SharedWritingDiagnostics.event("screen.context preview-unavailable");cancel(request);return;}
+                SharedWritingDiagnostics.event("screen.context preview-shown");
             }catch(Exception unavailable){cancel(request);message(request.context,"Could not open Gboard’s writing surface. Nothing was changed.");}
         }));
         MAIN.postDelayed(()->{if(pending==request && request.panel==null)cancel(request);},4500);

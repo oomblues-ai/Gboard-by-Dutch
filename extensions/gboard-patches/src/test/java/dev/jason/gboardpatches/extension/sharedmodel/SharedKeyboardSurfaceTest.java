@@ -22,6 +22,29 @@ public class SharedKeyboardSurfaceTest {
   switcher.addView(nativeFrame);switcher.addView(new FrameLayout(activity));root.addView(switcher);activity.setContentView(root);SharedKeyboardSurface.bind(null,root);
  }
  @After public void cleanup(){SharedKeyboardSurface.clear();activity.finish();}
+ @Test public void cachedWritingViewRebindsAfterReturningFromTheKeyboard(){
+  assertTrue(SharedKeyboardSurface.available());
+  SharedKeyboardSurface.clear();assertFalse(SharedKeyboardSurface.available());
+  SharedKeyboardSurface.bindVisible(root);assertTrue(SharedKeyboardSurface.available());
+  LinearLayout body=SharedKeyboardSurface.body();SharedKeyboardSurface.label(body,"Translating to French…");
+  assertEquals(message.getTextColors(),((TextView)body.getChildAt(0)).getTextColors());
+ }
+ @Test public void hiddenCachedWritingViewCannotBecomeAnActiveSurface(){
+  SharedKeyboardSurface.clear();root.setVisibility(View.GONE);
+  SharedKeyboardSurface.bindVisible(root);assertFalse(SharedKeyboardSurface.available());
+  root.setVisibility(View.VISIBLE);SharedKeyboardSurface.bindVisible(root);assertTrue(SharedKeyboardSurface.available());
+ }
+ @Test public void repeatedVisibleChecksDoNotDismissTheCurrentOperation(){
+  LinearLayout body=SharedKeyboardSurface.body();SharedKeyboardSurface.label(body,"Working…");
+  SharedKeyboardSurface.Panel panel=new SharedKeyboardSurface.Panel(body);assertTrue(panel.show());
+  SharedKeyboardSurface.bindVisible(root);assertTrue(panel.isShowing());panel.dismiss();
+ }
+ @Test public void extraActionsIdentifyTheirTaskWhileTheModelRuns(){
+  assertEquals("Translating to French…",SharedTextActions.progressLabel("translate","fr"));
+  assertEquals("Translating to Ukrainian…",SharedTextActions.progressLabel("translate","uk"));
+  assertEquals("Suggesting changes…",SharedTextActions.progressLabel("suggest_instructions",null));
+  assertEquals("Drafting your reply…",SharedTextActions.progressLabel("reply",null));
+ }
  @Test public void textInheritsActualNativeThemeRatherThanAFixedPalette(){TextView copy=SharedKeyboardSurface.styledText(message,"Local result");assertEquals(message.getTextColors(),copy.getTextColors());assertEquals(message.getTypeface(),copy.getTypeface());assertEquals(message.getTextSize(),copy.getTextSize(),0.01f);}
  @Test public void aThemeRebindUsesTheNewNativeTextStyle(){install(0xffab7812);LinearLayout body=SharedKeyboardSurface.body();SharedKeyboardSurface.label(body,"Local result");assertEquals(0xffab7812,((TextView)body.getChildAt(0)).getCurrentTextColor());}
  @Test public void extraSurfacePreservesBothNativeSwitcherChildrenAndRestoresVisibility(){LinearLayout body=SharedKeyboardSurface.body();SharedKeyboardSurface.label(body,"Local result");SharedKeyboardSurface.Panel panel=new SharedKeyboardSurface.Panel(body);assertTrue(panel.show());assertEquals(2,switcher.getChildCount());assertEquals(View.INVISIBLE,message.getVisibility());panel.dismiss();assertEquals(2,switcher.getChildCount());assertEquals(View.VISIBLE,message.getVisibility());assertEquals(2,nativeFrame.getChildCount());}

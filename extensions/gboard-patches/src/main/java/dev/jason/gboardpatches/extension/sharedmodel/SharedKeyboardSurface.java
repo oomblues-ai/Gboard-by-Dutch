@@ -23,6 +23,18 @@ public final class SharedKeyboardSurface {
     private static Panel current;
     private SharedKeyboardSurface() {}
 
+    /** Gboard reuses a keyboard view after deactivation without calling ep again. */
+    static void bindVisible(View root){
+        if(keyboard.get()!=null || !(root instanceof ViewGroup))return;
+        if(hasVisibleBody(root))bind(null,root);
+    }
+    private static boolean hasVisibleBody(View root){
+        if(!root.isAttachedToWindow() || !root.isShown())return false;
+        if(root.getId()==BODY_SWITCHER || root.getId()==MODERN_BODY)return true;
+        if(root instanceof ViewGroup){ViewGroup group=(ViewGroup)root;for(int i=0;i<group.getChildCount();i++)if(hasVisibleBody(group.getChildAt(i)))return true;}
+        return false;
+    }
+
     public static void bind(Object owner,Object root){
         if(SharedWritingDiagnostics.enabled())SharedWritingDiagnostics.event("surface.bind root="+(root instanceof ViewGroup));
         if(!(root instanceof ViewGroup))return;

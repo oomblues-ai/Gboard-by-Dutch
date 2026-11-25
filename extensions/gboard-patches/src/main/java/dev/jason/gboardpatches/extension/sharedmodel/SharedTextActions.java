@@ -29,10 +29,10 @@ public final class SharedTextActions {
   final SharedKeyboardSurface.Panel working;
   java.util.concurrent.atomic.AtomicReference<CompletableFuture<String>> active=new java.util.concurrent.atomic.AtomicReference<>();
   if(existing==null){
-   LinearLayout progress=SharedKeyboardSurface.body();SharedKeyboardSurface.label(progress,"Working on your text…");working=new SharedKeyboardSurface.Panel(progress);
+   LinearLayout progress=SharedKeyboardSurface.body();SharedKeyboardSurface.label(progress,progressLabel(operation,language));working=new SharedKeyboardSurface.Panel(progress);
    SharedKeyboardSurface.button(progress,"Cancel",working::dismiss);
   }else{
-   working=existing;if(!working.isShowing())return;working.replaceContent();working.label("Working on your text…");working.button("Cancel",working::dismiss);
+   working=existing;if(!working.isShowing())return;working.replaceContent();working.label(progressLabel(operation,language));working.button("Cancel",working::dismiss);
   }
   working.setOnDismissListener(()->{CompletableFuture<String> task=active.get();if(task!=null&&!task.isDone())task.cancel(false);});
   if(existing==null&&!working.show()){failure(context,"NATIVE_THEME_UNAVAILABLE");return;}
@@ -47,6 +47,12 @@ public final class SharedTextActions {
    try{if("suggest_instructions".equals(operation))showInstructions(context,working,result,original,snapshot);else preview(context,working,result,operation,snapshot);}
    catch(Exception unavailable){showFailure(context,working,"NATIVE_THEME_UNAVAILABLE");}
   }));
+ }
+ static String progressLabel(String operation,String language){
+  if("translate".equals(operation))return "Translating to "+java.util.Locale.forLanguageTag(language==null?"en":language).getDisplayLanguage(java.util.Locale.ENGLISH)+"…";
+  if("suggest_instructions".equals(operation))return "Suggesting changes…";
+  if("reply".equals(operation))return "Drafting your reply…";
+  return "Working on your text…";
  }
  private static void showInstructions(Context context,SharedKeyboardSurface.Panel panel,String result,String original,EditorSnapshot snapshot){
   try{

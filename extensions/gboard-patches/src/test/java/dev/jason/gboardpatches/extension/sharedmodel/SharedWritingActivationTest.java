@@ -34,6 +34,12 @@ public class SharedWritingActivationTest {
     private EditorSnapshot snapshot(Ime ime){return EditorSnapshot.capture(ime,GboardSharedWritingRuntime.currentRevision());}
     @Test public void existingNativeSessionDoesNotToggleTheKeyboardOff(){Entry entry=new Entry();entry.ready=true;assertTrue(SharedWritingActivation.start(snapshot(new Ime()),entry).isDone());assertEquals(0,entry.opens);}
     @Test public void actionsWaitForActualNativeActivation(){Entry entry=new Entry();CompletableFuture<Void> result=SharedWritingActivation.start(snapshot(new Ime()),entry);assertEquals(1,entry.opens);assertFalse(result.isDone());entry.ready=true;SharedWritingActivation.nativeReady();Shadows.shadowOf(Looper.getMainLooper()).idle();assertTrue(result.isDone());assertFalse(result.isCompletedExceptionally());}
+    @Test public void cachedViewBecomingVisibleAfterTheActivationCallbackStillCompletes(){
+        Entry entry=new Entry();CompletableFuture<Void> result=SharedWritingActivation.start(snapshot(new Ime()),entry);
+        Shadows.shadowOf(Looper.getMainLooper()).idle();assertFalse(result.isDone());
+        entry.ready=true;Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(100));
+        assertTrue(result.isDone());assertFalse(result.isCompletedExceptionally());assertEquals(1,entry.opens);
+    }
     @Test public void unavailableNativeSessionTimesOutWithoutRepeatingTheEvent(){Entry entry=new Entry();CompletableFuture<Void> result=SharedWritingActivation.start(snapshot(new Ime()),entry);Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(3));assertTrue(result.isCompletedExceptionally());assertEquals(1,entry.opens);}
     @Test public void changedDraftDiscardsALateNativeActivation(){Ime ime=new Ime();Entry entry=new Entry();CompletableFuture<Void> result=SharedWritingActivation.start(snapshot(ime),entry);ime.connection.text="A different draft";entry.ready=true;SharedWritingActivation.nativeReady();Shadows.shadowOf(Looper.getMainLooper()).idle();assertTrue(result.isCancelled());}
     @Test public void hiddenInputCannotOpenALateMenu(){Entry entry=new Entry();CompletableFuture<Void> result=SharedWritingActivation.start(snapshot(new Ime()),entry);SharedWritingActivation.cancel();entry.ready=true;SharedWritingActivation.nativeReady();Shadows.shadowOf(Looper.getMainLooper()).idle();assertTrue(result.isCancelled());}
