@@ -1,23 +1,24 @@
 {
   "packageName": "app.johninnl.modelhost",
-  "apkSha256": "6de2d2d2f2d7c896b85d4677aa590d7bf6ebaeac97dca5d313f39d9d39a12b41",
+  "apkSha256": "2ac35eb85fa3620f20fe13277eb4ec1090032b3381f9552ad424b2a5d68b301e",
   "signerSha256": "1c45e972f387160e6994391954d0f1ebd983a2b0ab506e444645f4ca9f47bdc4",
-  "versionCode": 106,
-  "versionName": "0.1.0-review.60eb04e02639",
-  "sourceCommit": "60eb04e02639f3978dae5ab2fac20aaec19e0395",
-  "apkBytes": 122025118,
-  "downloadUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/60eb04e02639f3978dae5ab2fac20aaec19e0395/local-model-host-0.1.0-review.60eb04e02639.apk",
+  "versionCode": 108,
+  "versionName": "0.1.0-review.cb76c04dfbb9",
+  "sourceCommit": "cb76c04dfbb91c4056f90e09053abc48cdee14f0",
+  "apkBytes": 122035678,
+  "downloadUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/cb76c04dfbb91c4056f90e09053abc48cdee14f0/local-model-host-0.1.0-review.cb76c04dfbb9.apk",
   "modelSha256": "181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c",
   "runtimeAarSha256": "652fe8bef9964d6b24fc72cf53c4e05f487c316bc55a9d148a268f2e9cbc5250",
   "protocolMajor": 1,
   "protocolMinor": 1,
-  "clientSdkUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/60eb04e02639f3978dae5ab2fac20aaec19e0395/modelhost-client-api-0.1.0-review.60eb04e02639.aar",
-  "clientSdkSha256": "371492bb84220fa20c3249053ebfbce7f6b2fd16f2e062972c16cc300ec606e5",
+  "clientSdkUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/cb76c04dfbb91c4056f90e09053abc48cdee14f0/modelhost-client-api-0.1.0-review.cb76c04dfbb9.aar",
+  "clientSdkSha256": "b544ce5c156ba77fb8f208030be1d9dfa33ee682759226ea62791366db2c8450",
   "speechModels": [
     "parakeet-tdt-v3",
     "parakeet-ultra",
     "nemotron-streaming",
     "whisper-tiny"
   ],
-  "runtimeValidation": "pending"
+  "runtimeValidation": "partial: selector and native TDTv3/WhisperTiny loading; transcription pending",
+  "developerHandoverUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/cb76c04dfbb91c4056f90e09053abc48cdee14f0/DriveDeck-Local-Model-Host-Handover.html"
 }

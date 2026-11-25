@@ -30,7 +30,7 @@ public final class SharedSpeechController {
     }
     private static void accept(HostStatus value){try{JSONObject json=new JSONObject(value.toJson());status=json.optJSONObject("speech");error=status==null?"HOST_UPDATE_REQUIRED":status.optString("state","SPEECH_UNAVAILABLE");}catch(Exception failure){status=null;error="PROTOCOL_ERROR";}}
     public static boolean ready(Context context){connect(context);return connected&&readyStatus(status);}
-    static boolean readyStatus(JSONObject speech){return speech!=null&&speech.optBoolean("enabled")&&speech.optBoolean("engineLoaded")&&("READY".equals(speech.optString("state"))||"BUSY".equals(speech.optString("state")));}
+    static boolean readyStatus(JSONObject speech){return speech!=null&&speech.optBoolean("enabled")&&speech.optBoolean("engineLoaded")&&!speech.optBoolean("reconfiguring")&&("READY".equals(speech.optString("state"))||"BUSY".equals(speech.optString("state")));}
     public static String summary(Context context){connect(context);if(SharedProviderSetup.busy())return SharedProviderSetup.message();JSONObject speech=status;if(speech==null)return "Shared speech: "+error+". Open Local AI to set it up.";return speech.optString("modelLabel","Shared speech")+" · "+speech.optString("state")+(speech.optBoolean("enabled")?"":" · off");}
     public static void openSettings(Context context){if(!ProviderDiscovery.inspect(context).installed || SharedProviderSetup.needsUpdate(context) || SharedProviderSetup.pending()!=null){SharedProviderSetup.download(context);return;}try{context.startActivity(new Intent().setClassName(ModelHostClient.DEFAULT_PACKAGE,"app.johninnl.modelhost.setup.HostSettingsActivity").putExtra("section","speech").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));}catch(ActivityNotFoundException failure){android.widget.Toast.makeText(context,"Install or update Local Model Host first.",android.widget.Toast.LENGTH_LONG).show();}}
     /** Reflection entry used by the standalone Gboard extension. Call on its microphone worker. */
@@ -40,7 +40,7 @@ public final class SharedSpeechController {
         if(!connected||status==null||!status.optBoolean("enabled"))throw new HostException("SHARED_SPEECH_NOT_READY");
         SpeechSession vad=client.openSpeechSession("auto");
         try{deadline=SystemClock.elapsedRealtime()+30000;while(!ready(context)&&SystemClock.elapsedRealtime()<deadline){
-            accept(client.status());String state=error;if("MEMORY_PAUSED".equals(state)||"FAILED".equals(state)||"MODEL_MISSING".equals(state))throw new HostException("SHARED_SPEECH_"+state);Thread.sleep(100);
+            accept(client.status());if(status==null||!status.optBoolean("enabled"))throw new HostException("SPEECH_DISABLED");String state=error;if("MEMORY_PAUSED".equals(state)||"FAILED".equals(state)||"MODEL_MISSING".equals(state))throw new HostException("SHARED_SPEECH_"+state);Thread.sleep(100);
         }if(!ready(context))throw new HostException("SHARED_SPEECH_NOT_READY");return new CaptureSession(client,vad);}catch(Exception failure){vad.close();throw failure;}
     }
     public static final class CaptureSession implements AutoCloseable {

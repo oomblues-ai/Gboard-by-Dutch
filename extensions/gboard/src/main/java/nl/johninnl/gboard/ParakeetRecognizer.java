@@ -49,6 +49,7 @@ public final class ParakeetRecognizer {
 
     private final Context context;
     private volatile SharedSpeechHook.Session shared;
+    private volatile Thread captureThread;
     private final ExecutorService decoder = Executors.newSingleThreadExecutor(r -> {
         Thread thread = new Thread(r, "MorpheParakeetDecode");
         thread.setPriority(Thread.NORM_PRIORITY + 1);
@@ -98,12 +99,14 @@ public final class ParakeetRecognizer {
         listening = true;
         Thread capture = new Thread(this::capture, "MorpheParakeetMic");
         capture.setPriority(Thread.MAX_PRIORITY);
+        captureThread=capture;
         capture.start();
     }
 
     /** The user closed the microphone: finish the current utterance, then end the session. */
     public void stopListening() {
         listening = false;
+        if(shared==null){Thread pending=captureThread;if(pending!=null)pending.interrupt();}
     }
 
     /** Gboard cancelled the session: stop without delivering anything further. */
@@ -111,6 +114,7 @@ public final class ParakeetRecognizer {
         cancelled = true;
         listening = false;
         decoder.shutdownNow();
+        Thread pending=captureThread;if(pending!=null)pending.interrupt();
         SharedSpeechHook.Session old=shared;if(old!=null)old.close();
     }
 
@@ -146,6 +150,7 @@ public final class ParakeetRecognizer {
                 if(cancelled){vad.close();return;}
                 if(!listening){vad.close();signalStopListening(cb);if(finished.compareAndSet(false,true))cbStopRecognition(cb);decoder.shutdown();return;}
             } catch (Throwable t) {
+                if(!listening){if(vad!=null)vad.close();if(!cancelled){signalStopListening(cb);if(finished.compareAndSet(false,true))cbStopRecognition(cb);}decoder.shutdown();return;}
                 Log.w(TAG, "Speech detection unavailable", t);
                 fail(cb, ERROR_OTHER);
                 return;
