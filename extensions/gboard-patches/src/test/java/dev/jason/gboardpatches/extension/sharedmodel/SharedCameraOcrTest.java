@@ -18,6 +18,14 @@ public class SharedCameraOcrTest {
   final android.content.Context b;final android.widget.TextView f;final android.widget.ImageButton h;int x=2;
   Camera(android.content.Context context){b=context;f=new android.widget.TextView(context);h=new android.widget.ImageButton(context);}
  }
+ private static final class ResultControls {
+  final android.view.View d,z;
+  ResultControls(android.content.Context context){d=new android.view.View(context);z=new android.view.View(context);}
+ }
+ @Test public void resultNavigationStaysVisibleAboveTheFullSizeTextLayer(){
+  android.content.Context app=org.robolectric.RuntimeEnvironment.getApplication();android.widget.FrameLayout root=new android.widget.FrameLayout(app),navigation=new android.widget.FrameLayout(app);ResultControls controls=new ResultControls(app);navigation.addView(controls.d);navigation.addView(controls.z);root.addView(navigation);root.addView(new android.widget.ScrollView(app));controls.d.setVisibility(android.view.View.GONE);controls.z.setAlpha(0f);controls.z.setEnabled(false);
+  SharedCameraOcr.restoreResultControls(controls);assertEquals(android.view.View.VISIBLE,controls.d.getVisibility());assertEquals(1f,controls.z.getAlpha(),0f);assertTrue(controls.z.isEnabled());assertSame(navigation,root.getChildAt(root.getChildCount()-1));
+ }
  @Test public void insertionUsesOnlyTheChosenTextRange(){assertEquals("12.34",SharedCameraOcr.selection("Total 12.34 EUR",6,11));}
  @Test public void absentOrCollapsedSelectionInsertsTheWholeText(){assertEquals("line one\nline two",SharedCameraOcr.selection("line one\nline two",-1,-1));assertEquals("abc",SharedCameraOcr.selection("abc",2,2));}
  @Test public void invalidRangesNeverInsertEverythingAndReverseSelectionsAreNormalized(){assertEquals("",SharedCameraOcr.selection("abc",0,4));assertEquals("b",SharedCameraOcr.selection("abc",2,1));}

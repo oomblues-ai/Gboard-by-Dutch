@@ -77,8 +77,11 @@ internal object GboardSharedWritingTargets {
         listOf("g","h").forEach{GboardFieldTarget("Laicd;",it,"Lahdw;").resolve(context)}
         GboardMethodTarget("Laheb;","f",listOf("Lahdw;"),"Z").resolve(context)
         listOf("g","h").forEach{GboardMethodTarget("Laheb;",it,listOf("Lahdw;"),"Z").resolve(context)}
-        // Enter through the same native request as the original Writing Tools access point.
-        GboardMethodTarget("Lpve;","f",listOf("Ladbd;","Laicj;","Z","Laeaj;","Ljava/util/function/Consumer;"),"V").resolve(context)
+        // A keyboard transition restores Jarvis after capture/picker Activities deactivate it.
+        GboardMethodTarget("Lpve;","a",listOf("Ladbd;","Laicj;","Z","Laeaj;"),"Laubj;").resolve(context)
+        GboardMethodTarget("Lagoq;","<init>",listOf("Lagoo;","Ljava/lang/Object;"),"V").resolve(context)
+        GboardMethodTarget("Laars;","a",listOf("Lagoq;"),"Laars;").resolve(context)
+        GboardFieldTarget("Laars;","b","Ladan;").resolve(context)
         GboardMethodTarget("Laicj;","d",listOf("Lavgf;"),"Laicj;").resolve(context)
         GboardMethodTarget("Lafae;","bT",listOf("Ladan;"),"V").resolve(context)
         GboardFieldTarget("Ladbd;","d","Ladbd;").resolve(context)
@@ -259,7 +262,7 @@ internal fun installSharedCameraOcr(context:BytecodePatchContext){
     GboardMethodTarget("Laars;","a",listOf("Lagoq;"),"Laars;").resolve(context)
     GboardMethodTarget("Lafae;","bT",listOf("Ladan;"),"V").resolve(context)
     val owner="Ltwm;"
-    listOf("b" to "Landroid/content/Context;","c" to "Landroidx/camera/view/PreviewView;","f" to "Landroid/widget/TextView;","g" to "Landroid/widget/TextView;","h" to "Landroid/widget/ImageButton;","l" to "Landroid/widget/FrameLayout;","B" to "Landroid/widget/TextView;","A" to "Landroid/view/View;","C" to "Landroid/view/View;","d" to "Landroid/view/View;","r" to "Lcia;","u" to "Z","x" to "I").forEach{(name,type)->GboardFieldTarget(owner,name,type).resolve(context)}
+    listOf("b" to "Landroid/content/Context;","c" to "Landroidx/camera/view/PreviewView;","f" to "Landroid/widget/TextView;","g" to "Landroid/widget/TextView;","h" to "Landroid/widget/ImageButton;","l" to "Landroid/widget/FrameLayout;","B" to "Landroid/widget/TextView;","A" to "Landroid/view/View;","C" to "Landroid/view/View;","d" to "Landroid/view/View;","z" to "Landroid/view/View;","r" to "Lcia;","u" to "Z","x" to "I").forEach{(name,type)->GboardFieldTarget(owner,name,type).resolve(context)}
     listOf(GboardMethodTarget(owner,"b",listOf("Ljava/lang/String;"),"V"),GboardMethodTarget(owner,"j",listOf("Ljava/lang/String;"),"V"),GboardMethodTarget(owner,"d",emptyList(),"V"),GboardMethodTarget(owner,"i",emptyList(),"V"),GboardMethodTarget("Lcia;","c",emptyList(),"V")).forEach{it.resolve(context)}
     // Use separate wrapper frames so original methods may reuse parameter registers safely.
     for((name,params,call) in listOf(Triple("g",listOf("Landroid/view/inputmethod/EditorInfo;","Ljava/lang/Object;"),RuntimeCallId.SHARED_CAMERA_OCR_BIND),Triple("e",emptyList<String>(),RuntimeCallId.SHARED_CAMERA_OCR_BIND),Triple("h",emptyList<String>(),RuntimeCallId.SHARED_CAMERA_OCR_CLEAR))){

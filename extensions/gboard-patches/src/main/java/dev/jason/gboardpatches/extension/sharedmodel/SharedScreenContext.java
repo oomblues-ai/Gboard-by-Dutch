@@ -28,7 +28,7 @@ public final class SharedScreenContext {
         if(pending!=request)return;
         if(SystemClock.uptimeMillis()>request.expires || remaining==0){SharedWritingDiagnostics.event("screen.context editor-handoff-unavailable");cancel(request);message(request.context,"Return to the original conversation and try again. Nothing was changed.");return;}
         EditorSnapshot resumed=request.editor.resumeForPreview();
-        if(resumed==null){MAIN.postDelayed(()->resume(request,remaining-1),100);return;}
+        if(resumed==null || !NativeEditBridge.readyForTransition(GboardSharedWritingRuntime.currentService())){MAIN.postDelayed(()->resume(request,remaining-1),100);return;}
         SharedWritingDiagnostics.event("screen.context editor-resumed");
         SharedWritingActivation.ensure(request.context,resumed,()->SharedKeyboardSurface.whenAvailable(request.context,resumed,()->{
             if(pending!=request)return;

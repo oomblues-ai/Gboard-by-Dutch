@@ -71,7 +71,7 @@ public final class SharedKeyboardSurface {
         TextView text=findText(root,false);if(text==null)throw new IllegalStateException("NATIVE_THEME_UNAVAILABLE");return text;
     }
     private static TextView primaryTemplate(){FrameLayout card=nativeCard();View action=card==null?null:card.findViewById(PRIMARY_ACTION);if(!(action instanceof TextView) || action.getBackground()==null || action.getBackground().getConstantState()==null)return null;return (TextView)action;}
-    private static TextView buttonTemplate(){TextView text=modern.get()!=null?primaryTemplate():findText(templateRoot(),true);if(text==null)throw new IllegalStateException("NATIVE_THEME_UNAVAILABLE");return text;}
+    private static TextView buttonTemplate(){TextView text=modern.get()!=null?footerTemplate():findText(templateRoot(),true);if(text==null)throw new IllegalStateException("NATIVE_THEME_UNAVAILABLE");return text;}
     private static TextView findText(View view,boolean clickable){
         if(view instanceof TextView && !(view instanceof EditText)){
             TextView text=(TextView)view;

@@ -76,7 +76,7 @@ public final class SharedCameraOcr {
         if(remaining==0 || android.os.SystemClock.uptimeMillis()>request.expires){discardChosen(request);message(context,"The original editor changed or did not return. Choose the image again in the intended field.");return;}
         // requestShowSelf restores normal typing, not the OCR keyboard. Wait for the original live
         // editor before dispatching the stock OCR transition; never adopt the picker's editor.
-        if(request.editor.resumeForPreview()!=null){
+        if(request.editor.resumeForPreview()!=null && NativeEditBridge.readyForTransition(GboardSharedWritingRuntime.currentService())){
             Object owner=peer.get();
             if(owner!=null && shown(owner))deliverChosen(request);
             else if(!request.reopening){
@@ -108,7 +108,7 @@ public final class SharedCameraOcr {
             View insertPanel=(View)field(owner,"C");Drawable backdrop=insertPanel.getBackground();if(backdrop!=null && backdrop.getConstantState()!=null)frame.setBackground(backdrop.getConstantState().newDrawable(frame.getResources(),frame.getContext().getTheme()).mutate());
             TextView style=(TextView)field(owner,"B");TextView text=SharedKeyboardSurface.styledText(style,"Reading text on your device…");text.setSingleLine(false);text.setEllipsize(null);text.setMaxLines(Integer.MAX_VALUE);text.setGravity(Gravity.TOP|Gravity.START);text.setTextIsSelectable(true);
             int gap=((TextView)field(owner,"f")).getPaddingLeft();int bottom=Math.max(insertPanel.getHeight(),insertPanel.getLayoutParams().height)+Math.max(((View)field(owner,"g")).getHeight(),((View)field(owner,"g")).getLayoutParams().height);text.setPadding(Math.max(gap,style.getPaddingLeft()),style.getPaddingTop(),Math.max(gap,style.getPaddingRight()),Math.max(0,bottom));
-            ScrollView scroll=new ScrollView(frame.getContext());scroll.setFillViewport(true);scroll.addView(text,new ScrollView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT));frame.addView(scroll,new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));state.text=text;
+            ScrollView scroll=new ScrollView(frame.getContext());scroll.setFillViewport(true);scroll.addView(text,new ScrollView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT));frame.addView(scroll,new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));state.text=text;restoreResultControls(owner);
             State current=state;Context context=frame.getContext();
             state.work=WORK.submit(()->{try{synchronized(current){if(current.cancelled)return;current.started=true;}String result=SharedOcrRuntime.recognize(context,image);MAIN.post(()->complete(current,result));}catch(Exception failure){MAIN.post(()->showFailure(current,failure));}finally{if(!image.isRecycled())image.recycle();}});
         }catch(Exception failure){if(!image.isRecycled())image.recycle();if(state!=null)state.cancelled=true;SharedModelClient.noteFailure("NATIVE_OCR_UNAVAILABLE");}
@@ -116,7 +116,7 @@ public final class SharedCameraOcr {
     private static void showFailure(State state,Exception failure){
         if(!valid(state))return;
         String code=SharedLocalAiState.failureCode(failure);SharedModelClient.noteFailure(code);
-        state.text.setText(failureMessage(code));
+        state.text.setText(failureMessage(code));restoreResultControls(state.peer);
         try{
             TextView setup=(TextView)field(state.peer,"f");setup.setText("Model setup");setup.setContentDescription("Open Local Model Host status and setup");setup.setVisibility(View.VISIBLE);
             setup.setOnClickListener(v->SharedLocalAiSettingsFeature.openProvider(setup.getContext()));
@@ -128,14 +128,20 @@ public final class SharedCameraOcr {
     }
     private static void complete(State state,String result){
         if(!valid(state)){if(active==state&&!state.cancelled&&shown(state.peer))state.text.setText("The editor changed. Capture again in the intended field.");return;}
+        restoreResultControls(state.peer);
         if(result==null||result.trim().isEmpty()){state.text.setText("No text was found. Try a clearer crop.");return;}
         try{
             state.text.setText(result,TextView.BufferType.SPANNABLE);
             invoke(state.peer,"j",new Class<?>[]{String.class},result);
             ((FrameLayout)field(state.peer,"l")).setVisibility(View.VISIBLE);
-            TextView all=(TextView)field(state.peer,"g");all.setVisibility(View.VISIBLE);all.setOnClickListener(v->Selection.setSelection((Spannable)state.text.getText(),0,state.text.length()));
+            TextView all=(TextView)field(state.peer,"g");all.setVisibility(View.VISIBLE);all.bringToFront();((View)field(state.peer,"C")).bringToFront();all.setOnClickListener(v->Selection.setSelection((Spannable)state.text.getText(),0,state.text.length()));
             ((View)field(state.peer,"A")).setOnClickListener(v->{if(!valid(state)){message(state.text.getContext(),"The editor changed. Nothing was inserted.");return;}String selected=selection(result,state.text.getSelectionStart(),state.text.getSelectionEnd());try{invoke(state.peer,"b",new Class<?>[]{String.class},selected);invoke(state.peer,"i");}catch(Exception failure){message(state.text.getContext(),"Could not insert recognised text.");}});
         }catch(Exception failure){state.text.setText("Could not open the text insertion controls.");}
+    }
+    /** Keep the original camera navigation above the local full-size result layer. */
+    static void restoreResultControls(Object owner){
+        try{for(String name:new String[]{"d","z"}){View control=(View)field(owner,name);control.animate().cancel();control.setVisibility(View.VISIBLE);control.setAlpha(1f);control.setEnabled(true);control.bringToFront();if(control.getParent() instanceof View)((View)control.getParent()).bringToFront();}}
+        catch(ReflectiveOperationException unavailable){SharedModelClient.noteFailure("NATIVE_OCR_UNAVAILABLE");}
     }
     static String selection(String text,int start,int end){if(start==-1&&end==-1)return text;if(start<0||end<0||start>text.length()||end>text.length())return "";return start==end?text:text.substring(Math.min(start,end),Math.max(start,end));}
     /** Native restartCamera rejects preview state2; local capture must enter captured state3 too. */
