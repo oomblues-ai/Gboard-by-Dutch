@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 # Editorial destinations only; app names, versions and patches come from metadata.
 APP_PAGES = {
+    'com.jamworks.dynamicspot': ('dynamicspot', 'other'),
     'com.cronometer.android.gold': ('cronometer', 'other'),
     'com.bol.shop': ('bol', 'other'),
     'com.klevico.monet': ('monet', 'other'),

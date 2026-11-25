@@ -1,6 +1,6 @@
 # Patchcatalogus
 
-**Patchbundel: 1.105.0**
+**Patchbundel: 1.106.0**
 
 Controleer per patch de ondersteunde app-versies en de standaardinstelling. De app-pagina legt uit wat de patch voor het gebruik verandert.
 
@@ -306,6 +306,20 @@ Controleer per patch de ondersteunde app-versies en de standaardinstelling. De a
 | Disable tracking | Aan | 5.8.0 |
 | Hide ads | Aan | 5.8.0 |
 | Skip consent screens | Aan | 5.8.0 |
+
+## dynamicSpot
+
+[Wat veranderen de patches?](../apps/dynamicspot.md)
+
+`com.jamworks.dynamicspot`
+
+| Patch | Standaard | App-versies |
+| --- | --- | --- |
+| AMOLED theme | Aan | 3.02 |
+| Fix PairIP startup | Aan | 3.02 |
+| Remove promotions | Aan | 3.02 |
+| Stop automatic app selection | Aan | 3.02 |
+| Unlock Pro | Aan | 3.02 |
 
 ## EasyPark
 

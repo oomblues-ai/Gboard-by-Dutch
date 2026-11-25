@@ -1,6 +1,6 @@
 # Patch catalogue
 
-**Patch bundle: 1.105.0**
+**Patch bundle: 1.106.0**
 
 Check the supported app versions and default setting for each patch. The app page explains what each patch changes when using the app.
 
@@ -306,6 +306,20 @@ Check the supported app versions and default setting for each patch. The app pag
 | Disable tracking | On | 5.8.0 |
 | Hide ads | On | 5.8.0 |
 | Skip consent screens | On | 5.8.0 |
+
+## dynamicSpot
+
+[What do the patches change?](../apps/dynamicspot.md)
+
+`com.jamworks.dynamicspot`
+
+| Patch | Default | App versions |
+| --- | --- | --- |
+| AMOLED theme | On | 3.02 |
+| Fix PairIP startup | On | 3.02 |
+| Remove promotions | On | 3.02 |
+| Stop automatic app selection | On | 3.02 |
+| Unlock Pro | On | 3.02 |
 
 ## EasyPark
 

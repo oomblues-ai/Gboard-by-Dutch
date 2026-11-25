@@ -92,6 +92,7 @@ Match the exact app version and build. Select the complete APKS or APKM archive 
 | [Orpheon](../apps/orpheon.md) | 1.0.0 / 1194 | [APK](#local-original-inputs) |
 | [SoundCloud](../apps/soundcloud.md) | 2026.11.02-release / 379060 | [APKM](#local-original-inputs) |
 | [Spotify](../apps/spotify.md) | 9.2.0.2053 / 148387875 | [APK](#local-original-inputs) |
+| [dynamicSpot](../apps/dynamicspot.md) | 3.02 / 200155 | [APKM](#local-original-inputs) |
 | [Gboard](../apps/gboard.md) | 18.8.0.1022711984-beta-arm64-v8a / 176124766 | [APK](#local-original-inputs) |
 | [Waze](../apps/waze.md) | 5.26.90.901 / 1030746 | [APKM](https://buzzheavier.com/cpwy7pirf997) |
 | [Weeronline](../apps/weeronline.md) | 3.61.0 / 2030006811 | [APKS](https://buzzheavier.com/mj9n1s9e3ihs) |
