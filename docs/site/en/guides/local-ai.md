@@ -26,7 +26,7 @@ Additional actions include shortening, summaries, replies, style examples and a 
 
 ## Read text from an image
 
-With Local AI selected and vision Ready, open **Scan Text** and choose an image or use the camera entry. Review the recognized text before selecting or inserting it. A screenshot or photograph can contain sensitive information, so choose only the image you intend to process.
+With Local AI selected and the host’s text and image model **Ready**, open an editable field and tap **Scan Text** in the Gboard toolbar. Tap **Choose an image** to select an existing photo or screenshot, or tap the camera shutter to capture a new frame. Review the result. Select the text you want and tap **Insert** to put it in the active field.
 
 The local image path returns text generated from the image. Check names and numbers. It is distinct from barcode/QR scanning and does not provide OCR word boxes or confidence scores. The existing Google/bundled OCR route has its own setup when Local AI is not selected.
 

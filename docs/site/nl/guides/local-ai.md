@@ -26,7 +26,7 @@ Waar aangeboden zijn er ook verkorten, samenvatten, antwoorden, stijlvoorbeelden
 
 ## Tekst uit een afbeelding lezen
 
-Met Local AI geselecteerd en vision Gereed open je **Scan Text** en kies je een afbeelding of de cameraoptie. Controleer de herkende tekst vóór selectie of invoegen. Een foto of schermafbeelding kan gevoelige informatie bevatten; kies alleen het bedoelde beeld.
+Selecteer Local AI en wacht tot het tekst- en beeldmodel van de host **Ready** meldt. Open een invoerveld en tik in de Gboard-werkbalk op **Scan Text**. Kies **Choose an image** voor een bestaande foto of schermafbeelding, of tik op de ontspanknop om een nieuw beeld vast te leggen. Controleer het resultaat. Selecteer de gewenste tekst en tik op **Insert** om die in het actieve veld te plaatsen.
 
 De lokale beeldroute geeft gegenereerde herkende tekst terug. Controleer namen en getallen. Dit is iets anders dan barcode-/QR-scannen en levert geen OCR-woordvakken of zekerheidscores. De bestaande Google/gebundelde OCR-route heeft eigen instellingen wanneer Local AI niet geselecteerd is.
 
