@@ -764,6 +764,31 @@ val parakeetVoiceTyping = bytecodePatch(
                 const/4 v0, 0x0
                 return v0
             """, ExternalLabel("enhanced_stock", enhanced.getInstruction(0)))
+
+            // The consolidated stack bypasses rtt.c() entirely. Let the stock factory build its
+            // existing Standard handler when shared speech is selected.
+            val handler = GboardMethodTarget(
+                "Lrlm;", "a", listOf(CONTEXT, "Lakrx;", "Lakse;", "Latta;"), "Laksa;",
+            ).resolve(this)
+            val handlerCode = handler.instructionsOrEmpty()
+            val contextCopy = handlerCode.getOrNull(1) as? TwoRegisterInstruction
+            check(handler.implementation!!.registerCount == 21 &&
+                contextCopy?.opcode == Opcode.MOVE_OBJECT_FROM16 &&
+                contextCopy.registerA == 2 && contextCopy.registerB == 17
+            ) { "Gboard dictation factory context register changed" }
+            val consolidatedFlag = handlerCode.indices.single {
+                handlerCode[it].isFieldReference("Lakti;->Q:Ladfh;")
+            }
+            val flagResult = handlerCode.getOrNull(consolidatedFlag + 5) as? OneRegisterInstruction
+            check(handlerCode[consolidatedFlag + 4].isMethodReference("Ljava/lang/Boolean;->booleanValue()Z") &&
+                flagResult?.opcode == Opcode.MOVE_RESULT && flagResult.registerA == 1 &&
+                handlerCode[consolidatedFlag + 7].opcode == Opcode.IF_NEZ &&
+                handlerCode.any { it.isMethodReference("Lrtt;->c()Z") }
+            ) { "Gboard consolidated dictation routing changed" }
+            handler.addInstructions(consolidatedFlag + 6, """
+                invoke-static {v2, v1}, $RECOGNIZER->allowConsolidatedDictation(${CONTEXT}Z)Z
+                move-result v1
+            """.trimIndent())
         }
 
         val factory = mutableClassDefBy(contract.factory.definingClass).methods

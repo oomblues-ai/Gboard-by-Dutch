@@ -94,6 +94,15 @@ public final class ParakeetRecognizer {
                         .getBoolean("enable_jetson", false);
     }
 
+    public static boolean allowConsolidatedDictation(Context context, boolean stockEnabled) {
+        if (!stockEnabled) return false;
+        boolean shared = shouldUseSharedStandard(context);
+        if (shared && Log.isLoggable("GboardLocalAi", Log.DEBUG)) {
+            Log.d("GboardLocalAi", "voice.consolidated bypassed for shared Standard");
+        }
+        return !shared;
+    }
+
     /** Keep Gboard’s selected Rambler route and use shared speech for Standard when enabled. */
     public static ParakeetRecognizer createForVoiceRequest(Context context, boolean rambler) {
         ParakeetRecognizer result = rambler ? null : create(context);

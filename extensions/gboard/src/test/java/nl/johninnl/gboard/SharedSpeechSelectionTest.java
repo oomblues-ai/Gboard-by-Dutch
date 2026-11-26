@@ -40,4 +40,10 @@ public class SharedSpeechSelectionTest {
         assertFalse(ParakeetRecognizer.shouldUseSharedStandard(context(true, true)));
         assertFalse(ParakeetRecognizer.shouldUseSharedStandard(context(false, false)));
     }
+    @Test public void consolidatedDictationYieldsOnlyToSelectedSharedStandardSpeech() {
+        assertFalse(ParakeetRecognizer.allowConsolidatedDictation(context(true, false), true));
+        assertTrue(ParakeetRecognizer.allowConsolidatedDictation(context(true, true), true));
+        assertTrue(ParakeetRecognizer.allowConsolidatedDictation(context(false, false), true));
+        assertFalse(ParakeetRecognizer.allowConsolidatedDictation(context(false, false), false));
+    }
 }
