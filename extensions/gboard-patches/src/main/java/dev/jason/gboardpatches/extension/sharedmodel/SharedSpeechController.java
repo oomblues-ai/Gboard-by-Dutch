@@ -5,6 +5,8 @@ import android.os.*;
 import app.johninnl.modelhost.api.*;
 import org.json.JSONObject;
 import java.util.Arrays;
+import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
@@ -35,14 +37,41 @@ public final class SharedSpeechController {
     public static void openSettings(Context context){if(!ProviderDiscovery.inspect(context).installed || SharedProviderSetup.needsBundledUpdate(context) || SharedProviderSetup.pending()!=null){SharedProviderSetup.download(context);return;}try{context.startActivity(new Intent().setClassName(ModelHostClient.DEFAULT_PACKAGE,"app.johninnl.modelhost.setup.HostSettingsActivity").putExtra("section","speech").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));}catch(ActivityNotFoundException failure){android.widget.Toast.makeText(context,"Install or update Local Model Host first.",android.widget.Toast.LENGTH_LONG).show();}}
     /** Reflection entry used by the standalone Gboard extension. Call on its microphone worker. */
     public static Object open(Context context) throws Exception {
+        return open(context, () -> false);
+    }
+    public static Object open(Context context, BooleanSupplier allowContactNames) throws Exception {
         connect(context);long deadline=SystemClock.elapsedRealtime()+8000;
         while(!connected&&SystemClock.elapsedRealtime()<deadline){Thread.sleep(25);}
         if(!connected||status==null||!status.optBoolean("enabled"))throw new HostException("SHARED_SPEECH_NOT_READY");
-        SpeechSession vad=client.openSpeechSession("auto");
+        ModelHostClient connection = client;
+        if (connection == null) throw new HostException("SHARED_SPEECH_NOT_READY");
+        SpeechSession vad=connection.openSpeechSession("auto");
         try{deadline=SystemClock.elapsedRealtime()+30000;while(!ready(context)&&SystemClock.elapsedRealtime()<deadline){
-            accept(client.status());if(status==null||!status.optBoolean("enabled"))throw new HostException("SPEECH_DISABLED");String state=error;if("MEMORY_PAUSED".equals(state)||"FAILED".equals(state)||"MODEL_MISSING".equals(state))throw new HostException("SHARED_SPEECH_"+state);Thread.sleep(100);
-        }if(!ready(context))throw new HostException("SHARED_SPEECH_NOT_READY");return new CaptureSession(client,vad);}catch(Exception failure){vad.close();throw failure;}
+            accept(connection.status());if(status==null||!status.optBoolean("enabled"))throw new HostException("SPEECH_DISABLED");String state=error;if("MEMORY_PAUSED".equals(state)||"FAILED".equals(state)||"MODEL_MISSING".equals(state))throw new HostException("SHARED_SPEECH_"+state);Thread.sleep(100);
+        }if(!ready(context))throw new HostException("SHARED_SPEECH_NOT_READY");return new CaptureSession(() -> openDecoder(connection, context, allowContactNames), vad);}catch(Exception failure){vad.close();throw failure;}
     }
+    private static SpeechSession openDecoder(ModelHostClient connection, Context context,
+            BooleanSupplier allowContactNames) throws HostException {
+        if (allowContactNames.getAsBoolean() && SharedSpeechContactNames.canRead(context)
+                && supportsContactHints(connection)) {
+            List<String> names = SharedSpeechContactNames.read(context);
+            if (Thread.currentThread().isInterrupted()) throw new HostException("SPEECH_SESSION_CLOSED");
+            if (!names.isEmpty() && allowContactNames.getAsBoolean() && SharedSpeechContactNames.canRead(context)) {
+                try {
+                    return connection.openSpeechSession("auto", names);
+                } catch (HostException error) {
+                    if (!"CONTEXT_BIAS_UNSUPPORTED".equals(error.code) && !"INVALID_REQUEST".equals(error.code)) throw error;
+                }
+            }
+        }
+        return connection.openSpeechSession("auto");
+    }
+
+    private static boolean supportsContactHints(ModelHostClient connection) {
+        try { return connection.supportsSpeechContactHints(); }
+        catch (HostException unavailable) { return false; }
+    }
+
     public static final class CaptureSession implements AutoCloseable {
         interface DecoderOpener { SpeechSession open() throws HostException; }
         private final DecoderOpener openDecoder;
@@ -52,7 +81,6 @@ public final class SharedSpeechController {
         private volatile boolean closed;
         private int sent;
         private boolean lastFeedEnded;
-        CaptureSession(ModelHostClient connection,SpeechSession vad){this(()->connection.openSpeechSession("auto"),vad);}
         CaptureSession(DecoderOpener openDecoder,SpeechSession vad){this.openDecoder=openDecoder;this.vad=vad;}
         public float probability(float[] window)throws HostException{requireOpen();return vad.voiceProbability(window);}
         public void reset(){

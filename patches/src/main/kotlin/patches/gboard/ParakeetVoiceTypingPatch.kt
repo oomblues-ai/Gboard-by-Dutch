@@ -495,7 +495,7 @@ private fun resolveTranscriptionBundle(): TranscriptionBundle {
 val parakeetVoiceTyping = bytecodePatch(
     name = "Parakeet voice typing",
     description = "Uses the speech model selected in Local Model Host through Binder while preserving Gboard's native microphone and dictation UI. " +
-        "Choose Parakeet, Nemotron Streaming or Whisper Tiny and download/enable the model in the host. Gboard keeps only its client switch; language support depends on the selected model.",
+        "Choose Parakeet, Nemotron Streaming or Whisper Tiny and download/enable the model in the host. Gboard can use separately authorized contact names for local dictation with Parakeet Ultra.",
 ) {
     compatibleWith(gboard)
     extendWith("extensions/gboard.mpe")
@@ -512,6 +512,7 @@ val parakeetVoiceTyping = bytecodePatch(
                 val root=manifest.documentElement
                 ensureManifestUsesPermission(manifest,root,"android.permission.REQUEST_INSTALL_PACKAGES")
                 ensureManifestUsesPermission(manifest,root,"android.permission.RECORD_AUDIO")
+                ensureManifestUsesPermission(manifest,root,"android.permission.READ_CONTACTS")
                 val queries=root.childElements("queries").firstOrNull()?:manifest.createElement("queries").also{root.insertBefore(it,application)}
                 if(queries.childElements("package").none{it.manifestAndroidAttribute("name")=="app.johninnl.modelhost"})queries.appendChild(manifest.createElement("package").apply{setManifestAndroidAttribute("name","app.johninnl.modelhost")})
                 ensureManifestComponent(manifest,application,"activity","dev.jason.gboardpatches.extension.sharedmodel.SharedModelSetupActivity").setManifestAndroidAttribute("exported","false")
@@ -535,10 +536,14 @@ val parakeetVoiceTyping = bytecodePatch(
                 "values" to listOf(
                     "Local AI voice typing", "Speech models and downloads are managed in Local Model Host",
                     "Standard", "Google voice typing, or the selected Local AI speech model when enabled below",
+                    "Use contact names",
+                    "With Parakeet Ultra selected in Local Model Host, use up to 32 contact display names to improve local dictation. Names stay on this phone and are not saved by Local Model Host.",
                 ),
                 "values-nl" to listOf(
                     "Lokale AI-spraakinvoer", "Spraakmodellen en downloads worden beheerd in Local Model Host",
                     "Standaard", "Google-spraakinvoer, of het gekozen lokale AI-spraakmodel als dit hieronder is ingeschakeld",
+                    "Contactnamen gebruiken",
+                    "Als Parakeet Ultra is geselecteerd in Local Model Host, kan lokale spraakinvoer maximaal 32 namen uit je contacten gebruiken. De namen blijven op deze telefoon en worden niet opgeslagen door Local Model Host.",
                 ),
             )) {
                 val path = "res/$folder/strings.xml"
@@ -546,7 +551,8 @@ val parakeetVoiceTyping = bytecodePatch(
                 document(path).use { strings ->
                     val root = strings.documentElement
                     val keys = listOf("morphe_parakeet_title", "morphe_parakeet_summary",
-                        "morphe_parakeet_selector_title", "morphe_parakeet_selector_summary")
+                        "morphe_parakeet_selector_title", "morphe_parakeet_selector_summary",
+                        "morphe_parakeet_contact_names", "morphe_parakeet_contact_names_summary")
                     for ((key, value) in keys.zip(texts)) {
                         root.appendChild(strings.createElement("string").apply {
                             setAttribute("name", key)

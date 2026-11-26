@@ -58,7 +58,7 @@ Deze patch vult dezelfde lijst met spraakcorrecties aan. Zet **Contact names** a
 
 ### Parakeet personal dictionary
 
-De akoestische woordenboekintegratie van deze patch hoort bij de oude ingebouwde Parakeet-decoder. De gedeelde Local AI-adapters bieden geen akoestische spraakwoordenboekvoorkeur. Een opgeslagen correctielijst bewijst dus niet dat gedeelde herkenning die toepast. Namen worden niet stilzwijgend met een taalmodel herschreven om akoestische ondersteuning na te bootsen. Ramblers afzonderlijke correctielijst behoudt haar eigen werking.
+De akoestische woordenboekintegratie van deze patch hoort bij de oude ingebouwde Parakeet-decoder. Kies voor contactnamen bij gedeelde spraak Local Model Host v0.1.145 of nieuwer, selecteer **Parakeet Ultra**, zet **Contactnamen gebruiken** aan onder **Spraakinvoer → Local AI voice typing** en geef Android toegang tot je contacten. Gboard geeft een beperkt aantal namen mee voor die dicteerbeurt. Parakeet TDT v3, Nemotron en Whisper Tiny gebruiken de gebruikelijke gedeelde spraakherkenning.
 
 ### Rambler custom instructions
 
@@ -141,6 +141,22 @@ Open **Thema**, selecteer een ondersteund thema en zoek **Key shape** in de deta
 Pas **AMOLED dark keyboard** toe in Morphe. Kies daarna in Gboard **Instellingen → Thema → Dynamic Color → Toepassen** en schakel Androids **donkere thema** in. Open een tekstveld. Het paneel achter en tussen de toetsen hoort puur zwart te zijn. De toetsen zelf en de accentkleuren kunnen grijs of gekleurd blijven. Ga terug naar het lichte Android-thema en open het toetsenbord opnieuw om het verschil te controleren. Er is geen aparte AMOLED-tegel.
 
 ## Schrijven, scannen en bewerken
+
+### Shift + Backspace Forward Delete
+
+Selecteer de patch in Morphe en zet de schakelaar aan bij **Patches → Toetsenbordhulpmiddelen → Shift + Backspace Forward Delete**. Start Gboard opnieuw als daarom wordt gevraagd. Plaats de cursor vlak voor een teken. Houd Shift op het scherm ingedrukt en tik op Backspace om het teken na de cursor te wissen. Backspace zonder Shift wist het teken vóór de cursor.
+
+### Long-Press Editing Shortcuts
+
+Stel bij **Patches → Toetsenbordhulpmiddelen → Long-Press Editing Shortcuts** de standaardpositie in op **Eerst** of **Laatst**. Elke toets kan de standaard volgen of een eigen positie krijgen. Open het toetsenbord opnieuw nadat je de instelling hebt opgeslagen. Houd A ingedrukt om alles te selecteren, Z om ongedaan te maken, C om te kopiëren, X om te knippen, V om te plakken of Y om opnieuw uit te voeren. Ongedaan maken en opnieuw uitvoeren hangen af van de teksteditor. De gebruikelijke accenten en andere opties blijven in het menu staan.
+
+### Custom Symbols
+
+Selecteer de patch in Morphe, schakel over naar een Engelse indeling en open **Custom Symbols** in het hulpmiddelenmenu van het toetsenbord. Kies een categorie en tik op een symbool om het in te voegen. Gboard opent zijn eigen expressiepaneel met 11 aangepaste categorieën. Wissel van categorie via de tabbladen en gebruik de toetsenbordknop om verder te typen.
+
+### Grammar Checker
+
+Kies op Android 12 of nieuwer de gepatchte Gboard als spellingcontrole van Android en zet **Gboard → Tekstcorrectie → Grammaticacontrole** aan. Tik in een teksteditor die Android-spellingcontrole ondersteunt op een onderstreepte tekst om vervangende suggesties te zien. De taal en beschikbaarheid van het grammaticamodel bepalen wat Gboard kan controleren. Wil je Gemma gebruiken voor dezelfde onderstreping en suggestielijst, kies dan Local AI en schakel **Inline grammar** in bij **Writing preferences**. Laat de gepatchte Gboard geselecteerd als Android-spellingcontrole.
 
 ### Enable Inline Autofill Suggestions
 

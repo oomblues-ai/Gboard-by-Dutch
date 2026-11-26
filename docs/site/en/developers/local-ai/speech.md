@@ -4,7 +4,7 @@ Keep speech models in Local AI so integrating apps can share them. Release an ap
 
 ## Speech recognition
 
-Users choose and download Parakeet TDT v3, Parakeet Ultra, Nemotron Streaming or Whisper Tiny in the host. Query the selected profile's language metadata and readiness. Whisper Tiny's supplied integration uses an English prefix; do not advertise multilingual Whisper from the model family name alone. The adapters do not provide acoustic voice-dictionary bias.
+Users choose and download Parakeet TDT v3, Parakeet Ultra, Nemotron Streaming or Whisper Tiny in the host. Query the selected profile's language metadata and readiness. Whisper Tiny's supplied integration uses an English prefix; do not advertise multilingual Whisper from the model family name alone. When the selected adapter advertises `speech.contextBias`, call `openSpeechSession(language, contextPhrases)` to pass optional names or terms for the session. Parakeet Ultra is the supported adapter. Check the capability before collecting names and handle `CONTEXT_BIAS_UNSUPPORTED` if the selected model changes.
 
 After connecting, call `client.openSpeechSession("auto")` on a worker. Your app captures audio with its normal microphone permission. Feed finite float32 mono samples at 16 kHz, in chunks of at most 16000 samples, through `SpeechSession.feed(samples, endOfStream, listener)`. Wait for each acknowledgement/result to bound the queue.
 

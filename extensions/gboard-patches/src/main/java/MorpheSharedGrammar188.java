@@ -15,7 +15,7 @@ public final class MorpheSharedGrammar188 implements uum {
   if(closed || input==null || !SharedInlineSettings.grammarSelected(context) || SharedGrammarController.onUiThread())return auaz.n(Collections.emptyList());
   CompletableFuture<List<GrammarEdits.Edit>> request=SharedGrammarController.check(context,input.toString());pending=request;
   try{
-   List<Object> result=new ArrayList<>();for(GrammarEdits.Edit edit:request.get(5,TimeUnit.SECONDS)){uuk builder=new uuk();builder.a=edit.start;builder.b=edit.end;builder.c=Collections.singletonList(edit.replacement);result.add(builder.a());}
+   List<Object> result=new ArrayList<>();for(GrammarEdits.Edit edit:request.get(SharedGrammarController.REQUEST_DEADLINE_MS+1_000L,TimeUnit.MILLISECONDS)){uuk builder=new uuk();builder.a=edit.start;builder.b=edit.end;builder.c=Collections.singletonList(edit.replacement);result.add(builder.a());}
    return auaz.n(result);
   }catch(Exception error){request.cancel(false);return auaz.n(Collections.emptyList());}
   finally{if(pending==request)pending=null;}

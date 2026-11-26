@@ -9,6 +9,8 @@ import android.util.Log;
 public final class GboardPatchesFeatureAvailability {
     public static final String FEATURE_KEYPRESS_HAPTICS =
             "dev.jason.gboardpatches.feature.keypress_haptics";
+    public static final String FEATURE_SHIFT_FORWARD_DELETE =
+            "dev.jason.gboardpatches.feature.shift_forward_delete";
     public static final String FEATURE_EDITING_ACCESS_POINTS =
             "dev.jason.gboardpatches.feature.editing_access_points";
     /** 18.8.0 beta gates forced by the Beta features toggle. */

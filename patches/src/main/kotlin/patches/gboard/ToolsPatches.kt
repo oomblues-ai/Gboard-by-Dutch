@@ -1,6 +1,18 @@
 package patches.gboard
 
 import app.morphe.patcher.patch.resourcePatch
+import patches.gboard.features.addsymbols.gboardCustomSymbolsFeatureMarkerPatch
+import patches.gboard.features.addsymbols.gboardNativeSymbolsPatch
+import patches.gboard.features.editingaccesspoints.gboardEditingAccessPointsLifecyclePatch
+import patches.gboard.features.featureflags.gboardGrammarCheckerFeatureMarkerPatch
+import patches.gboard.features.featureflags.gboardGrammarCheckerFlagValuePatch
+import patches.gboard.features.longpressquickactions.gboardLongPressQuickActionsFeatureMarkerPatch
+import patches.gboard.features.longpressquickactions.gboardLongPressQuickActionsInputEventPatch
+import patches.gboard.features.longpressquickactions.gboardLongPressQuickActionsPointerOwnerPatch
+import patches.gboard.features.longpressquickactions.gboardLongPressQuickActionsSoftKeyPatch
+import patches.gboard.features.shiftdelete.gboardShiftDeleteBytecodePatch
+import patches.gboard.features.shiftdelete.gboardShiftDeleteFeatureMarkerPatch
+import patches.gboard.shared.accesspoint.gboardAccessPointContributions1803Patch
 import patches.gboard.features.accesspointcount.gboardAccessPointCountFeatureMarkerPatch
 import patches.gboard.features.accesspointcount.gboardAccessPointCountFlagValuePatch
 import patches.gboard.features.sharedmodel.gboardSharedModelPatch
@@ -26,6 +38,62 @@ import patches.gboard.features.hiddenflags.gboardHiddenFlagsFeatureMarkerPatch
 import patches.gboard.features.featureflags.applyFeatureMarker
 import patches.gboard.features.ramblerextras.gboardRamblerExtrasMarkerPatch
 import patches.gboard.shared.gboardPatchesSettingsPatch
+
+@Suppress("unused")
+val gboardForwardDeletePatch = resourcePatch(
+    name = "Shift + Backspace Forward Delete",
+    description = "Hold Shift and press Backspace to delete the next character.",
+    default = false,
+) {
+    compatibleWith(gboard)
+    dependsOn(gboardPatchesSettingsPatch, gboardShiftDeleteFeatureMarkerPatch, gboardShiftDeleteBytecodePatch)
+}
+
+@Suppress("unused")
+val gboardLongPressEditingShortcutsPatch = resourcePatch(
+    name = "Long-Press Editing Shortcuts",
+    description = "Adds Select all, Undo, Copy, Cut, Paste and Redo to letter menus, with per-key placement.",
+    default = false,
+) {
+    compatibleWith(gboard)
+    dependsOn(
+        gboardPatchesSettingsPatch,
+        gboardLongPressQuickActionsFeatureMarkerPatch,
+        gboardLongPressQuickActionsSoftKeyPatch,
+        gboardLongPressQuickActionsInputEventPatch,
+        gboardLongPressQuickActionsPointerOwnerPatch,
+    )
+}
+
+@Suppress("unused")
+val gboardCustomSymbolsPalettePatch = resourcePatch(
+    name = "Custom Symbols",
+    description = "Adds a themed toolbar palette with 11 symbol categories for English keyboard layouts.",
+    default = false,
+) {
+    compatibleWith(gboard)
+    dependsOn(
+        gboardPatchesSettingsPatch,
+        gboardCustomSymbolsFeatureMarkerPatch,
+        gboardNativeSymbolsPatch,
+        gboardAccessPointContributions1803Patch,
+        gboardEditingAccessPointsLifecyclePatch,
+    )
+}
+
+@Suppress("unused")
+val gboardGrammarCheckerPatch = resourcePatch(
+    name = "Grammar Checker",
+    description = "Enables Gboard's native grammar-check setting and spelling suggestions on Android 12 or later.",
+    default = false,
+) {
+    compatibleWith(gboard)
+    dependsOn(
+        gboardPatchesSettingsPatch,
+        gboardGrammarCheckerFeatureMarkerPatch,
+        gboardGrammarCheckerFlagValuePatch,
+    )
+}
 
 @Suppress("unused")
 val gboardTopToolbarItemCountPatch = resourcePatch(

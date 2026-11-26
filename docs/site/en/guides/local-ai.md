@@ -24,7 +24,7 @@ For a standalone installation without Gboard, use the [companion project](https:
 
 With Gboard networking enabled, opening Local AI setup checks for a newer official Host. If one is available, choose **Update Local Model Host**. Gboard verifies the package, version, SHA-256 and signer before Android asks you to confirm installation.
 
-This Gboard bundle pins **Local Model Host v0.1.143** for first-time setup. The Host accepts installed apps by default and lets you optionally allow or block apps in **App access**. If a restricted policy blocks Gboard, change that choice in the Host and reopen Local AI. [Host release and developer files](https://gitlab.com/johninnld/local-model-host/-/releases/v0.1.143).
+This Gboard bundle pins **Local Model Host v0.1.145** for first-time setup. The Host accepts installed apps by default and lets you optionally allow or block apps in **App access**. If a restricted policy blocks Gboard, change that choice in the Host and reopen Local AI. [Host release and developer files](https://gitlab.com/johninnld/local-model-host/-/releases/v0.1.145).
 
 ## Write in the current keyboard theme
 
@@ -44,7 +44,7 @@ Additional actions include shortening, summaries, replies, style examples and a 
 | **AI Reply** | Open the toolbar action in an editable conversation, approve the screen capture, review the screenshot and choose **Read this screen**. Review the draft yourself before inserting it. |
 | **My Style** | Open the toolbar action with writing examples visible in the app, confirm the capture and use **Read this screen**. Review the result before applying. |
 | **Smart Compose** | Enable the experimental switch in **Writing preferences**. Type a partial sentence and review any offered continuation. |
-| **Inline grammar** | Enable the experimental switch in **Writing preferences**. Type a draft and review any offered correction before applying it. |
+| **Inline grammar** | On Android 12 or later, select the patched Gboard as Android's spell checker and enable **Inline grammar** in **Writing preferences**. Gemma checks supported text fields on the device. Tap a blue underline to review and choose a correction. |
 | **Voice Edit** | Set up shared local speech as well as the text model, then open **Voice Edit** and follow the recording steps below. |
 
 ## Read text from an image
@@ -67,7 +67,7 @@ Downloads are managed in the companion, not separately in Gboard. Text/image pro
 
 **Voice Edit** takes an explicit recording in the keyboard. With a draft open, choose **Voice Edit → Record instruction** and speak when it says it is listening. Your selected shared speech model transcribes the instruction. Gemma uses the transcript and draft to propose an edit. Review it and tap **Apply** or **Cancel**.
 
-The shared adapters do not provide the old embedded Parakeet decoder's acoustic voice-dictionary bias. Google/Rambler settings apply to those selected backends; they do not add the same commands or dictionary behavior to every local recognizer.
+Local Model Host v0.1.145 or later can use contact names with Parakeet Ultra. Select Ultra in the Host, then enable **Use contact names** in Gboard’s **Local AI voice typing** settings and grant contacts access. Gboard passes names locally for each dictation session. Google and Rambler have their own voice dictionary settings.
 
 ## Memory, storage and privacy
 

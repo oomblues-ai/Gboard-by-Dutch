@@ -190,7 +190,7 @@ public final class ParakeetRecognizer {
                 return;
             }
             try {
-                vad = SharedSpeechHook.open(context);
+                vad = SharedSpeechHook.open(context, speechCommand == null);
                 shared=vad;
                 if(cancelled){vad.close();return;}
                 if(!listening){vad.close();signalStopListening(cb);if(finished.compareAndSet(false,true))cbStopRecognition(cb);decoder.shutdown();return;}

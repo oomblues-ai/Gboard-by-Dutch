@@ -22,6 +22,28 @@ public class SharedSpeechControllerTest {
     @Test public void transientReadySnapshotDuringReconfigurationCannotBeSelected()throws Exception{assertFalse(SharedSpeechController.readyStatus(new JSONObject("{\"enabled\":true,\"engineLoaded\":true,\"state\":\"READY\",\"reconfiguring\":true}")));}
     @Test public void stoppedOrUnloadedSpeechCannotBecomeSelectable()throws Exception{assertFalse(SharedSpeechController.readyStatus(null));assertFalse(SharedSpeechController.readyStatus(new JSONObject("{\"enabled\":false,\"engineLoaded\":true,\"state\":\"READY\"}")));assertFalse(SharedSpeechController.readyStatus(new JSONObject("{\"enabled\":true,\"engineLoaded\":false,\"state\":\"READY\"}")));assertFalse(SharedSpeechController.readyStatus(new JSONObject("{\"enabled\":true,\"engineLoaded\":true,\"state\":\"MEMORY_PAUSED\"}")));}
 
+    @Test public void contactHintsRequireAnExactCurrentUltraCapability() throws Exception {
+        assertTrue(contactCapability("parakeet-ultra", "true"));
+        assertFalse(contactCapability("parakeet-ultra", "false"));
+        assertFalse(contactCapability("parakeet-ultra", "\"true\""));
+        assertFalse(contactCapability("parakeet-tdt-v3", "true"));
+    }
+
+    @Test public void boundedContactNamesKeepSpellingAndExcludeOtherContactFields() {
+        SharedSpeechContactNames.Phrases phrases = new SharedSpeechContactNames.Phrases();
+        for (String value : new String[]{"  Rene\u0301e   Jansen  ", "Renée Jansen", "Łukasz", "João", "O’Neill", "mail@example.org", "+3112345678", "Name\nHidden", "X".repeat(65)}) {
+            phrases.offer(value);
+        }
+        assertEquals(java.util.List.of("Renée Jansen", "Łukasz", "João", "O’Neill"), phrases.values());
+        for (int i = 0; i < 64; i++) phrases.offer("Contact " + i);
+        assertEquals(32, phrases.values().size());
+    }
+
+    private static boolean contactCapability(String model, String contextBias) {
+        return new app.johninnl.modelhost.api.HostCapabilities("{\"protocolMajor\":1,\"speech\":{\"modelId\":\""
+            + model + "\",\"contextBias\":" + contextBias + "}}").supportsSpeechContactHints();
+    }
+
     @Test public void stoppingWhileDecoderOpensClosesTheLateStreamWithoutFeedingIt()throws Exception {
         ExecutorService workers=Executors.newFixedThreadPool(2);
         CountDownLatch opening=new CountDownLatch(1);

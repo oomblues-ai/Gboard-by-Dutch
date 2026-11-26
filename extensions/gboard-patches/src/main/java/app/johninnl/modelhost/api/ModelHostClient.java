@@ -69,13 +69,61 @@ public final class ModelHostClient implements AutoCloseable {
             return session;
         } catch(Exception e){throw new HostException("SESSION_UNAVAILABLE",e);}
     }
+    /** The current selected model can change independently of the Binder connection. */
+    public boolean supportsSpeechContactHints() throws HostException {
+        IModelHost host = remote;
+        if (closed.get() || host == null) throw new HostException("NOT_CONNECTED");
+        try {
+            return new HostCapabilities(host.capabilitiesJson()).supportsSpeechContactHints();
+        } catch (Exception error) {
+            throw new HostException("SPEECH_SESSION_UNAVAILABLE", error);
+        }
+    }
     /** Call on a worker thread after the provider advertises its speech capability. */
     public SpeechSession openSpeechSession(String language) throws HostException {
-        IModelHost host=remote;if(closed.get()||host==null)throw new HostException("NOT_CONNECTED");
-        try{String config=new org.json.JSONObject().put("schema",1).put("language",language==null?"auto":language).toString();ISpeechSession remoteSession=host.openSpeechSession(config,new IHostEvents.Stub(){@Override public void onStatus(String json){}});
-            SpeechSession session=new SpeechSession(remoteSession,worker,controls,callbacks,context,speechSessions::remove);
-            synchronized(this){if(closed.get()||remote!=host){session.close();throw new HostException("NOT_CONNECTED");}speechSessions.add(session);}return session;
-        }catch(Exception error){throw new HostException("SPEECH_SESSION_UNAVAILABLE",error);}
+        return openSpeechSession(language, java.util.Collections.emptyList());
+    }
+    /** Optional, already validated display names for one utterance. */
+    public SpeechSession openSpeechSession(String language, List<String> contextPhrases) throws HostException {
+        IModelHost host = remote;
+        if (closed.get() || host == null) throw new HostException("NOT_CONNECTED");
+        try {
+            org.json.JSONObject config = new org.json.JSONObject().put("schema", 1)
+                .put("language", language == null ? "auto" : language);
+            if (!contextPhrases.isEmpty()) {
+                if (!new HostCapabilities(host.capabilitiesJson()).supportsSpeechContactHints()) {
+                    throw new HostException("CONTEXT_BIAS_UNSUPPORTED");
+                }
+                config.put("contextPhrases", new org.json.JSONArray(contextPhrases));
+            }
+            ISpeechSession remoteSession = host.openSpeechSession(config.toString(), new IHostEvents.Stub() {
+                @Override public void onStatus(String json) {}
+            });
+            SpeechSession session = new SpeechSession(remoteSession, worker, controls, callbacks, context,
+                speechSessions::remove);
+            synchronized (this) {
+                if (closed.get() || remote != host) {
+                    session.close();
+                    throw new HostException("NOT_CONNECTED");
+                }
+                speechSessions.add(session);
+            }
+            return session;
+        } catch (HostException error) {
+            throw error;
+        } catch (IllegalStateException error) {
+            if ("CONTEXT_BIAS_UNSUPPORTED".equals(error.getMessage())) {
+                throw new HostException("CONTEXT_BIAS_UNSUPPORTED");
+            }
+            throw new HostException("SPEECH_SESSION_UNAVAILABLE", error);
+        } catch (IllegalArgumentException error) {
+            if (!contextPhrases.isEmpty() && "INVALID_REQUEST".equals(error.getMessage())) {
+                throw new HostException("INVALID_REQUEST");
+            }
+            throw new HostException("SPEECH_SESSION_UNAVAILABLE", error);
+        } catch (Exception error) {
+            throw new HostException("SPEECH_SESSION_UNAVAILABLE", error);
+        }
     }
     public HostStatus status() throws HostException { try { if(closed.get() || remote==null)throw new HostException("NOT_CONNECTED");return new HostStatus(remote.statusJson()); }catch(RemoteException e){throw new HostException("PROVIDER_UNAVAILABLE",e);} }
     private void lost(HostException error) { remote=null;for(SpeechSession s:speechSessions)s.disconnected();speechSessions.clear();for(HostSession s:sessions)s.disconnected();sessions.clear();ConnectionListener l=listener;if(l!=null)callbacks.execute(() -> l.onDisconnected(error)); }

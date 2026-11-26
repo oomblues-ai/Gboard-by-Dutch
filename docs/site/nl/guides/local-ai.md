@@ -24,7 +24,7 @@ Gebruik voor installatie zonder Gboard het [companion-project](https://gitlab.co
 
 Als netwerktoegang voor Gboard aanstaat, controleert Local AI bij het openen van de instellingen of er een nieuwere officiële Host is. Kies **Update Local Model Host** wanneer een update beschikbaar is. Gboard verifieert het pakket, de versie, de SHA-256 en de ondertekenaar voordat Android om een installatiebevestiging vraagt.
 
-Deze Gboard-bundel gebruikt **Local Model Host v0.1.143** voor de eerste installatie. De Host laat geïnstalleerde apps standaard toe. Bij **App access** kun je apps toestaan of blokkeren. Als een beperkte instelling Gboard blokkeert, pas die keuze aan in de Host en open Local AI opnieuw. [Host-release en ontwikkelaarsbestanden](https://gitlab.com/johninnld/local-model-host/-/releases/v0.1.143).
+Deze Gboard-bundel gebruikt **Local Model Host v0.1.145** voor de eerste installatie. De Host laat geïnstalleerde apps standaard toe. Bij **App access** kun je apps toestaan of blokkeren. Als een beperkte instelling Gboard blokkeert, pas die keuze aan in de Host en open Local AI opnieuw. [Host-release en ontwikkelaarsbestanden](https://gitlab.com/johninnld/local-model-host/-/releases/v0.1.145).
 
 ## Schrijven in het toetsenbordthema
 
@@ -44,7 +44,7 @@ Waar aangeboden zijn er ook verkorten, samenvatten, antwoorden, stijlvoorbeelden
 | **AI Reply** | Open de actie in een gesprek met een invoerveld, geef toestemming voor de schermopname, controleer de schermafbeelding en kies **Read this screen**. Controleer het antwoord voordat je het invoegt. |
 | **My Style** | Open de actie wanneer schrijfvoorbeelden zichtbaar zijn, bevestig de opname en kies **Read this screen**. Controleer het resultaat voordat je het toepast. |
 | **Smart Compose** | Zet de experimentele schakelaar aan onder **Writing preferences**. Typ een deel van een zin en controleer een eventuele aanvulling. |
-| **Inline grammar** | Zet de experimentele schakelaar aan onder **Writing preferences**. Typ een concept en controleer een eventuele correctie voordat je die toepast. |
+| **Inline grammar** | Kies op Android 12 of nieuwer de gepatchte Gboard als Android-spellingcontrole en zet **Inline grammar** aan onder **Writing preferences**. Gemma controleert ondersteunde tekstvelden op het toestel. Tik op een blauwe onderstreping om een correctie te bekijken en te kiezen. |
 | **Voice Edit** | Stel zowel gedeelde lokale spraak als het tekstmodel in. Open dan **Voice Edit** en volg de opnamestappen hieronder. |
 
 ## Tekst uit een afbeelding lezen
@@ -67,7 +67,7 @@ Downloads staan in de companion, niet afzonderlijk in Gboard. Tekst-/beeldverwer
 
 **Voice Edit** neemt een opdracht op in het toetsenbord. Open een concept, kies **Voice Edit → Record instruction** en spreek zodra het toetsenbord aangeeft dat het luistert. Het geselecteerde spraakmodel zet de opdracht om in tekst. Gemma gebruikt die opdracht en het concept om een bewerking voor te stellen. Controleer het resultaat en tik op **Apply** of **Cancel**.
 
-De gedeelde adapters hebben niet de akoestische spraakwoordenboekvoorkeur van de oude ingebouwde Parakeet-decoder. Google/Rambler-instellingen gelden voor die gekozen backends; ze geven niet aan elke lokale herkenner dezelfde opdrachten of woordenboekwerking.
+Vanaf Local Model Host v0.1.145 kan Parakeet Ultra contactnamen meewegen. Selecteer Ultra in de Host, zet **Contactnamen gebruiken** aan onder **Local AI voice typing** in Gboard en geef toegang tot je contacten. Gboard geeft namen lokaal door per dicteerbeurt. Google en Rambler hebben eigen instellingen voor hun spraakwoordenboek.
 
 ## Geheugen, opslag en privacy
 

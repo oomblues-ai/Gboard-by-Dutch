@@ -54,11 +54,11 @@ Under **Voice typing → Voice dictionary**, add an unusual name in the **Voice 
 
 ### Rambler contact names
 
-This extends the Voice correction list. Enable **Contact names** under **Voice dictionary** and grant Android contacts access if you want to use it. Start a fresh dictation and check that a known name appears. Names removed from the list stay removed. The legacy embedded Parakeet decoder can use the list; shared Local AI adapters do not provide that acoustic bias. The list can be sent to Google when you select Rambler. Keep only the entries you want the active recognizer to see.
+This extends the Voice correction list. Enable **Contact names** under **Voice dictionary** and grant Android contacts access if you want to use it. Start a fresh dictation and check that a known name appears. Names removed from the list stay removed. The legacy embedded Parakeet decoder can use this list. Shared Parakeet Ultra has a separate contact-name switch in **Local AI voice typing**. The list can be sent to Google when you select Rambler. Keep only the entries you want the active recognizer to see.
 
 ### Parakeet personal dictionary
 
-This patch's acoustic dictionary integration belongs to the legacy embedded Parakeet decoder. The shared Local AI adapters do not offer acoustic voice-dictionary bias. Do not treat a saved correction list as proof that it changes shared recognition, and do not silently rewrite names with a language model to simulate acoustic support. Rambler's separate correction list retains its own behavior.
+This patch's acoustic dictionary integration belongs to the legacy embedded Parakeet decoder. For contact-name hints with shared speech, choose Local Model Host v0.1.145 or later, select **Parakeet Ultra**, then turn on **Use contact names** under **Voice typing → Local AI voice typing** and grant Android contacts permission. Gboard sends a limited set of names for that dictation session. Parakeet TDT v3, Nemotron and Whisper Tiny use ordinary shared recognition.
 
 ### Rambler custom instructions
 
@@ -141,6 +141,22 @@ Open **Theme**, select a supported theme and look for **Key shape** in its detai
 Apply **AMOLED dark keyboard** in Morphe, then choose **Gboard Settings → Theme → Dynamic Color → Apply** and turn on Android’s **Dark theme**. Open a text field. The panel behind and between keys should be pure black. Key faces and accents can stay gray or colored. Switch Android back to light mode and reopen the keyboard to confirm the light palette still works. There is no separate AMOLED theme tile.
 
 ## Writing, capture and editing
+
+### Shift + Backspace Forward Delete
+
+After selecting this patch in Morphe, open **Patches → Keyboard Tools & Shortcuts → Shift + Backspace Forward Delete** and turn the switch on. Restart Gboard if prompted. Place the cursor just before a character. Hold the on-screen Shift key and tap the on-screen Backspace key to delete the character after the cursor. Backspace by itself deletes the character before the cursor.
+
+### Long-Press Editing Shortcuts
+
+In **Patches → Keyboard Tools & Shortcuts → Long-Press Editing Shortcuts**, set the default menu position to **First** or **Last**. Each key can follow the default or choose its own position. Reopen the keyboard after saving. Long-press A to select all, Z to undo, C to copy, X to cut, V to paste or Y to redo. Undo and redo depend on the editor. The menu keeps the key’s usual accents and other entries.
+
+### Custom Symbols
+
+With the patch selected in Morphe, switch to an English layout and open **Custom Symbols** in the keyboard’s tools menu. Choose a category and tap a symbol to insert it. Gboard opens its native expression panel with 11 custom categories. Use its tabs to change categories and its keyboard button to return to typing.
+
+### Grammar Checker
+
+On Android 12 or later, select the patched Gboard as Android’s spell checker and turn on **Gboard → Text correction → Grammar check**. In an editor that supports Android spell checking, tap an underlined phrase to see replacement suggestions. Language and grammar-model availability affect what Gboard can check. To use Gemma for the same underline and replacement menu, choose Local AI and turn on **Inline grammar** in **Writing preferences**. Keep the patched Gboard selected as Android's spell checker.
 
 ### Enable Inline Autofill Suggestions
 

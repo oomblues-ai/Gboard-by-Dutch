@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import dev.jason.gboardpatches.extension.settings.GboardPatchesFeatureAvailability;
+import dev.jason.gboardpatches.extension.sharedmodel.GboardSharedWritingRuntime;
+import dev.jason.gboardpatches.extension.sharedmodel.SharedInlineSettings;
 
 @SuppressWarnings("unused")
 public final class GboardFeatureFlagsRuntime {
@@ -47,12 +49,22 @@ public final class GboardFeatureFlagsRuntime {
     }
 
     public static Object applyGrammarCheckerFlagValue(String flagName, Object original) {
-        Context shared=applicationContext();
-        if(shared!=null && dev.jason.gboardpatches.extension.sharedmodel.GboardSharedWritingRuntime.selected(shared)){
-            boolean enabled=dev.jason.gboardpatches.extension.sharedmodel.SharedInlineSettings.grammarSelected(shared);
-            if(FLAG_GRAMMAR_CHECKER.equals(flagName))return Boolean.valueOf(enabled);
-            if(enabled && "grammar_checker_use_grammar_checker_manager".equals(flagName))return Boolean.TRUE;
-            if(enabled && ("grammar_checker_enable_language_detector".equals(flagName) || "enable_llm_based_grammar_checker".equals(flagName)))return Boolean.FALSE;
+        Context context = applicationContext();
+        if (context != null && GboardSharedWritingRuntime.selected(context)) {
+            boolean sharedGrammar = SharedInlineSettings.grammarSelected(context);
+            if (FLAG_GRAMMAR_CHECKER.equals(flagName)) {
+                return sharedGrammar
+                        || isActiveFeature(GboardPatchesFeatureAvailability.FEATURE_GRAMMAR_CHECKER);
+            }
+            if (sharedGrammar) {
+                if ("grammar_checker_use_grammar_checker_manager".equals(flagName)) {
+                    return Boolean.TRUE;
+                }
+                if ("grammar_checker_enable_language_detector".equals(flagName)
+                        || "enable_llm_based_grammar_checker".equals(flagName)) {
+                    return Boolean.FALSE;
+                }
+            }
         }
         return applySelectedFlagValue(
                 flagName,

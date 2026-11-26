@@ -10,7 +10,12 @@ final class SharedSpeechHook {
     static boolean ready(Context context){try{return Boolean.TRUE.equals(controller().getMethod("ready",Context.class).invoke(null,context));}catch(Exception failure){return false;}}
     static String summary(Context context){try{return String.valueOf(controller().getMethod("summary",Context.class).invoke(null,context));}catch(Exception failure){return "Install or update Local Model Host to use shared speech.";}}
     static void settings(Context context){try{controller().getMethod("openSettings",Context.class).invoke(null,context);}catch(Exception failure){android.widget.Toast.makeText(context,"Install or update Local Model Host first.",android.widget.Toast.LENGTH_LONG).show();}}
-    static Session open(Context context)throws Exception{return new Session(controller().getMethod("open",Context.class).invoke(null,context));}
+    static Session open(Context context, boolean nativeDictation) throws Exception {
+        java.util.function.BooleanSupplier contactConsent = () -> nativeDictation
+            && ParakeetStore.contactNamesEnabled(context);
+        return new Session(controller().getMethod("open", Context.class, java.util.function.BooleanSupplier.class)
+            .invoke(null, context, contactConsent));
+    }
     static final class Session implements AutoCloseable {
         private final Object remote;
         Session(Object remote){this.remote=remote;}

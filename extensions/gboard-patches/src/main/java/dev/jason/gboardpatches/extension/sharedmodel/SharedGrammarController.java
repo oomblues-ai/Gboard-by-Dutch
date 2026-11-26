@@ -8,6 +8,7 @@ import java.util.concurrent.*;
 
 /** Private grammar channel. Work/debounce is off the UI thread; closing it never stops another client's engine. */
 public final class SharedGrammarController {
+ public static final int REQUEST_DEADLINE_MS=9_000;
  private static final ScheduledExecutorService WORK=Executors.newSingleThreadScheduledExecutor(r->new Thread(r,"gboard-shared-grammar"));
  private static final Handler MAIN=new Handler(Looper.getMainLooper());
  private static volatile ModelHostClient client;private static HostSession session;
@@ -41,7 +42,7 @@ public final class SharedGrammarController {
   if(active!=query || query.result.isDone() || session==null)return;
   try{
    if(!client.status().isReady()){finish(query,null);return;}
-   query.handle=session.submitText(new TextRequest("proofread",query.text,null,null,null,null,512,4500),json->{
+   query.handle=session.submitText(new TextRequest("proofread",query.text,null,null,null,null,512,REQUEST_DEADLINE_MS),json->{
     try{JSONObject event=new JSONObject(json);if(!event.optBoolean("terminal"))return;String corrected="ok".equals(event.optString("status"))?event.getString("text"):null;WORK.execute(()->finish(query,corrected));}
     catch(Exception error){WORK.execute(()->finish(query,null));}
    });
