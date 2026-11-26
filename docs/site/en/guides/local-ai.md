@@ -6,7 +6,7 @@ The standard install retains the original Gboard backends.
 
 ## Block Gboard telemetry
 
-Enable the optional **Block Gboard telemetry** patch in Morphe to stop the identified Clearcut uploads, Play services client telemetry and Tenor share reports. The patch targets those submission paths. Gboard retains network access for features such as GIF search, translation, language downloads, LAN tools and companion updates. The user feedback action remains available.
+Apply **Block Gboard telemetry** in Morphe to stop the identified Clearcut uploads, Play services client metrics and Tenor share reports. The patch hides stock Translate and blocks its cloud request. **AI Translate** remains available with Local AI. GIF search, downloads, LAN tools, companion updates and manual feedback retain network access. See [private setup and data flows](gboard-privacy.md).
 
 This patch does not change the selected speech recognizer. Use the local model setup to choose and verify shared speech separately.
 
@@ -31,6 +31,19 @@ Open Gboard's **Writing Tools** from the toolbar. Local actions use the keyboard
 Additional actions include shortening, summaries, replies, style examples and a saved instruction where offered. A reply needs supplied conversation context; it does not read another app automatically. Use **Read this screen** explicitly and approve Android's screen-capture consent when asked. Apps that block capture cannot be read through that workflow. Nothing is sent as a message for you.
 
 **AI Translate** uses the destination selected under Local AI's **Writing preferences → Translation language**. Choose that destination first. Experimental Smart Compose and inline grammar have their own Writing preferences switches; suggestions still need review. The picker offers all 38 baseline languages; the source language is inferred from your draft. These are destination choices, not a claim that translation quality has been verified in every language.
+
+| Action | How to use it |
+| --- | --- |
+| **Proofread** | Type or select a draft in an editable field. Open **Writing Tools → Proofread**. Check the proposed corrections and tap **Apply**. |
+| **Rephrase**, **Professional** and other visible tones | Open **Writing Tools**, select the style, then review the proposed rewrite. Use **Cancel** to keep the draft. |
+| **AI Translate** | Set **Translation language** first. Open the toolbar's **AI Translate** action with your draft in the editor. Check the destination and preview before applying. |
+| **AI Instruction** | In **Writing preferences**, save an instruction such as “Keep the dates and shorten to one sentence.” Open **AI Instruction** from the toolbar and review the edit. |
+| **Suggest Changes** | Open the toolbar action with a draft. Choose one proposed instruction to generate a preview. Applying the preview is a separate step. |
+| **AI Reply** | Open the toolbar action in an editable conversation, approve the screen capture, review the screenshot and choose **Read this screen**. Review the draft yourself before inserting it. |
+| **My Style** | Open the toolbar action with writing examples visible in the app, confirm the capture and use **Read this screen**. Review the result before applying. |
+| **Smart Compose** | Enable the experimental switch in **Writing preferences**. Type a partial sentence and review any offered continuation. |
+| **Inline grammar** | Enable the experimental switch in **Writing preferences**. Type a draft and review any offered correction before applying it. |
+| **Voice Edit** | Set up shared local speech as well as the text model, then open **Voice Edit** and follow the recording steps below. |
 
 ## Read text from an image
 

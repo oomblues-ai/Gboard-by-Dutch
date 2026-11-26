@@ -14,7 +14,7 @@ import patches.gboard.shared.isMethodReference
 val gboardBlockTelemetryPatch = bytecodePatch(
     name = "Block Gboard telemetry",
     description = "Stops the identified Clearcut, Play services client metrics and Tenor share-report submissions " +
-        "at their send paths. Keeps network-backed features and user-initiated feedback available.",
+        "and disables stock Translate. Local AI Translate, GIF search, downloads and user-initiated feedback remain available.",
     default = false,
 ) {
     compatibleWith(COMPATIBILITY_GBOARD)
@@ -40,6 +40,20 @@ val gboardBlockTelemetryPatch = bytecodePatch(
             // Clearcut's batch flush owns both log-batch and log-error sends.
             GboardMethodTarget("Lxlc;", "c", listOf("Lxki;", "Ljava/lang/String;"), "V").resolve(this),
         )
+
+        val translateAccessPoint = GboardMethodTarget("Lvsy;", "gg", emptyList(), "V").resolve(this)
+            .expectCall("Laaew;-><init>(Lauaz;Laaev;Z)V")
+        val autoTranslateBanner = GboardMethodTarget("Llcd;", "t", emptyList(), "V").resolve(this)
+            .expectCall("Laefj;->a(Laegc;)V")
+        val autoTranslateOpen = GboardMethodTarget("Llcd;", "u", emptyList(), "V").resolve(this)
+            .expectCall("Ladbz;->T(Ladan;)V")
+        val cloudTranslate = GboardMethodTarget("Lvrc;", "a", listOf("Lvtm;"), "Lavvx;").resolve(this)
+            .expectCall("Ladre;->l(Ljava/lang/Object;)Ladre;")
+        GboardMethodTarget("Lvtn;", "<init>", listOf("I"), "V").resolve(this)
+        check(cloudTranslate.implementation!!.registerCount >= 4) {
+            "Cloud translator has no scratch registers"
+        }
+
         val tenor = GboardMethodTarget("Lajbe;", "a", listOf("Lajar;"), "Ladre;").resolve(this)
         tenor.expectCall("Lajar;->gZ(Landroid/content/Context;)Lahbp;")
         GboardMethodTarget("Lahbv;", "a", emptyList(), "Lahbu;").resolve(this)
@@ -67,6 +81,20 @@ val gboardBlockTelemetryPatch = bytecodePatch(
             return-void
         """.trimIndent())
         for (method in sendsWithoutResult) method.addInstructions(0, "return-void")
+
+        // Suppress native Translate before it can register a tile or open from an automatic prompt.
+        for (method in listOf(translateAccessPoint, autoTranslateBanner, autoTranslateOpen)) {
+            method.addInstructions(0, "return-void")
+        }
+        // Any other stock entry point receives the translator's existing service-failure result.
+        cloudTranslate.addInstructions(0, """
+            new-instance v0, Lvtn;
+            const/4 v1, 0x4
+            invoke-direct {v0, v1}, Lvtn;-><init>(I)V
+            invoke-static {v0}, Ladre;->l(Ljava/lang/Object;)Ladre;
+            move-result-object v0
+            return-object v0
+        """.trimIndent())
 
         // ajao is the dedicated register-share request. Search, trends and image fetching share
         // this transport and still go through its original code. The share branch can reuse

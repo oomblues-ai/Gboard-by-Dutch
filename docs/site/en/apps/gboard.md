@@ -8,7 +8,7 @@ Select Google's armeabi-v7a APK (build 176124765) or arm64-v8a APK (build 176124
 
 [Read how to use and test every Gboard patch](../guides/gboard.md) · [Make Frosted Glass visible](../guides/gboard.md#frosted-glass)
 
-[Set up Local AI writing, images and shared speech](../guides/local-ai.md). The companion requires Android 11+ and arm64; ordinary Gboard patch compatibility remains separate.
+[Set up Local AI writing, images and shared speech](../guides/local-ai.md). [Set up Gboard for private local AI](../guides/gboard-privacy.md). The companion requires Android 11+ and arm64; ordinary Gboard patch compatibility remains separate.
 
 ## Patches
 
@@ -36,7 +36,7 @@ Select Google's armeabi-v7a APK (build 176124765) or arm64-v8a APK (build 176124
 | **AMOLED dark keyboard** | On | Turns the dark keyboard background pure black instead of Google's grey, including the dynamic theme that follows your wallpaper, while light mode keeps the light keyboard. There is no separate tile: pick Dynamic Color in Gboard's theme screen — see [AMOLED dark keyboard](#amoled-dark-keyboard). |
 | **Enable OCR / Scan Text** | On | Keeps the Scan Text entry point and adds a selected-image/camera workflow through Gemma when Local AI and vision are ready. Review recognized text before insertion. The separate bundled/Google OCR route retains its own setup when Local AI is off. |
 | **AI Writing Tools** | On | Keeps Google backend choices and adds optional shared Gemma writing, proofreading, translation, replies, style and image actions in the keyboard theme. Smart Compose and inline grammar are separately experimental. Configure the standalone companion under Local AI. |
-| **Block Gboard telemetry** | Off | Suppresses the identified Clearcut, Play services client metrics and Tenor share reports at their submission paths. Gboard retains network access for its features. See the [Local AI guide](../guides/local-ai.md#block-gboard-telemetry). |
+| **Block Gboard telemetry** | Off | Suppresses the identified Clearcut, Play services client metrics and Tenor share reports at their submission paths. Hides stock Translate and blocks its cloud request. GIF search, downloads and AI Translate remain available where configured. See [private setup](../guides/gboard-privacy.md). |
 | **Clipboard Enhancements** | On | Controls how long copied snippets stay available, how many are kept, how many preview lines a card shows, and whether cards show a countdown, creation time, order number and column count. |
 | **Web Clipboard** | On | Hosts a small Web Clipboard portal on the phone so a desktop browser on the same local network can exchange clipboard text with Gboard. The portal is protected by a pairing code and can be reached from a Quick Settings tile. |
 | **Toolbar Editing Buttons** | On | Adds Select All, Copy, Cut and Paste to Gboard's menu so they can be dragged onto the top toolbar and used across supported keyboard languages and editors. |

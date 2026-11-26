@@ -6,7 +6,7 @@ De standaardinstallatie behoudt de oorspronkelijke Gboard-backends.
 
 ## Gboard-telemetrie blokkeren
 
-Schakel in Morphe de optionele patch **Block Gboard telemetry** in om de gevonden Clearcut-uploads, clienttelemetrie via Play-services en Tenor-deelrapporten tegen te houden. De patch grijpt in op die verzendpaden. Gboard behoudt netwerktoegang voor onder meer GIF-zoeken, vertalen, taaldownloads, LAN-tools en updates van de companion. Feedback die je zelf verstuurt blijft beschikbaar.
+Pas **Block Gboard telemetry** toe in Morphe om de gevonden Clearcut-uploads, clienttelemetrie via Play-services en Tenor-deelrapporten te stoppen. De patch verbergt de standaardoptie Translate en blokkeert de cloudrequest ervan. **AI Translate** blijft beschikbaar met Local AI. GIF-zoeken, downloads, LAN-tools, companion-updates en handmatige feedback behouden netwerktoegang. Zie [private installatie en gegevensstromen](gboard-privacy.md).
 
 Deze patch wijzigt de gekozen spraakherkenner niet. Kies en controleer gedeelde spraak afzonderlijk in Local AI.
 
@@ -31,6 +31,19 @@ Open **Writing Tools** via de werkbalk. Lokale acties volgen het toegepaste toet
 Waar aangeboden zijn er ook verkorten, samenvatten, antwoorden, stijlvoorbeelden en een opgeslagen instructie. Een antwoord heeft aangeleverde gesprekscontext nodig; een andere app wordt niet automatisch uitgelezen. Gebruik **Read this screen** expliciet en bevestig Androids schermopnametoestemming. Apps die opname blokkeren kunnen zo niet worden gelezen. Er wordt geen bericht namens jou verstuurd.
 
 **AI Translate** gebruikt de doeltaal onder **Writing preferences → Translation language**. Kies die eerst. Experimentele Smart Compose en inline grammatica hebben eigen schakelaars onder Writing preferences; controleer suggesties nog steeds. De keuzelijst bevat alle 38 basistalen; de brontaal wordt uit je tekst afgeleid. Dit zijn beschikbare doeltalen, geen claim dat de vertaalkwaliteit voor iedere taal is geverifieerd.
+
+| Actie | Zo gebruik je die |
+| --- | --- |
+| **Proofread** | Typ of selecteer tekst in een invoerveld. Open **Writing Tools → Proofread**, controleer de correcties en tik op **Apply**. |
+| **Rephrase**, **Professional** en andere zichtbare stijlen | Open **Writing Tools**, kies een stijl en controleer het voorstel. Met **Cancel** behoud je je concept. |
+| **AI Translate** | Stel eerst **Translation language** in. Open **AI Translate** via de werkbalk bij je concept. Controleer de doeltaal en het voorbeeld voordat je het toepast. |
+| **AI Instruction** | Bewaar onder **Writing preferences** een instructie zoals “Behoud de datums en maak er één zin van”. Open **AI Instruction** via de werkbalk en controleer de bewerking. |
+| **Suggest Changes** | Open de actie bij een concept. Kies een voorgestelde instructie om een voorbeeld te maken. Daarna kies je zelf of je het toepast. |
+| **AI Reply** | Open de actie in een gesprek met een invoerveld, geef toestemming voor de schermopname, controleer de schermafbeelding en kies **Read this screen**. Controleer het antwoord voordat je het invoegt. |
+| **My Style** | Open de actie wanneer schrijfvoorbeelden zichtbaar zijn, bevestig de opname en kies **Read this screen**. Controleer het resultaat voordat je het toepast. |
+| **Smart Compose** | Zet de experimentele schakelaar aan onder **Writing preferences**. Typ een deel van een zin en controleer een eventuele aanvulling. |
+| **Inline grammar** | Zet de experimentele schakelaar aan onder **Writing preferences**. Typ een concept en controleer een eventuele correctie voordat je die toepast. |
+| **Voice Edit** | Stel zowel gedeelde lokale spraak als het tekstmodel in. Open dan **Voice Edit** en volg de opnamestappen hieronder. |
 
 ## Tekst uit een afbeelding lezen
 
