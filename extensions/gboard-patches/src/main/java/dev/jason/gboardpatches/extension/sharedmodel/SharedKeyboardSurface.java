@@ -14,7 +14,7 @@ import java.lang.ref.WeakReference;
 public final class SharedKeyboardSurface {
     private static final int BODY_SWITCHER=0x7f0b2a8b;
     private static final int MESSAGE_TEXT=0x7f0b0436;
-    private static final int MODERN_BODY=0x7f0b2a8c,RESULTS=0x7f0b0430,RESULT_TEXT=0x7f0b042e,FOOTER=0x7f0b045e,PRIMARY_ACTION=0x7f0b0458;
+    private static final int MODERN_BODY=0x7f0b2a8c,RESULTS=0x7f0b0430,RESULT_TEXT=0x7f0b042e,FOOTER=0x7f0b045e;
     private static final Handler MAIN=new Handler(Looper.getMainLooper());
     private static WeakReference<ViewGroup> keyboard=new WeakReference<>(null);
     private static WeakReference<ViewSwitcher> switcher=new WeakReference<>(null);
@@ -51,7 +51,11 @@ public final class SharedKeyboardSurface {
     static boolean available(){
         ViewGroup root=keyboard.get();if(root==null || !root.isAttachedToWindow() || !root.isShown())return false;
         if(switcher.get()!=null)return switcher.get().getCurrentView() instanceof FrameLayout;
-        FrameLayout card=nativeCard();TextView action=primaryTemplate(),footer=footerTemplate();return card!=null && card.getWidth()>0 && card.getHeight()>0 && stableModernParent()!=null && action!=null && footer!=null && footer.getHeight()>0;
+        FrameLayout card=nativeCard();
+        TextView footer=footerTemplate();
+        // Panels borrow controls from the visible footer. The result card may still be loading.
+        return card!=null && card.getWidth()>0 && card.getHeight()>0
+                && stableModernParent()!=null && footer!=null && footer.getHeight()>0;
     }
     static void whenAvailable(Context context,EditorSnapshot snapshot,Runnable show){await(context,snapshot,show,20);}
     private static void await(Context context,EditorSnapshot snapshot,Runnable show,int remaining){
@@ -70,7 +74,6 @@ public final class SharedKeyboardSurface {
         if(known instanceof TextView)return (TextView)known;
         TextView text=findText(root,false);if(text==null)throw new IllegalStateException("NATIVE_THEME_UNAVAILABLE");return text;
     }
-    private static TextView primaryTemplate(){FrameLayout card=nativeCard();View action=card==null?null:card.findViewById(PRIMARY_ACTION);if(!(action instanceof TextView) || action.getBackground()==null || action.getBackground().getConstantState()==null)return null;return (TextView)action;}
     private static TextView buttonTemplate(){TextView text=modern.get()!=null?footerTemplate():findText(templateRoot(),true);if(text==null)throw new IllegalStateException("NATIVE_THEME_UNAVAILABLE");return text;}
     private static TextView findText(View view,boolean clickable){
         if(view instanceof TextView && !(view instanceof EditText)){
