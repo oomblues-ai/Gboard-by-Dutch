@@ -130,7 +130,7 @@ Selecteer **Top Toolbar Item Count** bij het patchen in Morphe. Zet bij **Patche
 
 Open **Patches → Keys, Layout & Symbols → G logo**. Kies de ingebouwde G, een ander teken of een eigen PNG, WebP of JPEG. Pas formaat en kleur aan. Laat de taalnaam eerst zichtbaar tot het logo naar wens staat. Open het toetsenbord opnieuw en bekijk de spatiebalk in je eigen thema en toetsenbordtaal.
 
-Als Handwriting en Morse code naast QWERTY zijn ingeschakeld, kan de QWERTY-spatiebalk weer de taalnaam tonen terwijl **G logo** aanstaat. Dit staat in [issue #13](https://gitlab.com/johninnld/nl-morphe-patches/-/work_items/13).
+Vanaf v1.107.1 blijft het logo zichtbaar wanneer je met **G logo** ingeschakeld wisselt tussen QWERTY, Handwriting en Morse code. Dit is op een OnePlus 15 gecontroleerd. De oorspronkelijke melding staat in [issue #13](https://gitlab.com/johninnld/nl-morphe-patches/-/work_items/13).
 
 ### Key Shape Selection
 

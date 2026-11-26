@@ -130,7 +130,7 @@ Select **Top Toolbar Item Count** when patching in Morphe. In **Patches → Keys
 
 Open **Patches → Keys, Layout & Symbols → G logo**. Select the built-in G, another glyph or your own PNG, WebP or JPEG. Adjust the size and color. Leave the language label visible until the image is positioned as you like. Reopen the keyboard and check the logo in the theme and language you normally use.
 
-With Handwriting and Morse code enabled alongside QWERTY, the QWERTY spacebar can show its language label again even when **G logo** is on. This is tracked in [issue #13](https://gitlab.com/johninnld/nl-morphe-patches/-/work_items/13).
+In v1.107.1, the logo stays visible when switching between QWERTY, Handwriting and Morse code with **G logo** enabled. This was verified on a OnePlus 15. [Issue #13](https://gitlab.com/johninnld/nl-morphe-patches/-/work_items/13) tracks the original report.
 
 ### Key Shape Selection
 
