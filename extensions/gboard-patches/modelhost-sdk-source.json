@@ -27,10 +27,14 @@
     "aidl/app/johninnl/modelhost/api/IHostEvents.aidl": "695d98505990c814962cb1c40627e5469931359a58b7465e9962c6a7cb8df9ed",
     "aidl/app/johninnl/modelhost/api/IModelHost.aidl": "e00c48b6de793ccad8698bf8b39e54c509388d7beaae4643d2d17061474eb993",
     "aidl/app/johninnl/modelhost/api/IModelSession.aidl": "3851dda208158b599c92453343a9f3f8c953b6984157ec7db314e68cfdcee5ce",
-    "aidl/app/johninnl/modelhost/api/ITextResultCallback.aidl": "0b41b6b6935daf74656e28ec20709121c7b16e9b8308363cf14c51813f4f83f5"
+    "aidl/app/johninnl/modelhost/api/ITextResultCallback.aidl": "0b41b6b6935daf74656e28ec20709121c7b16e9b8308363cf14c51813f4f83f5",
+    "java/app/johninnl/modelhost/api/ProviderRelease.java": "506130550e6d4b8855938d7414ecea566d0c9fdad3e83b9d72befb4316ceeb42",
+    "java/app/johninnl/modelhost/api/ProviderUpdates.java": "33065066b6789ce538809cb62036d4c313f1e46cb2c2f00d075e86e84d796e70"
   },
   "fileOverrides": {
     "java/app/johninnl/modelhost/api/VerifiedApk.java": "5f45116745715bdfa6992341f28b40a41a663011",
-    "java/app/johninnl/modelhost/api/ProviderDiscovery.java": "5f45116745715bdfa6992341f28b40a41a663011"
+    "java/app/johninnl/modelhost/api/ProviderDiscovery.java": "5f45116745715bdfa6992341f28b40a41a663011",
+    "java/app/johninnl/modelhost/api/ProviderRelease.java": "01c16e56a50b561c635ea7997d29d9078f13c15b",
+    "java/app/johninnl/modelhost/api/ProviderUpdates.java": "01c16e56a50b561c635ea7997d29d9078f13c15b"
   }
 }

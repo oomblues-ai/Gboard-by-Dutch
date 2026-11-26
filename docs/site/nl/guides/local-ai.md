@@ -22,6 +22,8 @@ De huidige companion vereist **Android 11 of nieuwer en 64-bits ARM**. E4B heeft
 
 Gebruik voor installatie zonder Gboard het [companion-project](https://gitlab.com/johninnld/local-model-host) en de [geverifieerde installatieprocedure](../developers/local-ai/install.md).
 
+Als netwerktoegang voor Gboard aanstaat, controleert Local AI bij het openen van de instellingen of er een nieuwere officiële Host is. Kies **Update Local Model Host** wanneer een update beschikbaar is. Gboard verifieert het pakket, de versie, de SHA-256 en de ondertekenaar voordat Android om een installatiebevestiging vraagt.
+
 ## Schrijven in het toetsenbordthema
 
 Open **Writing Tools** via de werkbalk. Lokale acties volgen het toegepaste toetsenbordthema. Probeer Proofread, Rephrase of Professional op een korte tekst, controleer het voorbeeld en pas toe of annuleer. Behoud het gewone ongedaan maken van de editor.

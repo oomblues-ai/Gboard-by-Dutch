@@ -20,28 +20,76 @@ final class SharedProviderSetup {
     private static volatile VerifiedApk pending;
     private static volatile long generation;
     private static Future<?> job;
-    static boolean installedMatchesReview(Context context){try{SharedProviderIdentity.verify(context);android.content.pm.PackageInfo info=context.getPackageManager().getPackageInfo(ModelHostClient.DEFAULT_PACKAGE,0);long version=android.os.Build.VERSION.SDK_INT>=28?info.getLongVersionCode():info.versionCode;return version==release(context).versionCode;}catch(Exception unavailable){return false;}}
-    static boolean needsUpdate(Context context){try{android.content.pm.PackageInfo info=context.getPackageManager().getPackageInfo(ModelHostClient.DEFAULT_PACKAGE,0);long version=android.os.Build.VERSION.SDK_INT>=28?info.getLongVersionCode():info.versionCode;return version<release(context).versionCode;}catch(Exception unavailable){return false;}}
+    private static final ExecutorService UPDATES = Executors.newSingleThreadExecutor(r ->
+            new Thread(r, "gboard-host-update-check"));
+    private static volatile ProviderRelease offeredUpdate;
+    private static long nextUpdateCheck;
+
+    static synchronized void checkForUpdates(Context context) {
+        if (dev.jason.gboardpatches.extension.privacy.GboardTelemetryPolicy.isEnabled(context)
+                || !ProviderDiscovery.isOfficialProviderSupported()) return;
+        long now = android.os.SystemClock.elapsedRealtime();
+        if (now < nextUpdateCheck) return;
+        nextUpdateCheck = now + TimeUnit.HOURS.toMillis(6);
+        Context app = context.getApplicationContext();
+        UPDATES.submit(() -> {
+            try {
+                ProviderRelease discovered = ProviderUpdates.check(app, release(app).versionCode, 4);
+                ProviderRelease current = offeredUpdate;
+                if (discovered != null && (current == null || discovered.versionCode >= current.versionCode)) {
+                    offeredUpdate = discovered;
+                } else if (current != null && current.versionCode <= ProviderUpdates.installedVersion(app)) {
+                    offeredUpdate = null;
+                }
+            } catch (HostException unavailable) {
+                // Keep any previously verified offer and the bundled installer.
+            } catch (Exception invalidBundle) {
+                // The setup screen already reports an unavailable bundled installer.
+            }
+        });
+    }
+
+    private static ProviderRelease target(Context context) throws Exception {
+        ProviderRelease pinned = release(context);
+        ProviderRelease discovered = offeredUpdate;
+        return discovered != null && discovered.versionCode > pinned.versionCode ? discovered : pinned;
+    }
+    static boolean installedMatchesReview(Context context) {
+        try {
+            VerifiedApk apk = pending;
+            return apk != null && ProviderUpdates.installedVersion(context) >= apk.versionCode;
+        } catch (Exception unavailable) {
+            return false;
+        }
+    }
+    static boolean needsUpdate(Context context) {
+        try { return ProviderUpdates.installedVersion(context) < target(context).versionCode; }
+        catch (Exception unavailable) { return false; }
+    }
+    static boolean needsBundledUpdate(Context context) {
+        try { return ProviderUpdates.installedVersion(context) < release(context).versionCode; }
+        catch (Exception unavailable) { return false; }
+    }
     static String platformMessage(){return "Local AI requires Android 11 or later and a 64-bit ARM device.";}
     static boolean busy(){return busy;}
     static String message(){return message;}
     static VerifiedApk pending(){return pending;}
     static void finished(String status){pending=null;busy=false;message=status;}
-    static SharedProviderRelease release(Context context)throws Exception{
+    static ProviderRelease release(Context context)throws Exception{
         try(InputStream input=context.getAssets().open("morphe/model-host-release.json")){
             ByteArrayOutputStream data=new ByteArrayOutputStream();byte[] buffer=new byte[2048];int count;
             while((count=input.read(buffer))!=-1){if(data.size()+count>8192)throw new IOException("Release identity too large");data.write(buffer,0,count);}
-            return new SharedProviderRelease(new JSONObject(data.toString("UTF-8")));
+            return new ProviderRelease(new JSONObject(data.toString("UTF-8")));
         }
     }
-    private static VerifiedApk verify(Context context,Uri uri,SharedProviderRelease release)throws Exception{
+    private static VerifiedApk verify(Context context,Uri uri,ProviderRelease release)throws Exception{
         VerifiedApk result=VerifiedApk.verify(context,uri,release.packageName,release.apkSha256,release.signerSha256);
         if(result.versionCode!=release.versionCode)throw new IOException("Version mismatch");return result;
     }
     /** Launch only the pinned package URL, after the user selects the browser action. */
     static void openDownloadInBrowser(Context context) {
         try {
-            SharedProviderRelease release = release(context);
+            ProviderRelease release = release(context);
             if (release.download == null) throw new IOException("Release download unavailable");
             context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(release.download.toASCIIString()))
                     .addCategory(Intent.CATEGORY_BROWSABLE)
@@ -65,11 +113,21 @@ final class SharedProviderSetup {
         job=WORKER.submit(()->{
             File copy=null;
             try{
-                SharedProviderRelease release=release(app);if(release.download==null)throw new IOException("Release unavailable");
-                copy=File.createTempFile("local-ai-download-",".apk",app.getCacheDir());
-                release.downloadTo(copy,(done,total)->{if(generation==current)message="Downloading companion app"+(total>0?" · "+done*100/total+"%":"…");});
-                if(generation!=current)return;message="Checking the companion app…";
-                VerifiedApk verified=verify(app,Uri.fromFile(copy),release);
+                ProviderRelease release = target(app);
+                ProviderRelease.Progress progress = (done,total) -> {
+                    if (generation == current) message = "Downloading companion app"
+                            + (total > 0 ? " · " + done * 100 / total + "%" : "…");
+                };
+                VerifiedApk verified;
+                if (release.versionCode > release(app).versionCode) {
+                    verified = ProviderUpdates.download(app, release, progress);
+                } else {
+                    copy = File.createTempFile("local-ai-download-", ".apk", app.getCacheDir());
+                    release.downloadTo(copy, progress);
+                    if (generation != current) return;
+                    message = "Checking the companion app…";
+                    verified = verify(app, Uri.fromFile(copy), release);
+                }
                 MAIN.post(()->{if(generation!=current)return;pending=verified;busy=false;message="Ready to install.";Context origin=source.get();if(origin instanceof android.app.Activity && ((android.app.Activity)origin).hasWindowFocus()){try{SharedModelSetupActivity.install(origin);}catch(RuntimeException unavailable){message="Ready to install. Tap Install companion app to continue.";}}});
             }catch(Exception failure){if(generation==current){busy=false;message="Could not download the companion app. Check your connection and try again.";}}
             finally{if(copy!=null)copy.delete();}

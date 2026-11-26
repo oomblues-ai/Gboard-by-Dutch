@@ -25,7 +25,10 @@ public final class SharedLocalAiSettingsFeature implements GboardPatchesSettings
     @Override public String getEntrySummary(){return GboardSharedWritingRuntime.selected(context)?"On · Writing tools and text scanning use the local model":"Off · Set up local writing tools";}
     @Override public boolean isAvailable(Context context){return GboardPatchesFeatureAvailability.hasFeature(context,GboardPatchesFeatureAvailability.FEATURE_SHARED_LOCAL_MODEL);}
     @Override public List<GboardPatchesSettingsContract.Feature> getNavigationChildren(){return Arrays.asList(writing,languages,advanced);}
-    @Override public void onVisible(GboardPatchesSettingsContract.FeatureHost host){SharedModelClient.reconnect(host.getContext());}
+    @Override public void onVisible(GboardPatchesSettingsContract.FeatureHost host) {
+        SharedModelClient.reconnect(host.getContext());
+        SharedProviderSetup.checkForUpdates(host.getContext());
+    }
     @Override public GboardPatchesSettingsContract.Screen buildScreen(GboardPatchesSettingsContract.FeatureHost host){
         Context c=host.getContext();boolean supported=ProviderDiscovery.isOfficialProviderSupported(),installed=ProviderDiscovery.inspect(c).installed;
         boolean selected=GboardSharedWritingRuntime.selected(c),ready=supported && installed && SharedModelClient.ready(c);
