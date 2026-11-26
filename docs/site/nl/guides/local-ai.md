@@ -24,6 +24,8 @@ Gebruik voor installatie zonder Gboard het [companion-project](https://gitlab.co
 
 Als netwerktoegang voor Gboard aanstaat, controleert Local AI bij het openen van de instellingen of er een nieuwere officiële Host is. Kies **Update Local Model Host** wanneer een update beschikbaar is. Gboard verifieert het pakket, de versie, de SHA-256 en de ondertekenaar voordat Android om een installatiebevestiging vraagt.
 
+Deze Gboard-bundel gebruikt **Local Model Host v0.1.143** voor de eerste installatie. De Host laat geïnstalleerde apps standaard toe. Bij **App access** kun je apps toestaan of blokkeren. Als een beperkte instelling Gboard blokkeert, pas die keuze aan in de Host en open Local AI opnieuw. [Host-release en ontwikkelaarsbestanden](https://gitlab.com/johninnld/local-model-host/-/releases/v0.1.143).
+
 ## Schrijven in het toetsenbordthema
 
 Open **Writing Tools** via de werkbalk. Lokale acties volgen het toegepaste toetsenbordthema. Probeer Proofread, Rephrase of Professional op een korte tekst, controleer het voorbeeld en pas toe of annuleer. Behoud het gewone ongedaan maken van de editor.

@@ -24,6 +24,8 @@ For a standalone installation without Gboard, use the [companion project](https:
 
 With Gboard networking enabled, opening Local AI setup checks for a newer official Host. If one is available, choose **Update Local Model Host**. Gboard verifies the package, version, SHA-256 and signer before Android asks you to confirm installation.
 
+This Gboard bundle pins **Local Model Host v0.1.143** for first-time setup. The Host accepts installed apps by default and lets you optionally allow or block apps in **App access**. If a restricted policy blocks Gboard, change that choice in the Host and reopen Local AI. [Host release and developer files](https://gitlab.com/johninnld/local-model-host/-/releases/v0.1.143).
+
 ## Write in the current keyboard theme
 
 Open Gboard's **Writing Tools** from the toolbar. Local actions use the keyboard's applied theme. Try Proofread, Rephrase or Professional on a short draft, review the preview and apply or cancel. Keep normal editor undo available.

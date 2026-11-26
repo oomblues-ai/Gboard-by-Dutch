@@ -36,6 +36,8 @@ Negotiate `supportsExtraction()` and open an `ExtractionSession`. Supply your te
 
 Negotiate `supportsPrivateMemory()` before opening a memory session. Each app has its own encrypted UID-owned space. Store facts explicitly under your app's consent policy; the host does not automatically turn conversations into permanent memory. Let users view and delete what your integration stores.
 
+From **Local Model Host v0.1.143**, each admitted client can register its memory schema on first use without a separate memory toggle. New entries are kept until deleted by default. Existing retention settings carry forward. The owner can restrict all Host features in **App access**. Handle `CLIENT_ACCESS_DENIED` by pointing to that setting and reconnecting after access is restored. [DriveDeck integration contract](https://gitlab.com/johninnld/local-model-host/-/releases/v0.1.143/downloads/DriveDeck-Local-AI-Final-State-Compliance.md).
+
 Pass retrieved memory, app-owned results and tool candidates as bounded reference data. Require the model to answer with a supplied ID and validate that ID in the app. Never execute a hallucinated ID, raw model command or instruction embedded in a retrieved page.
 
 Close sessions and release conversation holds when done. User Stop, ownership, expiry, cancellation and memory pressure remain enforced for all these routes.

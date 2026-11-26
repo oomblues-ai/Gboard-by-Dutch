@@ -124,11 +124,13 @@ Open Gboard’s **Theme** screen to import a compatible ZIP theme or use the the
 
 ### Top Toolbar Item Count
 
-Select **Top Toolbar Item Count** when patching in Morphe. In **Patches → Keys, Layout & Symbols → Top Toolbar Item Count**, turn on **Enable**, set **Count** to a value from 3 to 8, and restart Gboard when prompted. Open the keyboard in a regular text field and check the toolbar. The number of available items can vary with the editor and enabled features.
+Select **Top Toolbar Item Count** when patching in Morphe. In **Patches → Keys, Layout & Symbols → Top Toolbar Item Count**, turn on **Enable**, set **Count** to a value from 3 to 8, and restart Gboard when prompted. Open the keyboard in a regular text field and check the toolbar. The number of available items can vary with the editor and enabled features. Set the count first, then use the pencil in Gboard’s toolbar menu to drag items onto the top bar.
 
 ### G Logo on Spacebar
 
 Open **Patches → Keys, Layout & Symbols → G logo**. Select the built-in G, another glyph or your own PNG, WebP or JPEG. Adjust the size and color. Leave the language label visible until the image is positioned as you like. Reopen the keyboard and check the logo in the theme and language you normally use.
+
+With Handwriting and Morse code enabled alongside QWERTY, the QWERTY spacebar can show its language label again even when **G logo** is on. This is tracked in [issue #13](https://gitlab.com/johninnld/nl-morphe-patches/-/work_items/13).
 
 ### Key Shape Selection
 

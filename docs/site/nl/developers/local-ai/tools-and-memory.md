@@ -36,6 +36,8 @@ Onderhandel `supportsExtraction()` en open een `ExtractionSession`. Geef tekst, 
 
 Onderhandel `supportsPrivateMemory()` voordat een geheugensessie wordt geopend. Elke app krijgt eigen versleutelde UID-ruimte. Sla feiten expliciet op volgens jouw toestemmingsbeleid; de host maakt gesprekken niet automatisch permanent. Laat gebruikers opgeslagen gegevens bekijken en verwijderen.
 
+Vanaf **Local Model Host v0.1.143** kan elke toegelaten client bij het eerste gebruik zijn geheugenschema registreren zonder aparte geheugenschakelaar. Nieuwe gegevens blijven standaard bewaard totdat ze worden verwijderd. Bestaande bewaartermijnen blijven gelden. De eigenaar kan alle Host-functies beperken via **App access**. Verwijs bij `CLIENT_ACCESS_DENIED` naar die instelling en verbind opnieuw zodra toegang is hersteld. [DriveDeck-integratiecontract](https://gitlab.com/johninnld/local-model-host/-/releases/v0.1.143/downloads/DriveDeck-Local-AI-Final-State-Compliance.md).
+
 Geef herinneringen, eigen appresultaten en toolkandidaten mee als begrensde referentiegegevens. Laat het model een aangeleverde ID kiezen en controleer die in de app. Voer geen verzonnen ID, ruwe modelopdracht of instructie uit een opgehaalde pagina uit.
 
 Sluit sessies en laat gespreksholds los na afloop. Stop, eigendom, verval, annulering en geheugendruk gelden voor alle routes.

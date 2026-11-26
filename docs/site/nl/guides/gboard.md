@@ -124,11 +124,13 @@ Open **Thema** in Gboard om een geschikt ZIP-thema te importeren, of open de gal
 
 ### Top Toolbar Item Count
 
-Selecteer **Top Toolbar Item Count** bij het patchen in Morphe. Zet bij **Patches → Keys, Layout & Symbols → Top Toolbar Item Count** de optie **Enable** aan, stel **Count** in op 3 tot 8 en herstart Gboard wanneer daarom wordt gevraagd. Controleer de werkbalk in een normaal invoerveld. Het aantal beschikbare items hangt af van het invoerveld en de ingeschakelde functies.
+Selecteer **Top Toolbar Item Count** bij het patchen in Morphe. Zet bij **Patches → Keys, Layout & Symbols → Top Toolbar Item Count** de optie **Enable** aan, stel **Count** in op 3 tot 8 en herstart Gboard wanneer daarom wordt gevraagd. Controleer de werkbalk in een normaal invoerveld. Het aantal beschikbare items hangt af van het invoerveld en de ingeschakelde functies. Stel eerst het aantal in en gebruik daarna het potlood in het werkbalkmenu om items naar de bovenste balk te slepen.
 
 ### G Logo on Spacebar
 
 Open **Patches → Keys, Layout & Symbols → G logo**. Kies de ingebouwde G, een ander teken of een eigen PNG, WebP of JPEG. Pas formaat en kleur aan. Laat de taalnaam eerst zichtbaar tot het logo naar wens staat. Open het toetsenbord opnieuw en bekijk de spatiebalk in je eigen thema en toetsenbordtaal.
+
+Als Handwriting en Morse code naast QWERTY zijn ingeschakeld, kan de QWERTY-spatiebalk weer de taalnaam tonen terwijl **G logo** aanstaat. Dit staat in [issue #13](https://gitlab.com/johninnld/nl-morphe-patches/-/work_items/13).
 
 ### Key Shape Selection
 

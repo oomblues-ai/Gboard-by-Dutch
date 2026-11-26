@@ -1,12 +1,15 @@
 {
   "packageName": "app.johninnl.modelhost",
-  "apkSha256": "86bacbcf3f9d7c2635ba0fad168c88b93f78d7d108b8691e1a0f8dafa02ba6b9",
+  "apkSha256": "072be679173ae41e3d4dca2cfb9e108ced0f7603ff5204d8e16be7e41a118d89",
   "signerSha256": "1c45e972f387160e6994391954d0f1ebd983a2b0ab506e444645f4ca9f47bdc4",
-  "versionCode": 137,
-  "versionName": "0.1.0-review.607707e3e4b7",
-  "sourceCommit": "607707e3e4b78c54aa0a950a150f1ed28ff15874",
-  "apkBytes": 179635761,
-  "downloadUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/607707e3e4b78c54aa0a950a150f1ed28ff15874/local-model-host-0.1.0-review.607707e3e4b7.apk",
+  "versionCode": 143,
+  "versionName": "0.1.143",
+  "sourceCommit": "368266462f9a8fed0845aa8200a21b53f45c2ca6",
+  "apkBytes": 179672021,
+  "downloadUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/368266462f9a8fed0845aa8200a21b53f45c2ca6/local-model-host-0.1.143.apk",
+  "clientSdkUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/368266462f9a8fed0845aa8200a21b53f45c2ca6/modelhost-client-api-0.1.143.aar",
+  "clientSdkSha256": "8de79173089ab5b7db02cf485dc77f56205c386228dbd9a19ebef02daae00e50",
+  "runtimeAarSha256": "11878045194bd915462d3bf36f4b3c58b4a83c19abb3897b6211c21b9a3c371a",
   "modelSha256": "181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c",
   "modelProfiles": [
     {
@@ -18,27 +21,14 @@
       "sha256": "0b2a8980ce155fd97673d8e820b4d29d9c7d99b8fa6806f425d969b145bd52e0"
     }
   ],
-  "runtimeAarSha256": "11878045194bd915462d3bf36f4b3c58b4a83c19abb3897b6211c21b9a3c371a",
   "protocolMajor": 1,
   "protocolMinor": 4,
-  "clientSdkUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/607707e3e4b78c54aa0a950a150f1ed28ff15874/modelhost-client-api-0.1.0-review.607707e3e4b7.aar",
-  "clientSdkSha256": "cb9ffc202f46dff6558df57bd901ecd4d6ad07fea480b3c524307075bacd6316",
-  "speechModels": [
-    "parakeet-tdt-v3",
-    "parakeet-ultra",
-    "nemotron-streaming",
-    "whisper-tiny"
-  ],
-  "extractionModels": [
-    "gliner-multi-v2.1",
-    "gliner2.5-multi-v1"
-  ],
-  "developerHandoverUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/607707e3e4b78c54aa0a950a150f1ed28ff15874/DriveDeck-Local-Model-Host-Handover.html",
-  "complianceHandoverUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/607707e3e4b78c54aa0a950a150f1ed28ff15874/DriveDeck-Local-AI-Final-State-Compliance.md",
-  "runtimeValidation": "Build 137 signed APK installed on OnePlus 15. Gemma 4 E4B and Supertonic 3 reported Ready and both saved voice choices were visible. Build 136 with the same native runtime passed direct Binder OCR and Gboard image workflows. Further device acceptance deferred.",
-  "installationApkMaxBytes": 268435456,
   "minimumAndroidApi": 30,
   "supportedAbis": [
     "arm64-v8a"
-  ]
+  ],
+  "installationApkMaxBytes": 268435456,
+  "developerHandoverUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/368266462f9a8fed0845aa8200a21b53f45c2ca6/DriveDeck-Local-Model-Host-Handover.html",
+  "complianceHandoverUrl": "https://gitlab.com/api/v4/projects/89371837/packages/generic/local-model-host-review/368266462f9a8fed0845aa8200a21b53f45c2ca6/DriveDeck-Local-AI-Final-State-Compliance.md",
+  "runtimeValidation": "Host and SDK test suites, lint, signed APK and SDK assembly. Per-app access enforcement has JVM coverage and no independent device certification in this descriptor."
 }
