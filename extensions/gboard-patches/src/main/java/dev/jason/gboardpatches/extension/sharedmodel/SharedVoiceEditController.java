@@ -40,7 +40,7 @@ public final class SharedVoiceEditController {
             }
             LinearLayout body = SharedKeyboardSurface.body();
             SharedKeyboardSurface.label(body, "Speak an instruction for this draft.");
-            SharedKeyboardSurface.label(body, SharedSpeechController.summary(context));
+            SharedKeyboardSurface.label(body, "Uses the speech model selected in Local AI.");
             SharedKeyboardSurface.Panel panel = new SharedKeyboardSurface.Panel(body);
             Recording recording = new Recording(context, original, snapshot, panel);
             SharedKeyboardSurface.button(body, "Record instruction", () -> start(recording));
@@ -66,7 +66,10 @@ public final class SharedVoiceEditController {
                     SharedVoiceEditController.class.getClassLoader());
             Method record = recorder.getMethod("recordEditCommand", Context.class, Runnable.class, Consumer.class);
             Runnable ready = () -> MAIN.post(() -> {
-                if (current == recording) showStatus(recording, "Listening for your edit instruction…");
+                if (current == recording) {
+                    showStatus(recording, "Listening for your edit instruction…\n"
+                            + SharedSpeechController.summary(recording.context));
+                }
             });
             Consumer<String> result = text -> MAIN.post(() -> finish(recording, text));
             recording.stop = (Runnable) record.invoke(null, recording.context, ready, result);
