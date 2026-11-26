@@ -2,7 +2,13 @@
 
 Local AI adds an optional on-device route for writing help, image text and dictation. A separate Local Model Host app owns the models, so Gboard and other integrating apps can share them. Its installation and inference do not require the Play Store, AICore, a Google account or Google Play services.
 
-The original Gboard backends remain available. This is not a switch that removes all Google traffic from the keyboard: GIF searches, synchronization and explicitly selected Google features retain their own behavior.
+The standard install retains the original Gboard backends.
+
+## Block Gboard telemetry
+
+Enable the optional **Block Gboard telemetry** patch in Morphe for offline typing or Local AI. The patch removes Gboard’s network permission and blocks the identified Google Play services telemetry, usage-reporting and feedback transactions from Gboard. The writing settings offer Local AI or off, and Rambler is disabled.
+
+Gboard network features such as GIF search, sync, LAN tools and the in-keyboard companion download are unavailable with this patch. Install the companion separately or open a previously downloaded verified APK from Local AI setup. Local Model Host runs in its own app and communicates with Gboard over Binder. The host’s downloads and tools follow its own settings.
 
 ## Install the companion
 

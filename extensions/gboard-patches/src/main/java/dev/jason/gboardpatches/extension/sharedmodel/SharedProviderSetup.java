@@ -39,6 +39,10 @@ final class SharedProviderSetup {
     }
     static synchronized void cancel(){generation++;if(job!=null)job.cancel(true);busy=false;message="Download cancelled.";}
     static synchronized void download(Context context){
+        if(dev.jason.gboardpatches.extension.privacy.GboardTelemetryPolicy.isEnabled(context) && pending==null){
+            message="Gboard network access is blocked. Download Local Model Host separately and open the APK here.";
+            return;
+        }
         if(!ProviderDiscovery.isOfficialProviderSupported()){message=platformMessage();return;}
         if(busy)return;
         if(pending!=null){SharedModelSetupActivity.install(context);return;}

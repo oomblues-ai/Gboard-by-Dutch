@@ -8,6 +8,15 @@ internal fun ensureManifestUsesPermission(
     manifest: Element,
     permissionName: String,
 ) {
+    if (permissionName in setOf("android.permission.INTERNET", "android.permission.ACCESS_LOCAL_NETWORK")
+        && manifest.childElements("application").any { application ->
+            application.childElements("meta-data").any {
+                it.manifestAndroidAttribute("name") == patches.gboard.GBOARD_OFFLINE_TELEMETRY_MARKER
+                    && it.manifestAndroidAttribute("value") == "true"
+            }
+        }
+    ) return
+
     val permission = manifest.childElements("uses-permission").firstOrNull {
         it.manifestAndroidAttribute("name") == permissionName
     } ?: document.createElement("uses-permission").also { createdPermission ->
