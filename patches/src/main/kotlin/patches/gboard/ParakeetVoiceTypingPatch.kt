@@ -746,14 +746,20 @@ val parakeetVoiceTyping = bytecodePatch(
 
         val factory = mutableClassDefBy(contract.factory.definingClass).methods
             .single { it.name == contract.factory.name && it.params() == contract.factory.params() && it.returnType == contract.factory.returnType }
-        // Rambler sessions stay with Google's cloud recognizer, so the user's Rambler/Standard choice in
-        // Gboard's Voice settings picks between Rambler and Parakeet instead of Parakeet taking both.
-        factory.addInstructionsWithLabels(0, """
-            iget-boolean v0, p1, ${contract.ramblerSessionField.smali()}
-            if-nez v0, :original
+        // Keep the stock Rambler request when no explicit local edit has been armed.
+        val factoryType = contract.factory.definingClass
+        val choose = "morpheSharedRecognizerForRequest"
+        addHelperMethodIfMissing(factoryType, choose, listOf(factoryType, factory.params().single()), RECOGNIZER,
+            AccessFlags.PRIVATE.value or AccessFlags.STATIC.value, 4, """
             iget-object v0, p0, ${contract.holderField.smali()}
             iget-object v0, v0, ${contract.contextField.smali()}
-            invoke-static {v0}, $RECOGNIZER->create($CONTEXT)$RECOGNIZER
+            iget-boolean v1, p1, ${contract.ramblerSessionField.smali()}
+            invoke-static {v0, v1}, $RECOGNIZER->createForVoiceRequest(${CONTEXT}Z)$RECOGNIZER
+            move-result-object v0
+            return-object v0
+        """.trimIndent())
+        factory.addInstructionsWithLabels(0, """
+            invoke-static {p0, p1}, $factoryType->$choose($factoryType${factory.params().single()})$RECOGNIZER
             move-result-object v0
             if-eqz v0, :original
             return-object v0

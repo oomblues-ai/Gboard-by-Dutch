@@ -20,12 +20,25 @@ public final class SharedVoiceEditController {
    if(!GboardSharedWritingRuntime.isCurrent(snapshot))return;
    if(original==null||original.trim().isEmpty()){SharedTextActions.message(context,"Select the text to edit first.");return;}
    Armed next=new Armed(context,original,snapshot);armed=next;
+   SharedWritingDiagnostics.event("voice.edit armed");
    MAIN.postDelayed(()->{if(armed==next)armed=null;},60000);
    android.inputmethodservice.InputMethodService ime=GboardSharedWritingRuntime.currentService();if(ime!=null)NativeEditBridge.leaveWriting(ime);
    android.widget.Toast.makeText(context,"Voice edit ready. Tap the microphone and speak your edit.",android.widget.Toast.LENGTH_LONG).show();
   }catch(Exception e){SharedTextActions.message(context,"Parakeet Voice edit is unavailable in this installation.");}
  }
- public static synchronized boolean beginParakeetSession(Context context){Armed state=armed;if(state==null||state.started||SystemClock.uptimeMillis()>state.expires ){armed=null;return false;}state.started=true;return true;}
+ public static synchronized boolean needsLocalRecognizer(){
+  return unclaimed(armed);
+ }
+ private static boolean unclaimed(Armed state){
+  return state!=null && !state.started && SystemClock.uptimeMillis()<=state.expires;
+ }
+ public static synchronized boolean beginParakeetSession(Context context){
+  Armed state=armed;
+  if(!unclaimed(state))return false;
+  state.started=true;
+  SharedWritingDiagnostics.event("voice.edit recognizer-started");
+  return true;
+ }
  public static void onParakeetCommand(Context context,String transcript){
   Armed state=armed;armed=null;
   MAIN.post(()->{if(state==null||!state.started||SystemClock.uptimeMillis()>state.expires||!GboardSharedWritingRuntime.isCurrent(state.snapshot)){SharedTextActions.message(context,"Voice edit was cancelled because the editor changed.");return;}
@@ -37,5 +50,9 @@ public final class SharedVoiceEditController {
    }));
   });
  }
- public static void cancel(){armed=null;}
+ public static synchronized void cancel(){
+  if(armed==null)return;
+  armed=null;
+  SharedWritingDiagnostics.event("voice.edit cancelled-by-editor-lifecycle");
+ }
 }

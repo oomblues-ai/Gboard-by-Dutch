@@ -72,6 +72,17 @@ public final class ParakeetRecognizer {
         this.context = context;
     }
 
+    /** A user-armed edit uses the shared speech provider even if the native request prefers Rambler. */
+    public static ParakeetRecognizer createForVoiceRequest(Context context, boolean rambler) {
+        boolean edit = VoiceEditHook.needsLocalRecognizer();
+        ParakeetRecognizer result = rambler && !edit ? null : create(context);
+        if (Log.isLoggable("GboardLocalAi", Log.DEBUG)) {
+            Log.d("GboardLocalAi", "voice.factory rambler=" + rambler
+                    + " armed=" + edit + " shared=" + (result != null));
+        }
+        return result;
+    }
+
     /** Called from Gboard's recognizer factory; null keeps Gboard's own recognizer. */
     public static ParakeetRecognizer create(Context context) {
         try {
@@ -95,6 +106,9 @@ public final class ParakeetRecognizer {
     public void start(Object callback) {
         if (!started.compareAndSet(false, true)) return;
         voiceEditSession = VoiceEditHook.begin(context);
+        if (Log.isLoggable("GboardLocalAi", Log.DEBUG)) {
+            Log.d("GboardLocalAi", "voice.shared started edit=" + voiceEditSession);
+        }
         this.callback = callback;
         listening = true;
         Thread capture = new Thread(this::capture, "MorpheParakeetMic");

@@ -23,4 +23,12 @@ public class SharedSpeechSelectionTest {
     }
     @Test public void selectedLocalSpeechDoesNotFallBackToGoogleWhenPermissionIsRevoked(){ParakeetRecognizer recognizer=ParakeetRecognizer.create(context(true));assertNotNull(recognizer);recognizer.shutdown();}
     @Test public void explicitlyUnselectedLocalSpeechKeepsTheOriginalFactory(){assertNull(ParakeetRecognizer.create(context(false)));}
+    @Test public void unarmedRamblerKeepsTheOriginalRecognizerEvenWithSharedSpeechSelected() {
+        assertNull(ParakeetRecognizer.createForVoiceRequest(context(true), true));
+    }
+    @Test public void standardVoiceRequestUsesSharedSpeechWhenSelected() {
+        ParakeetRecognizer recognizer = ParakeetRecognizer.createForVoiceRequest(context(true), false);
+        assertNotNull(recognizer);
+        recognizer.shutdown();
+    }
 }
