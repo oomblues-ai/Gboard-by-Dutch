@@ -21,7 +21,7 @@ public final class SharedCameraOcr {
     private static WeakReference<Object> peer=new WeakReference<>(null);
     private static State active;
     private static Pick picking;
-    private static final class Pick {final EditorSnapshot.Handoff editor;final long expires=android.os.SystemClock.uptimeMillis()+120000;Bitmap image;boolean reopening;Pick(EditorSnapshot.Handoff e){editor=e;}}
+    private static final class Pick {final EditorSnapshot.Handoff editor;final long expires=android.os.SystemClock.uptimeMillis()+120000;Bitmap image;byte[] encoded;boolean reopening;Pick(EditorSnapshot.Handoff e){editor=e;}}
     private static final class State {
         final Object peer;final EditorSnapshot snapshot;volatile boolean cancelled;boolean started;Bitmap image;Future<?> work;TextView text;
         State(Object p,EditorSnapshot s){peer=p;snapshot=s;}
@@ -49,25 +49,52 @@ public final class SharedCameraOcr {
         try{
             Context context=(Context)field(owner,"b");if(!selected(context))return false;
             EditorSnapshot snapshot=GboardSharedWritingRuntime.captureEditor();if(snapshot==null){message(context,"Text scanning is unavailable in this private or changed editor.");return true;}
-            View preview=(View)field(owner,"c");View texture=child(preview,TextureView.class),surface=child(preview,SurfaceView.class);
-            if(texture instanceof TextureView){Bitmap bitmap=((TextureView)texture).getBitmap();if(bitmap==null)message(context,"Wait until the camera preview is visible, then try again.");else recognize(owner,bitmap,snapshot);}
-            else if(surface instanceof SurfaceView && surface.getWidth()>0 && surface.getHeight()>0){
-                if(surface.getWidth()*(long)surface.getHeight()>8000000L){message(context,"Choose a smaller camera crop.");return true;}
-                Bitmap bitmap=Bitmap.createBitmap(surface.getWidth(),surface.getHeight(),Bitmap.Config.ARGB_8888);
-                PixelCopy.request((SurfaceView)surface,bitmap,result->{if(result==PixelCopy.SUCCESS && snapshot.isCurrent(GboardSharedWritingRuntime.currentRevision()) && shown(owner))recognize(owner,bitmap,snapshot);else{bitmap.recycle();message(context,"The camera capture changed. Please try again.");}},MAIN);
-            }else message(context,"Wait until the camera preview is visible, then try again.");
+            Bitmap bitmap=captureNativePreview(owner);
+            if(bitmap==null)message(context,"Wait until the camera preview is visible, then try again.");
+            else recognize(owner,bitmap,snapshot);
         }catch(Exception failure){Context context=GboardSharedWritingRuntime.context();if(context!=null)message(context,"Could not capture this camera frame. Try Choose an image.");}
         return true;
+    }
+    /** Match CameraX PreviewView's stock shutter conversion, including its viewport transform. */
+    private static Bitmap captureNativePreview(Object owner)throws ReflectiveOperationException{
+        Object preview=field(owner,"c");
+        Object implementation=field(preview,"a");
+        if(implementation==null)return null;
+        Bitmap source=(Bitmap)invoke(implementation,"a");
+        if(source==null)return null;
+        Bitmap aligned=null;
+        boolean returnedSource=false;
+        try{
+            Object transformation=field(implementation,"c");
+            if(!Boolean.TRUE.equals(invoke(transformation,"e"))){returnedSource=true;return source;}
+            FrameLayout container=(FrameLayout)field(implementation,"b");
+            if(container.getWidth()<=0 || container.getHeight()<=0 || container.getWidth()*(long)container.getHeight()>8000000L){return null;}
+            android.util.Size size=new android.util.Size(container.getWidth(),container.getHeight());
+            android.graphics.Matrix correction=(android.graphics.Matrix)invoke(transformation,"c");
+            android.graphics.RectF viewport=(android.graphics.RectF)invoke(transformation,"d",new Class<?>[]{android.util.Size.class,int.class},size,container.getLayoutDirection());
+            android.util.Size bufferSize=(android.util.Size)field(transformation,"a");
+            aligned=Bitmap.createBitmap(size.getWidth(),size.getHeight(),source.getConfig()==null?Bitmap.Config.ARGB_8888:source.getConfig());
+            android.graphics.Matrix matrix=new android.graphics.Matrix();
+            matrix.postConcat(correction);
+            matrix.postScale(viewport.width()/bufferSize.getWidth(),viewport.height()/bufferSize.getHeight());
+            matrix.postTranslate(viewport.left,viewport.top);
+            new android.graphics.Canvas(aligned).drawBitmap(source,matrix,new android.graphics.Paint(7));
+            Bitmap result=aligned;aligned=null;return result;
+        }finally{
+            if(!returnedSource && !source.isRecycled())source.recycle();
+            if(aligned!=null && !aligned.isRecycled())aligned.recycle();
+        }
     }
     private static void choose(Context context){
         SharedWritingDiagnostics.event("ocr.picker clicked");
         if(picking!=null){message(context,"An image choice is already in progress.");return;}
         EditorSnapshot snapshot=GboardSharedWritingRuntime.captureEditor();if(snapshot==null){message(context,"This editor cannot receive recognised text.");return;}
         Pick request=new Pick(snapshot.handoff());picking=request;
-        SharedImageInputActivity.choose(context,bitmap->{
+        SharedImageInputActivity.chooseImage(context,choice->{
+            Bitmap bitmap=choice==null?null:choice.bitmap;
             if(picking!=request){if(bitmap!=null)bitmap.recycle();return;}
             if(bitmap==null){picking=null;return;}
-            request.image=bitmap;resumeChosen(request,context,100);
+            request.image=bitmap;request.encoded=choice.encoded;resumeChosen(request,context,100);
         });
         MAIN.postDelayed(()->{if(picking==request && android.os.SystemClock.uptimeMillis()>=request.expires)discardChosen(request);},120000);
     }
@@ -87,15 +114,16 @@ public final class SharedCameraOcr {
         }
         if(picking==request)MAIN.postDelayed(()->resumeChosen(request,context,remaining-1),100);
     }
-    private static void discardChosen(Pick request){if(picking==request)picking=null;if(request.image!=null){if(!request.image.isRecycled())request.image.recycle();request.image=null;}}
+    private static void discardChosen(Pick request){if(picking==request)picking=null;if(request.image!=null){if(!request.image.isRecycled())request.image.recycle();request.image=null;}request.encoded=null;}
     private static void deliverChosen(Pick request){
         if(picking!=request || request.image==null)return;
         Object owner=peer.get();if(owner==null || !shown(owner) || !NativeEditBridge.readyForTransition(GboardSharedWritingRuntime.currentService()))return;
         EditorSnapshot snapshot=request.editor.resumeForPreview();
         if(android.os.SystemClock.uptimeMillis()>request.expires || snapshot==null)return;
-        SharedWritingDiagnostics.event("ocr.picker delivered-visible");Bitmap bitmap=request.image;request.image=null;picking=null;recognize(owner,bitmap,snapshot);
+        SharedWritingDiagnostics.event("ocr.picker delivered-visible");Bitmap bitmap=request.image;byte[] encoded=request.encoded;request.image=null;request.encoded=null;picking=null;recognize(owner,bitmap,snapshot,encoded);
     }
-    private static void recognize(Object owner,Bitmap image,EditorSnapshot snapshot){
+    private static void recognize(Object owner,Bitmap image,EditorSnapshot snapshot){recognize(owner,image,snapshot,null);}
+    private static void recognize(Object owner,Bitmap image,EditorSnapshot snapshot,byte[] encoded){
         State state=null;
         try{
             clear(owner);peer=new WeakReference<>(owner);markCaptured(owner);state=new State(owner,snapshot);state.image=image;active=state;
@@ -110,7 +138,7 @@ public final class SharedCameraOcr {
             int gap=((TextView)field(owner,"f")).getPaddingLeft();int bottom=Math.max(insertPanel.getHeight(),insertPanel.getLayoutParams().height)+Math.max(((View)field(owner,"g")).getHeight(),((View)field(owner,"g")).getLayoutParams().height);text.setPadding(Math.max(gap,style.getPaddingLeft()),style.getPaddingTop(),Math.max(gap,style.getPaddingRight()),Math.max(0,bottom));
             ScrollView scroll=new ScrollView(frame.getContext());scroll.setFillViewport(true);scroll.addView(text,new ScrollView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT));frame.addView(scroll,new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));state.text=text;restoreResultControls(owner);
             State current=state;Context context=frame.getContext();
-            state.work=WORK.submit(()->{try{synchronized(current){if(current.cancelled)return;current.started=true;}String result=SharedOcrRuntime.recognize(context,image);MAIN.post(()->complete(current,result));}catch(Exception failure){MAIN.post(()->showFailure(current,failure));}finally{if(!image.isRecycled())image.recycle();}});
+            state.work=WORK.submit(()->{try{synchronized(current){if(current.cancelled)return;current.started=true;}String result=SharedOcrRuntime.recognize(context,image,encoded);MAIN.post(()->complete(current,result));}catch(Exception failure){MAIN.post(()->showFailure(current,failure));}finally{if(!image.isRecycled())image.recycle();}});
         }catch(Exception failure){if(!image.isRecycled())image.recycle();if(state!=null)state.cancelled=true;SharedModelClient.noteFailure("NATIVE_OCR_UNAVAILABLE");}
     }
     private static void showFailure(State state,Exception failure){
@@ -148,9 +176,9 @@ public final class SharedCameraOcr {
     static void markCaptured(Object owner)throws ReflectiveOperationException{Field state=owner.getClass().getDeclaredField("x");state.setAccessible(true);state.setInt(owner,3);}
     private static boolean valid(State state){return active==state&&!state.cancelled&&shown(state.peer)&&state.snapshot.isCurrent(GboardSharedWritingRuntime.currentRevision());}
     static boolean shown(Object owner){try{View preview=(View)field(owner,"c");return Boolean.TRUE.equals(field(owner,"u"))&&preview.isAttachedToWindow()&&preview.isShown();}catch(Exception unavailable){return false;}}
-    private static View child(View root,Class<?> type){if(type.isInstance(root))return root;if(root instanceof ViewGroup){ViewGroup group=(ViewGroup)root;for(int i=0;i<group.getChildCount();i++){View found=child(group.getChildAt(i),type);if(found!=null)return found;}}return null;}
-    private static Object field(Object owner,String name)throws ReflectiveOperationException{Field f=owner.getClass().getDeclaredField(name);f.setAccessible(true);return f.get(owner);}
+
+    private static Object field(Object owner,String name)throws ReflectiveOperationException{Class<?> type=owner.getClass();while(type!=null){try{Field f=type.getDeclaredField(name);f.setAccessible(true);return f.get(owner);}catch(NoSuchFieldException missing){type=type.getSuperclass();}}throw new NoSuchFieldException(name);}
     private static Object invoke(Object owner,String name)throws ReflectiveOperationException{return invoke(owner,name,new Class<?>[0]);}
-    private static Object invoke(Object owner,String name,Class<?>[] types,Object...args)throws ReflectiveOperationException{Method m=owner.getClass().getDeclaredMethod(name,types);m.setAccessible(true);return m.invoke(owner,args);}
+    private static Object invoke(Object owner,String name,Class<?>[] types,Object...args)throws ReflectiveOperationException{Class<?> type=owner.getClass();while(type!=null){try{Method m=type.getDeclaredMethod(name,types);m.setAccessible(true);return m.invoke(owner,args);}catch(NoSuchMethodException missing){type=type.getSuperclass();}}throw new NoSuchMethodException(name);}
     private static void message(Context context,String text){if(context!=null)MAIN.post(()->Toast.makeText(context,text,Toast.LENGTH_LONG).show());}
 }

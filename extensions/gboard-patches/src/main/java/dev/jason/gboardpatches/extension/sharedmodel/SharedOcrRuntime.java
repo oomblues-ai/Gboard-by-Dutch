@@ -12,7 +12,8 @@ import org.json.JSONObject;
 /** A selected image goes through its own caller-private session; no camera/screen collection occurs in the provider. */
 public final class SharedOcrRuntime {
     private SharedOcrRuntime(){}
-    public static String recognize(Context context,Bitmap bitmap)throws Exception {
+    public static String recognize(Context context,Bitmap bitmap)throws Exception {return recognize(context,bitmap,null);}
+    static String recognize(Context context,Bitmap bitmap,byte[] encoded)throws Exception {
         if(Looper.myLooper()==Looper.getMainLooper())throw new IllegalStateException("OCR_MUST_RUN_OFF_UI_THREAD");
         if(bitmap==null || bitmap.getWidth()*(long)bitmap.getHeight()>8000000L)throw new IllegalArgumentException("Crop the image below eight megapixels");
         Context app=context.getApplicationContext();SharedProviderIdentity.verify(app);CountDownLatch connected=new CountDownLatch(1);
@@ -30,7 +31,7 @@ public final class SharedOcrRuntime {
             if(!status.get().isReady())throw new IllegalStateException(SharedLocalAiState.safeCode(status.get().state));
             if(!capabilities.get().supports("ocr"))throw new IllegalStateException("ENABLE_OCR_IN_PROVIDER");
             image=File.createTempFile("shared-ocr-",".png",app.getCacheDir());
-            try(FileOutputStream output=new FileOutputStream(image)){if(!bitmap.compress(Bitmap.CompressFormat.PNG,100,output))throw new IOException("IMAGE_ENCODING_FAILED");}
+            try(FileOutputStream output=new FileOutputStream(image)){if(encoded!=null){if(encoded.length>16*1024*1024)throw new IOException("IMAGE_TOO_LARGE");output.write(encoded);}else if(!bitmap.compress(Bitmap.CompressFormat.PNG,100,output))throw new IOException("IMAGE_ENCODING_FAILED");}
             session=client.openSession(new SessionOptions("Gboard OCR",null,4096));
             CountDownLatch done=new CountDownLatch(1);AtomicReference<String> result=new AtomicReference<>();
             try(ParcelFileDescriptor descriptor=ParcelFileDescriptor.open(image,ParcelFileDescriptor.MODE_READ_ONLY)){
