@@ -42,6 +42,8 @@ Open **Voice typing → Local AI voice typing → Open or install Local AI**. Ki
 
 Downloads staan in de companion, niet afzonderlijk in Gboard. Tekst-/beeldverwerking mag uit staan als je alleen spraak wilt. Microfoon- en invoeginterface blijven die van Gboard. Geselecteerde lokale spraak meldt een ontbrekend model of geheugenpauze en schakelt niet stilzwijgend naar Google.
 
+**Voice Edit** neemt een opdracht op in het toetsenbord. Open een concept, kies **Voice Edit → Record instruction** en spreek zodra het toetsenbord aangeeft dat het luistert. Het geselecteerde spraakmodel zet de opdracht om in tekst. Gemma gebruikt die opdracht en het concept om een bewerking voor te stellen. Controleer het resultaat en tik op **Apply** of **Cancel**.
+
 De gedeelde adapters hebben niet de akoestische spraakwoordenboekvoorkeur van de oude ingebouwde Parakeet-decoder. Google/Rambler-instellingen gelden voor die gekozen backends; ze geven niet aan elke lokale herkenner dezelfde opdrachten of woordenboekwerking.
 
 ## Geheugen, opslag en privacy

@@ -42,6 +42,8 @@ Open **Voice typing → Local AI voice typing → Open or install Local AI**. Ch
 
 Downloads are managed in the companion, not separately in Gboard. Text/image processing can be off if you only want speech. The microphone and insertion UI remain Gboard's. Selected local speech reports an unavailable model or memory pause instead of silently switching to Google.
 
+**Voice Edit** takes an explicit recording in the keyboard. With a draft open, choose **Voice Edit → Record instruction** and speak when it says it is listening. Your selected shared speech model transcribes the instruction. Gemma uses the transcript and draft to propose an edit. Review it and tap **Apply** or **Cancel**.
+
 The shared adapters do not provide the old embedded Parakeet decoder's acoustic voice-dictionary bias. Google/Rambler settings apply to those selected backends; they do not add the same commands or dictionary behavior to every local recognizer.
 
 ## Memory, storage and privacy

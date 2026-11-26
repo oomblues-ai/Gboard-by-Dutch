@@ -63,7 +63,22 @@ public final class ParakeetRecognizer {
     private volatile Object callback;
     private volatile int utterance;
     private volatile boolean decodePending;
-    private volatile boolean voiceEditSession;
+    private SpeechCommand speechCommand;
+
+    private static final class SpeechCommand {
+        final Runnable ready;
+        final java.util.function.Consumer<String> result;
+        final AtomicBoolean delivered = new AtomicBoolean();
+
+        SpeechCommand(Runnable ready, java.util.function.Consumer<String> result) {
+            this.ready = ready;
+            this.result = result;
+        }
+
+        void finish(String text) {
+            if (delivered.compareAndSet(false, true)) result.accept(text);
+        }
+    }
     private volatile String lastPartial;
     /** Utterances committed this session; Gboard joins results as they come, so later ones bring a space. */
     private int committed;
@@ -79,13 +94,11 @@ public final class ParakeetRecognizer {
                         .getBoolean("enable_jetson", false);
     }
 
-    /** A user-armed edit uses the shared speech provider even if the native request prefers Rambler. */
+    /** Keep Gboard’s selected Rambler route and use shared speech for Standard when enabled. */
     public static ParakeetRecognizer createForVoiceRequest(Context context, boolean rambler) {
-        boolean edit = VoiceEditHook.needsLocalRecognizer();
-        ParakeetRecognizer result = rambler && !edit ? null : create(context);
+        ParakeetRecognizer result = rambler ? null : create(context);
         if (Log.isLoggable("GboardLocalAi", Log.DEBUG)) {
-            Log.d("GboardLocalAi", "voice.factory rambler=" + rambler
-                    + " armed=" + edit + " shared=" + (result != null));
+            Log.d("GboardLocalAi", "voice.factory rambler=" + rambler + " shared=" + (result != null));
         }
         return result;
     }
@@ -103,18 +116,20 @@ public final class ParakeetRecognizer {
         }
     }
 
-    public static boolean availableForVoiceEdit(Context context) {
-        return context != null && ParakeetStore.active(context)
-                && context.checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
+    public static Runnable recordEditCommand(Context context, Runnable ready, java.util.function.Consumer<String> result) {
+        ParakeetRecognizer recognizer = create(context);
+        if (recognizer == null) throw new IllegalStateException("SHARED_SPEECH_NOT_SELECTED");
+        recognizer.speechCommand = new SpeechCommand(ready, result);
+        recognizer.start(null);
+        return recognizer::stopRecognition;
     }
 
     // ---- Gboard recognizer interface, wired by the patch ----
 
     public void start(Object callback) {
         if (!started.compareAndSet(false, true)) return;
-        voiceEditSession = VoiceEditHook.begin(context);
         if (Log.isLoggable("GboardLocalAi", Log.DEBUG)) {
-            Log.d("GboardLocalAi", "voice.shared started edit=" + voiceEditSession);
+            Log.d("GboardLocalAi", "voice.shared started edit=" + (speechCommand != null));
         }
         this.callback = callback;
         listening = true;
@@ -188,9 +203,13 @@ public final class ParakeetRecognizer {
                 throw new IllegalStateException("microphone busy");
             }
             // The host owns prewarming and models; Gboard retains only its microphone/endpointer.
-            // Like Gboard's own engines: open the keyboard's dictation session, then listen.
-            cbReady(cb);
-            cbListening(cb);
+            // Native dictation and a Voice Edit command have separate result targets.
+            if (speechCommand == null) {
+                cbReady(cb);
+                cbListening(cb);
+            } else {
+                speechCommand.ready.run();
+            }
 
             short[] pcm = new short[Endpointer.WINDOW_SAMPLES];
             int windows = 0;
@@ -203,10 +222,10 @@ public final class ParakeetRecognizer {
                 prerollNext = (prerollNext + 1) % preroll.length;
 
                 int event = endpointer.push(vad.compute(window), Endpointer.levelDb(pcm, read));
-                if (++windows % 3 == 0) cbLevel(cb, endpointer.meter());
+                if (++windows % 3 == 0 && speechCommand == null) cbLevel(cb, endpointer.meter());
                 if (event == Endpointer.UTTERANCE_START) {
                     // Like Gboard's own on-device engine: start of speech for every utterance.
-                    cbSpeech(cb);
+                    if (speechCommand == null) cbSpeech(cb);
                     current.clear();
                     for (int i = 0; i < preroll.length; i++) {
                         float[] previous = preroll[(prerollNext + i) % preroll.length];
@@ -215,11 +234,11 @@ public final class ParakeetRecognizer {
                     sincePartial = 0;
                 } else if (event == Endpointer.UTTERANCE_END) {
                     current.append(window);
-                    cbListening(cb);
+                    if (speechCommand == null) cbListening(cb);
                     finishUtterance(cb, current.copy());
                     current.clear();
                 } else if (event == Endpointer.UTTERANCE_DROPPED) {
-                    cbListening(cb);
+                    if (speechCommand == null) cbListening(cb);
                     dropUtterance();
                     current.clear();
                 } else if (event == Endpointer.SESSION_END) {
@@ -250,7 +269,9 @@ public final class ParakeetRecognizer {
         final boolean silent = noSpeech && !endpointer.heardSpeech();
         execute(() -> {
             if (cancelled || !finished.compareAndSet(false, true)) return;
-            if (silent) {
+            if (speechCommand != null) {
+                speechCommand.finish(null);
+            } else if (silent) {
                 cbError(cb, ERROR_NO_SPEECH);
             } else {
                 cbStopRecognition(cb);
@@ -278,7 +299,7 @@ public final class ParakeetRecognizer {
                 String text = shared.transcribe(audio, audio.length, false);
                 if (!cancelled && id == utterance && !text.isEmpty()) {
                     lastPartial = text;
-                    if (!voiceEditSession) cbResult(cb, separated(text), false);
+                    if (speechCommand == null) cbResult(cb, separated(text), false);
                 }
             } catch (Throwable t) {
                 decodeFailed(cb, t);
@@ -299,9 +320,9 @@ public final class ParakeetRecognizer {
                 lastPartial = null;
                 if (text.isEmpty()) text = partial == null ? "" : partial;
                 if (!cancelled && !text.isEmpty()) {
-                    if (voiceEditSession) {
+                    if (speechCommand != null) {
                         listening = false;
-                        VoiceEditHook.finish(context, text);
+                        speechCommand.finish(text);
                         return;
                     }
                     String sent = separated(text);
@@ -366,13 +387,14 @@ public final class ParakeetRecognizer {
     private void fail(Object cb, int kind) {
         if (cancelled || !finished.compareAndSet(false, true)) return;
         cancelled = true;
-        cbError(cb, kind);
+        if (speechCommand == null) cbError(cb, kind);
+        else speechCommand.finish(null);
         decoder.shutdownNow();
         SharedSpeechHook.Session old=shared;if(old!=null)old.close();
     }
 
     private void signalStopListening(Object cb) {
-        if (stopListeningSent.compareAndSet(false, true)) cbStopListening(cb);
+        if (speechCommand == null && stopListeningSent.compareAndSet(false, true)) cbStopListening(cb);
     }
 
     private void execute(Runnable task) {
