@@ -1,6 +1,6 @@
 # Patchcatalogus
 
-**Patchbundel: 1.107.1**
+**Patchbundel: 1.108.0**
 
 Controleer per patch de ondersteunde app-versies en de standaardinstelling. De app-pagina legt uit wat de patch voor het gebruik verandert.
 
@@ -438,15 +438,18 @@ Controleer per patch de ondersteunde app-versies en de standaardinstelling. De a
 | Change package name | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
 | Clipboard Enhancements | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
 | Cursor trackpad mode | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
+| Custom Symbols | Uit | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
 | Custom Theme | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
 | Custom branding | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
 | Enable Inline Autofill Suggestions | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
 | Enable OCR / Scan Text | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
 | Frosted Glass | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
 | G Logo on Spacebar | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
+| Grammar Checker | Uit | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
 | Hidden flags (18.8) | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
 | Incognito Mode Toggle | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
 | Key Shape Selection | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
+| Long-Press Editing Shortcuts | Uit | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
 | Parakeet personal dictionary | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
 | Parakeet voice typing | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
 | Rambler app context | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
@@ -459,6 +462,7 @@ Controleer per patch de ondersteunde app-versies en de standaardinstelling. De a
 | Rambler toolbar & revert extras (18.8) | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
 | Rambler voice typing | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
 | Rounded Keyboard Panel | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
+| Shift + Backspace Forward Delete | Uit | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
 | Simple Calculator | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
 | Smart Compose | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |
 | Toolbar Editing Buttons | Aan | 18.8.0.1022711984-beta-arm64-v8a, 18.8.0.1022711984-beta-armeabi-v7a |

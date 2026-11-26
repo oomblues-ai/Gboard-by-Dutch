@@ -1,4 +1,21 @@
 <!-- dap-release-branding:v1 -->
+![Dutch App Patches. Dutch apps. Your choices.](https://gitlab.com/johninnld/nl-morphe-patches/-/raw/dddd8923e40f5bfdc54f925a216af9c48e9ef488/docs/site/assets/brand/release-banner.png)
+
+**Release · patch bundle v1.108.0.**
+
+[Source metadata](https://gitlab.com/johninnld/nl-morphe-patches/-/raw/main/patches-bundle.json) · [User guide](https://gitlab.com/johninnld/nl-morphe-patches/-/blob/main/docs/site/en/index.md)
+
+Source: [dddd8923e40f](https://gitlab.com/johninnld/nl-morphe-patches/-/commit/dddd8923e40f5bfdc54f925a216af9c48e9ef488). Check each app's target versions in the user guide before patching.
+
+---
+
+## [1.108.0](https://gitlab.com/johninnld/nl-morphe-patches/compare/v1.107.1...v1.108.0) (2026-11-26)
+
+### ✨ New Features
+
+* **Gboard:** add native editing shortcuts, symbols and grammar on 18.8 ([dddd892](https://gitlab.com/johninnld/nl-morphe-patches/commit/dddd8923e40f5bfdc54f925a216af9c48e9ef488)), closes [#13](https://gitlab.com/johninnld/nl-morphe-patches/issues/13)
+
+<!-- dap-release-branding:v1 -->
 ![Dutch App Patches. Dutch apps. Your choices.](https://gitlab.com/johninnld/nl-morphe-patches/-/raw/f5607c15c12448e923dcbc3059bbe3f0b53fe3c4/docs/site/assets/brand/release-banner.png)
 
 **Release · patch bundle v1.107.1.**
