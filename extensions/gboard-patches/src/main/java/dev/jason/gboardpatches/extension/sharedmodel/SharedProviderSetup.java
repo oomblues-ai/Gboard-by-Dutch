@@ -1,7 +1,6 @@
 package dev.jason.gboardpatches.extension.sharedmodel;
 
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -26,8 +25,7 @@ final class SharedProviderSetup {
     private static long nextUpdateCheck;
 
     static synchronized void checkForUpdates(Context context) {
-        if (dev.jason.gboardpatches.extension.privacy.GboardTelemetryPolicy.isEnabled(context)
-                || !ProviderDiscovery.isOfficialProviderSupported()) return;
+        if (!ProviderDiscovery.isOfficialProviderSupported()) return;
         long now = android.os.SystemClock.elapsedRealtime();
         if (now < nextUpdateCheck) return;
         nextUpdateCheck = now + TimeUnit.HOURS.toMillis(6);
@@ -86,26 +84,8 @@ final class SharedProviderSetup {
         VerifiedApk result=VerifiedApk.verify(context,uri,release.packageName,release.apkSha256,release.signerSha256);
         if(result.versionCode!=release.versionCode)throw new IOException("Version mismatch");return result;
     }
-    /** Launch only the pinned package URL, after the user selects the browser action. */
-    static void openDownloadInBrowser(Context context) {
-        try {
-            ProviderRelease release = release(context);
-            if (release.download == null) throw new IOException("Release download unavailable");
-            context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(release.download.toASCIIString()))
-                    .addCategory(Intent.CATEGORY_BROWSABLE)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-            message = "";
-        } catch (Exception unavailable) {
-            message = "Could not open the companion download in a browser. You can choose a downloaded APK.";
-            android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_LONG).show();
-        }
-    }
     static synchronized void cancel(){generation++;if(job!=null)job.cancel(true);busy=false;message="Download cancelled.";}
     static synchronized void download(Context context){
-        if(dev.jason.gboardpatches.extension.privacy.GboardTelemetryPolicy.isEnabled(context) && pending==null){
-            message="Gboard network access is blocked. Download Local Model Host separately and open the APK here.";
-            return;
-        }
         if(!ProviderDiscovery.isOfficialProviderSupported()){message=platformMessage();return;}
         if(busy)return;
         if(pending!=null){SharedModelSetupActivity.install(context);return;}

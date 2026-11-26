@@ -148,11 +148,6 @@ internal enum class GboardFlagFamilyFeature(
         RuntimeCallId.RAMBLER_APP_CONTEXT_RUNTIME_APPLY_FLAG_VALUE,
         GboardFlagFamilyArgumentShape.FLAG_NAME_AND_RESULT,
     ),
-    OFFLINE_TELEMETRY(
-        1600,
-        RuntimeCallId.TELEMETRY_APPLY_OFFLINE_FLAGS,
-        GboardFlagFamilyArgumentShape.FLAG_NAME_AND_RESULT,
-    ),
     ;
 
     val spec: GboardFlagFamilyFeatureSpec
@@ -720,10 +715,6 @@ private fun emitFlagFamilyRuntimeCall(call: RuntimeCallId, registers: String): S
         RuntimeCallId.RAMBLER_APP_CONTEXT_RUNTIME_APPLY_FLAG_VALUE,
         registers,
     )
-    RuntimeCallId.TELEMETRY_APPLY_OFFLINE_FLAGS -> RuntimeCallEmitter.invoke(
-        RuntimeCallId.TELEMETRY_APPLY_OFFLINE_FLAGS,
-        registers,
-    )
     else -> error("Runtime call $call does not belong to the flag family")
 }
 
@@ -769,5 +760,4 @@ private val ALL_FLAG_FAMILY_RUNTIME_CALLS: Set<RuntimeCallId> = setOf(
     RuntimeCallId.RAMBLER_CUSTOM_INSTRUCTIONS_RUNTIME_APPLY_FLAG_VALUE,
     RuntimeCallId.RAMBLER_CURSOR_EDITING_RUNTIME_APPLY_FLAG_VALUE,
     RuntimeCallId.RAMBLER_APP_CONTEXT_RUNTIME_APPLY_FLAG_VALUE,
-    RuntimeCallId.TELEMETRY_APPLY_OFFLINE_FLAGS,
 )

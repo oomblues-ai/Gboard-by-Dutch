@@ -3,7 +3,6 @@ package dev.jason.gboardpatches.extension.sharedmodel;
 import android.content.*;
 import app.johninnl.modelhost.api.*;
 import dev.jason.gboardpatches.extension.R;
-import dev.jason.gboardpatches.extension.privacy.GboardTelemetryPolicy;
 import dev.jason.gboardpatches.extension.settings.*;
 import dev.jason.gboardpatches.extension.writingtools.GboardAiWritingToolsSettings;
 import java.util.*;
@@ -48,16 +47,11 @@ public final class SharedLocalAiSettingsFeature implements GboardPatchesSettings
             GboardPatchesSettingsContract.refresh(host);
         }));
         if (supported && (!installed || SharedProviderSetup.needsUpdate(c) || SharedProviderSetup.pending() != null)) {
-            if (GboardTelemetryPolicy.isEnabled(c) && SharedProviderSetup.pending() == null) {
-                rows.add(browserDownloadRow(c, !SharedProviderSetup.busy()));
-                rows.add(chooseApkRow(c, !SharedProviderSetup.busy()));
-            } else {
-                rows.add(new GboardPatchesSettingsContract.ActionRow(
-                        SharedProviderSetup.pending() != null ? "Install companion app"
-                                : installed ? "Update Local Model Host" : "Get Local Model Host",
-                        "Download and verify the companion app, then confirm installation in Android.",
-                        !SharedProviderSetup.busy(), () -> SharedProviderSetup.download(c)));
-            }
+            rows.add(new GboardPatchesSettingsContract.ActionRow(
+                    SharedProviderSetup.pending() != null ? "Install companion app"
+                            : installed ? "Update Local Model Host" : "Get Local Model Host",
+                    "Download and verify the companion app, then confirm installation in Android.",
+                    !SharedProviderSetup.busy(), () -> SharedProviderSetup.download(c)));
         }
         if(SharedProviderSetup.busy())rows.add(new GboardPatchesSettingsContract.ActionRow("Cancel download","Keep your current setup.",true,SharedProviderSetup::cancel));
         rows.add(new GboardPatchesSettingsContract.ActionRow("Model setup","Download the model, start or stop it, and choose image support.",supported&&installed,()->openProvider(c)));
@@ -66,12 +60,6 @@ public final class SharedLocalAiSettingsFeature implements GboardPatchesSettings
         rows.add(new GboardPatchesSettingsContract.ActionRow("Advanced","Manual installation and technical status.",true,()->GboardPatchesSettingsContract.openFeature(host,advanced)));
         return new GboardPatchesSettingsContract.Screen(title,badge,title,"Writing help that stays on your device.",status,Collections.singletonList(new GboardPatchesSettingsContract.Section("Local AI",rows)),GboardPatchesSettingsContract.RefreshPolicy.fullScreen(1500),GboardPatchesSettingsContract.PanelStyle.FLAT);
     }
-    private static GboardPatchesSettingsContract.ActionRow browserDownloadRow(Context context, boolean enabled) {
-        return new GboardPatchesSettingsContract.ActionRow("Download companion in browser",
-                "Opens the pinned APK link. Return here to choose and verify the downloaded file.",
-                enabled, () -> SharedProviderSetup.openDownloadInBrowser(context));
-    }
-
     private static GboardPatchesSettingsContract.ActionRow chooseApkRow(Context context, boolean enabled) {
         return new GboardPatchesSettingsContract.ActionRow("Choose companion APK",
                 "Only the matching signed APK will be accepted.",
@@ -137,13 +125,9 @@ public final class SharedLocalAiSettingsFeature implements GboardPatchesSettings
             List<GboardPatchesSettingsContract.Row> rows=new ArrayList<>();
             boolean canInstall = ProviderDiscovery.isOfficialProviderSupported() && !SharedProviderSetup.busy();
             rows.add(chooseApkRow(context, canInstall));
-            if (GboardTelemetryPolicy.isEnabled(context)) {
-                rows.add(browserDownloadRow(context, canInstall));
-            } else {
-                rows.add(new GboardPatchesSettingsContract.ActionRow("Download companion app again",
-                        "Verify the current review and open Android’s installer.",
-                        canInstall, () -> SharedProviderSetup.download(context)));
-            }
+            rows.add(new GboardPatchesSettingsContract.ActionRow("Download companion app again",
+                    "Verify the current review and open Android’s installer.",
+                    canInstall, () -> SharedProviderSetup.download(context)));
             rows.add(new GboardPatchesSettingsContract.DetailRow("Provider state",SharedModelClient.status(context),true,true));
             if(!SharedModelClient.lastRequestError().isEmpty())rows.add(new GboardPatchesSettingsContract.DetailRow("Last error code",SharedModelClient.lastRequestError(),true,true));
             return new GboardPatchesSettingsContract.Screen(getEntryTitle(),badge,getEntryTitle(),"Details for installation and troubleshooting.",Collections.emptyList(),Collections.singletonList(new GboardPatchesSettingsContract.Section("Advanced",rows)),GboardPatchesSettingsContract.RefreshPolicy.none(),GboardPatchesSettingsContract.PanelStyle.FLAT);

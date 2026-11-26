@@ -1,8 +1,6 @@
 package patches.gboard.shared.runtimeabi
 
 internal enum class RuntimeCallId(internal val encodedAbi: String) {
-    TELEMETRY_CHECK_TRANSACTION("Ldev/jason/gboardpatches/extension/privacy/GboardTelemetryPolicy;->checkTransaction(Ljava/lang/String;Landroid/os/Parcel;)V"),
-    TELEMETRY_APPLY_OFFLINE_FLAGS("Ldev/jason/gboardpatches/extension/writingtools/GboardAiWritingToolsRuntime;->applyOfflineFlagValue(Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;"),
     AI_WRITING_TOOLS_RUNTIME_IS_AUTO_FIX_ROUTING_ENABLED("Ldev/jason/gboardpatches/extension/writingtools/GboardAiWritingToolsRuntime;->isAutoFixRoutingEnabled(Ljava/lang/Object;)Z"),
     AI_WRITING_TOOLS_RUNTIME_ALLOW_AUTO_FIX_ROUTE("Ldev/jason/gboardpatches/extension/writingtools/GboardAiWritingToolsRuntime;->allowAutoFixRoute(ZLjava/lang/Object;)Z"),
     SHARED_GRAMMAR_CREATE("LMorpheSharedGrammar188;->create(Landroid/content/Context;)Luum;"),

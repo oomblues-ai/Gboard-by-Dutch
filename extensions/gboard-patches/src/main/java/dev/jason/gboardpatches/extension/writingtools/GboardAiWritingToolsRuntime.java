@@ -148,21 +148,6 @@ public final class GboardAiWritingToolsRuntime {
         return originalResult;
     }
 
-    /** Runs last when the offline telemetry patch is selected. */
-    public static Object applyOfflineFlagValue(String flagName, Object result) {
-        if (!(result instanceof Boolean)) return result;
-        if ("enable_agentic_dictation".equals(flagName) || FLAG_HYBRID.equals(flagName)) {
-            return Boolean.FALSE;
-        }
-        if (!isEnabledCapabilityFlag(flagName)
-                && !FLAG_ENABLE_WRITING_TOOLS_VOICE_COMMANDS.equals(flagName)
-                && !FLAG_ON_DEVICE_PROOFREAD.equals(flagName)) {
-            return result;
-        }
-        return dev.jason.gboardpatches.extension.sharedmodel.GboardSharedWritingRuntime
-                .selected(resolveContext()) ? result : Boolean.FALSE;
-    }
-
     private static boolean isOverrideCandidate(String flagName, Object result) {
         if (result instanceof String) {
             return isServerModelConfiguration(flagName)

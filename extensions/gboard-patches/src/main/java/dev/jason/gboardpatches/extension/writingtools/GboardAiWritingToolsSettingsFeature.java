@@ -102,10 +102,6 @@ public final class GboardAiWritingToolsSettingsFeature
             boolean allKeyboardsEnabled =
                     GboardAiWritingToolsSettings.readAllKeyboardsEnabled(preferences);
             String backendType = GboardAiWritingToolsSettings.readBackendType(preferences);
-            boolean offline = dev.jason.gboardpatches.extension.privacy.GboardTelemetryPolicy
-                    .isEnabled(host.getContext());
-            boolean shared = GboardAiWritingToolsSettings.BACKEND_SHARED_LOCAL.equals(backendType);
-            if (offline) enabled = enabled && shared;
 
             List<GboardPatchesSettingsContract.Row> behaviorRows =
                     new ArrayList<GboardPatchesSettingsContract.Row>();
@@ -114,14 +110,7 @@ public final class GboardAiWritingToolsSettingsFeature
                     enabledSummary,
                     true,
                     enabled,
-                    value -> {
-                        if (offline) {
-                            dev.jason.gboardpatches.extension.sharedmodel.SharedLocalAiState
-                                    .select(preferences, value);
-                        } else {
-                            GboardAiWritingToolsSettings.writeEnabled(preferences, value);
-                        }
-                    })
+                    value -> GboardAiWritingToolsSettings.writeEnabled(preferences, value))
                     .setRestartRequired(GboardAiWritingToolsSettings.PREF_KEY_ENABLED));
             behaviorRows.add(new GboardPatchesSettingsContract.ToggleRow(
                     allKeyboardsTitle,
@@ -132,7 +121,7 @@ public final class GboardAiWritingToolsSettingsFeature
                             preferences,
                             value))
                     .setRestartRequired(GboardAiWritingToolsSettings.PREF_KEY_ALL_KEYBOARDS));
-            if (!offline) behaviorRows.add(new GboardPatchesSettingsContract.SelectorRow(
+            behaviorRows.add(new GboardPatchesSettingsContract.SelectorRow(
                     backendTypeTitle,
                     backendTypeSummary,
                     GboardAiWritingToolsSettings.BACKEND_SHARED_LOCAL.equals(backendType)
@@ -140,7 +129,7 @@ public final class GboardAiWritingToolsSettingsFeature
                     enabled,
                     () -> showBackendTypeDialog(host, preferences, backendType)));
 
-            if (offline || shared) {
+            if (GboardAiWritingToolsSettings.BACKEND_SHARED_LOCAL.equals(backendType)) {
                 behaviorRows.add(new GboardPatchesSettingsContract.ActionRow(
                         GboardSettingsText.get(host.getContext(), R.string.gboard_patches_shared_context_title),
                         GboardSettingsText.get(host.getContext(), R.string.gboard_patches_shared_context_summary),
