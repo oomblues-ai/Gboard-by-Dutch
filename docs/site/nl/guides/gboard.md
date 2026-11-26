@@ -122,6 +122,10 @@ Open **Patches → Keys, Layout & Symbols → Rounded Keyboard Panel**. Zet het 
 
 Open **Thema** in Gboard om een geschikt ZIP-thema te importeren, of open de galerij onder **Patches → Keys, Layout & Symbols → Custom Theme**. Laat de patch voor compatibiliteit met de apphandtekening toegepast. Importeer of download een vertrouwd thema, selecteer het en tik op **Toepassen**. Galerijthema’s worden op aanvraag opgehaald. Een download verandert je thema pas wanneer je het toepast. Wordt een ZIP geweigerd, probeer dan een bekend werkend bestand en behoud intussen het vorige thema.
 
+### Top Toolbar Item Count
+
+Selecteer **Top Toolbar Item Count** bij het patchen in Morphe. Zet bij **Patches → Keys, Layout & Symbols → Top Toolbar Item Count** de optie **Enable** aan, stel **Count** in op 3 tot 8 en herstart Gboard wanneer daarom wordt gevraagd. Controleer de werkbalk in een normaal invoerveld. Het aantal beschikbare items hangt af van het invoerveld en de ingeschakelde functies.
+
 ### G Logo on Spacebar
 
 Open **Patches → Keys, Layout & Symbols → G logo**. Kies de ingebouwde G, een ander teken of een eigen PNG, WebP of JPEG. Pas formaat en kleur aan. Laat de taalnaam eerst zichtbaar tot het logo naar wens staat. Open het toetsenbord opnieuw en bekijk de spatiebalk in je eigen thema en toetsenbordtaal.
@@ -208,7 +212,7 @@ Je browser maakt via het lokale netwerk verbinding met de telefoon. Werkt het ad
 
 ### Beta features (18.8)
 
-Open **Patches → More settings → Beta features**. Laat de hoofdschakelaar aan en wijzig één functie tegelijk om het effect te kunnen onderscheiden.
+Open **Patches → More settings → Beta features**. De hoofdschakelaar moet aanstaan om deze wijzigingen toe te passen. Zet alleen de gewenste functies aan en herstart Gboard wanneer daarom wordt gevraagd. Zet je de hoofdschakelaar uit, dan gebruikt Gboard weer zijn eigen flagwaarden en blijven je keuzes bewaard.
 
 | Functie | Hoe je het controleert |
 | --- | --- |

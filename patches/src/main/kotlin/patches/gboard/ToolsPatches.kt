@@ -1,6 +1,8 @@
 package patches.gboard
 
 import app.morphe.patcher.patch.resourcePatch
+import patches.gboard.features.accesspointcount.gboardAccessPointCountFeatureMarkerPatch
+import patches.gboard.features.accesspointcount.gboardAccessPointCountFlagValuePatch
 import patches.gboard.features.sharedmodel.gboardSharedModelPatch
 import patches.gboard.features.sharedmodel.gboardSharedModelManifestPatch
 import patches.gboard.features.ocr.gboardOcrFeatureMarkerPatch
@@ -24,6 +26,21 @@ import patches.gboard.features.hiddenflags.gboardHiddenFlagsFeatureMarkerPatch
 import patches.gboard.features.featureflags.applyFeatureMarker
 import patches.gboard.features.ramblerextras.gboardRamblerExtrasMarkerPatch
 import patches.gboard.shared.gboardPatchesSettingsPatch
+
+@Suppress("unused")
+val gboardTopToolbarItemCountPatch = resourcePatch(
+    name = "Top Toolbar Item Count",
+    description = "Adds a setting for three to eight items in Gboard's top toolbar.",
+    default = false,
+) {
+    compatibleWith(gboard)
+
+    dependsOn(
+        gboardPatchesSettingsPatch,
+        gboardAccessPointCountFeatureMarkerPatch,
+        gboardAccessPointCountFlagValuePatch,
+    )
+}
 
 /**
  * Gboard's Scan Text (OCR).

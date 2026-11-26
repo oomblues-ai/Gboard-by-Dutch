@@ -2907,7 +2907,7 @@
         <translation locale="en">Features</translation>
     </string>
     <string name="gboard_patches_beta_flags_master_summary">
-        <translation locale="en">Master switch for every feature below. Each one can also be turned on by itself.</translation>
+        <translation locale="en">Turn this on to apply the selected beta features. Turn it off to use Gboard’s own values and keep your selections.</translation>
     </string>
     <string name="gboard_patches_beta_flag_quick_paste_title">
         <translation locale="en">Plain-text quick-paste chip</translation>

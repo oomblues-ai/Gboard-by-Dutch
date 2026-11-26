@@ -40,6 +40,7 @@ Select Google's armeabi-v7a APK (build 176124765) or arm64-v8a APK (build 176124
 | **Clipboard Enhancements** | On | Controls how long copied snippets stay available, how many are kept, how many preview lines a card shows, and whether cards show a countdown, creation time, order number and column count. |
 | **Web Clipboard** | On | Hosts a small Web Clipboard portal on the phone so a desktop browser on the same local network can exchange clipboard text with Gboard. The portal is protected by a pairing code and can be reached from a Quick Settings tile. |
 | **Toolbar Editing Buttons** | On | Adds Select All, Copy, Cut and Paste to Gboard's menu so they can be dragged onto the top toolbar and used across supported keyboard languages and editors. |
+| **Top Toolbar Item Count** | Off | Choose three to eight top toolbar items in Gboard settings. Restart the keyboard after changing the count. |
 | **Cursor trackpad mode** | On | Long-press the space bar to move the cursor more precisely with a trackpad and use the lock mode. |
 | **Incognito Mode Toggle** | On | Adds an Incognito toggle to the Access Point toolbar and lets you choose whether the clipboard and voice typing stay available while Incognito is active. This controls Gboard's own incognito state; it is not a network-wide tracking blocker. |
 | **Simple Calculator** | On | Type an arithmetic expression in a text field and see a scrollable equation with its answer in Gboard's suggestion row, ready to insert. |

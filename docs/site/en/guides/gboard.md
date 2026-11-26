@@ -122,6 +122,10 @@ Open **Patches → Keys, Layout & Symbols → Rounded Keyboard Panel**. Enable i
 
 Open Gboard’s **Theme** screen to import a compatible ZIP theme or use the theme gallery in **Patches → Keys, Layout & Symbols → Custom Theme**. Keep the signature compatibility patch applied. Save or import a trusted theme, select it, and tap **Apply**. Gallery packs are downloaded on demand. A downloaded pack stays inactive until you apply the theme. If a ZIP is rejected, try a known-compatible pack and keep the previous theme while checking the file.
 
+### Top Toolbar Item Count
+
+Select **Top Toolbar Item Count** when patching in Morphe. In **Patches → Keys, Layout & Symbols → Top Toolbar Item Count**, turn on **Enable**, set **Count** to a value from 3 to 8, and restart Gboard when prompted. Open the keyboard in a regular text field and check the toolbar. The number of available items can vary with the editor and enabled features.
+
 ### G Logo on Spacebar
 
 Open **Patches → Keys, Layout & Symbols → G logo**. Select the built-in G, another glyph or your own PNG, WebP or JPEG. Adjust the size and color. Leave the language label visible until the image is positioned as you like. Reopen the keyboard and check the logo in the theme and language you normally use.
@@ -208,7 +212,7 @@ The browser connects to the phone on the local network. If the address fails, ma
 
 ### Beta features (18.8)
 
-Open **Patches → More settings → Beta features**. Keep the master switch on and change one feature at a time so you can tell which behavior changed.
+Open **Patches → More settings → Beta features**. The master switch must be on to apply any of these overrides. Turn on only the individual features you want, then restart Gboard when prompted. Turning the master off restores Gboard’s own flag values and keeps your individual choices.
 
 | Feature | How to check it |
 | --- | --- |
