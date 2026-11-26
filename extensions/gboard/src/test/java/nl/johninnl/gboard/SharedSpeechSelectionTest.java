@@ -10,13 +10,17 @@ import static org.junit.Assert.*;
 
 public class SharedSpeechSelectionTest {
     private Context context(boolean selected){
+        return context(selected, false);
+    }
+    private Context context(boolean selected, boolean rambler){
         SharedPreferences preferences=(SharedPreferences)Proxy.newProxyInstance(getClass().getClassLoader(),new Class<?>[]{SharedPreferences.class},(proxy,method,args)->{
-            if(method.getName().equals("getBoolean"))return selected;
+            if(method.getName().equals("getBoolean"))return "enable_jetson".equals(args[0]) ? rambler : selected;
             if(method.getName().equals("getString"))return args[1];
             return null;
         });
         return new ContextWrapper(null){
             @Override public Context getApplicationContext(){return this;}
+            @Override public String getPackageName(){return "keyboard.test";}
             @Override public SharedPreferences getSharedPreferences(String name,int mode){return preferences;}
             @Override public int checkSelfPermission(String permission){return PackageManager.PERMISSION_DENIED;}
         };
@@ -30,5 +34,10 @@ public class SharedSpeechSelectionTest {
         ParakeetRecognizer recognizer = ParakeetRecognizer.createForVoiceRequest(context(true), false);
         assertNotNull(recognizer);
         recognizer.shutdown();
+    }
+    @Test public void enhancedVoiceYieldsOnlyForSelectedSharedStandardSpeech() {
+        assertTrue(ParakeetRecognizer.shouldUseSharedStandard(context(true, false)));
+        assertFalse(ParakeetRecognizer.shouldUseSharedStandard(context(true, true)));
+        assertFalse(ParakeetRecognizer.shouldUseSharedStandard(context(false, false)));
     }
 }

@@ -72,6 +72,13 @@ public final class ParakeetRecognizer {
         this.context = context;
     }
 
+    /** Gboard 18.8's enhanced Standard path bypasses the recognizer factory. */
+    public static boolean shouldUseSharedStandard(Context context) {
+        return context != null && ParakeetStore.unlocked(context) && ParakeetStore.enabled(context)
+                && !context.getSharedPreferences(context.getPackageName() + "_preferences", Context.MODE_PRIVATE)
+                        .getBoolean("enable_jetson", false);
+    }
+
     /** A user-armed edit uses the shared speech provider even if the native request prefers Rambler. */
     public static ParakeetRecognizer createForVoiceRequest(Context context, boolean rambler) {
         boolean edit = VoiceEditHook.needsLocalRecognizer();

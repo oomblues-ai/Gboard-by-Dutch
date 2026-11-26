@@ -21,6 +21,7 @@ import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21s
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
@@ -743,6 +744,27 @@ val parakeetVoiceTyping = bytecodePatch(
         constructor.addInstructions(returnIndex, """
             invoke-static {p0}, $RECOGNIZER->attachService(Landroid/inputmethodservice/InputMethodService;)V
         """)
+
+        if (GboardVersionBindings.targetVersion == "18.8.0-beta") {
+            // NGA constructs its own dictation client when this preference is true. Standard with
+            // shared speech selected must use the voice-ime factory, which supplies the host engine.
+            val enhanced = GboardMethodTarget("Lrtt;", "d", emptyList(), "Z").resolve(this)
+            GboardFieldTarget("Lrtt;", "a", CONTEXT).resolve(this)
+            check(enhanced.instructionsOrEmpty().any { (it as? NarrowLiteralInstruction)?.narrowLiteral == 0x7f14093c }) {
+                "Gboard enhanced voice preference binding changed"
+            }
+            check(enhanced.implementation!!.registerCount >= 2) {
+                "Gboard enhanced voice preference does not have a free local register"
+            }
+            enhanced.addInstructionsWithLabels(0, """
+                iget-object v0, p0, Lrtt;->a:$CONTEXT
+                invoke-static {v0}, $RECOGNIZER->shouldUseSharedStandard($CONTEXT)Z
+                move-result v0
+                if-eqz v0, :enhanced_stock
+                const/4 v0, 0x0
+                return v0
+            """, ExternalLabel("enhanced_stock", enhanced.getInstruction(0)))
+        }
 
         val factory = mutableClassDefBy(contract.factory.definingClass).methods
             .single { it.name == contract.factory.name && it.params() == contract.factory.params() && it.returnType == contract.factory.returnType }
