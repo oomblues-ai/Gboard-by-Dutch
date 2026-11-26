@@ -32,6 +32,21 @@ internal val gboardSharedModelPatch = bytecodePatch(
         val nativeKeyboard="Lcom/google/android/apps/inputmethod/libs/jarvis/JarvisKeyboard;"
         GboardMethodTarget(nativeKeyboard,"ep",listOf("Lcom/google/android/libraries/inputmethod/widgets/SoftKeyboardView;","Lcom/google/android/libraries/inputmethod/metadata/KeyboardViewDef;"),"V").resolve(this).addInstructions(0,RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_KEYBOARD_SURFACE_BIND,"p0 .. p1"))
         GboardMethodTarget(nativeKeyboard,"f",emptyList(),"V").resolve(this).addInstructions(0,RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_KEYBOARD_SURFACE_CLEAR,""))
+        // On return from screen consent the keyboard can reuse an already-active JarvisExtension.
+        // Restore its editor bridge from the keyboard that actually took ownership of the session.
+        GboardFieldTarget(nativeKeyboard,"b","Lpuq;").resolve(this)
+        val keyboardActivation=GboardMethodTarget(nativeKeyboard,"e",listOf("Landroid/view/inputmethod/EditorInfo;","Ljava/lang/Object;"),"V").resolve(this)
+        val stockKeyboardActivation="morpheSharedStock_jarvisActivate"
+        check(mutableClass(nativeKeyboard).methods.none{it.name==stockKeyboardActivation}){"Native keyboard activation wrapper already exists"}
+        keyboardActivation.name=stockKeyboardActivation
+        addHelperMethodIfMissing(nativeKeyboard,"e",keyboardActivation.parameterTypes.map(CharSequence::toString),"V",keyboardActivation.accessFlags,4,"""
+            invoke-virtual {p0, p1, p2}, ${nativeKeyboard}->${stockKeyboardActivation}(Landroid/view/inputmethod/EditorInfo;Ljava/lang/Object;)V
+            iget-object v0, p0, ${nativeKeyboard}->b:Lpuq;
+            if-eqz v0, :done
+            ${RuntimeCallEmitter.invoke(RuntimeCallId.SHARED_EDITOR_REMEMBER,"v0")}
+            :done
+            return-void
+        """.trimIndent())
         applySharedRequestDispatch(this)
         val provisioning=GboardMethodTarget("Ladtl;","k",emptyList(),"Z").resolve(this)
         val stockProvisioning="morpheSharedStock_k"
