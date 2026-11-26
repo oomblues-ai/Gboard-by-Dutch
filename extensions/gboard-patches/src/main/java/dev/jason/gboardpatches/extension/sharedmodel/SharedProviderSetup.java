@@ -1,6 +1,7 @@
 package dev.jason.gboardpatches.extension.sharedmodel;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -36,6 +37,20 @@ final class SharedProviderSetup {
     private static VerifiedApk verify(Context context,Uri uri,SharedProviderRelease release)throws Exception{
         VerifiedApk result=VerifiedApk.verify(context,uri,release.packageName,release.apkSha256,release.signerSha256);
         if(result.versionCode!=release.versionCode)throw new IOException("Version mismatch");return result;
+    }
+    /** Launch only the pinned package URL, after the user selects the browser action. */
+    static void openDownloadInBrowser(Context context) {
+        try {
+            SharedProviderRelease release = release(context);
+            if (release.download == null) throw new IOException("Release download unavailable");
+            context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(release.download.toASCIIString()))
+                    .addCategory(Intent.CATEGORY_BROWSABLE)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            message = "";
+        } catch (Exception unavailable) {
+            message = "Could not open the companion download in a browser. You can choose a downloaded APK.";
+            android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_LONG).show();
+        }
     }
     static synchronized void cancel(){generation++;if(job!=null)job.cancel(true);busy=false;message="Download cancelled.";}
     static synchronized void download(Context context){

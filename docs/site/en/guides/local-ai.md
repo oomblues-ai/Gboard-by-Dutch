@@ -8,7 +8,7 @@ The standard install retains the original Gboard backends.
 
 Enable the optional **Block Gboard telemetry** patch in Morphe for offline typing or Local AI. The patch removes Gboard’s network permission and blocks the identified Google Play services telemetry, usage-reporting and feedback transactions from Gboard. The writing settings offer Local AI or off, and Rambler is disabled.
 
-Gboard network features such as GIF search, sync, LAN tools and the in-keyboard companion download are unavailable with this patch. Install the companion separately or open a previously downloaded verified APK from Local AI setup. Local Model Host runs in its own app and communicates with Gboard over Binder. The host’s downloads and tools follow its own settings.
+Gboard network features such as GIF search, sync, LAN tools and the in-keyboard companion download are unavailable with this patch. In Local AI setup, tap **Download companion in browser**, then return and tap **Choose companion APK**. Gboard verifies the downloaded file before opening Android’s installer. A separately installed compatible Host also works. Local Model Host runs in its own app and communicates with Gboard over Binder. The host’s downloads and tools follow its own settings.
 
 ## Install the companion
 

@@ -8,7 +8,7 @@ De standaardinstallatie behoudt de oorspronkelijke Gboard-backends.
 
 Schakel in Morphe de optionele patch **Block Gboard telemetry** in voor offline typen of Local AI. De patch verwijdert de netwerktoestemming van Gboard en blokkeert de gevonden telemetrie-, gebruiksrapportage- en feedbacktransacties van Gboard naar Google Play-services. Bij de schrijfinstellingen kun je Local AI kiezen of de functie uitschakelen. Rambler is uitgeschakeld.
 
-Netwerkfuncties van Gboard, zoals GIF-zoeken, synchronisatie, LAN-tools en de companion downloaden vanuit het toetsenbord, zijn met deze patch niet beschikbaar. Installeer de companion afzonderlijk of open een eerder gedownloade, geverifieerde APK via Local AI. Local Model Host draait in een aparte app en communiceert met Gboard via Binder. De eigen instellingen van de host bepalen de downloads en tools.
+Netwerkfuncties van Gboard, zoals GIF-zoeken, synchronisatie, LAN-tools en de companion downloaden vanuit het toetsenbord, zijn met deze patch niet beschikbaar. Kies bij Local AI **Download companion in browser**. Ga daarna terug en tik op **Choose companion APK**. Gboard verifieert het gedownloade bestand voordat het Androids installatievenster opent. Een afzonderlijk geïnstalleerde compatibele Host werkt ook. Local Model Host draait in een aparte app en communiceert met Gboard via Binder. De eigen instellingen van de host bepalen de downloads en tools.
 
 ## De companion installeren
 
