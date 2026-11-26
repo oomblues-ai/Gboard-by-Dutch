@@ -1,4 +1,21 @@
 <!-- dap-release-branding:v1 -->
+![Dutch App Patches. Dutch apps. Your choices.](https://gitlab.com/johninnld/nl-morphe-patches/-/raw/f5607c15c12448e923dcbc3059bbe3f0b53fe3c4/docs/site/assets/brand/release-banner.png)
+
+**Release · patch bundle v1.107.1.**
+
+[Source metadata](https://gitlab.com/johninnld/nl-morphe-patches/-/raw/main/patches-bundle.json) · [User guide](https://gitlab.com/johninnld/nl-morphe-patches/-/blob/main/docs/site/en/index.md)
+
+Source: [f5607c15c124](https://gitlab.com/johninnld/nl-morphe-patches/-/commit/f5607c15c12448e923dcbc3059bbe3f0b53fe3c4). Check each app's target versions in the user guide before patching.
+
+---
+
+## [1.107.1](https://gitlab.com/johninnld/nl-morphe-patches/compare/v1.107.0...v1.107.1) (2026-11-26)
+
+### 🐛 Bug Fixes
+
+* **Gboard:** preserve the spacebar logo on repeated binds ([96e7e03](https://gitlab.com/johninnld/nl-morphe-patches/commit/96e7e03d395f79464c0b8aeffc457bd452f2f537))
+
+<!-- dap-release-branding:v1 -->
 ![Dutch App Patches. Dutch apps. Your choices.](https://gitlab.com/johninnld/nl-morphe-patches/-/raw/de208d5bddf0eeeb88c5e30a9ebfcd8ced42b146/docs/site/assets/brand/release-banner.png)
 
 **Release · patch bundle v1.107.0.**
