@@ -162,7 +162,7 @@ public final class GboardPatchesSettingsActivity extends Activity
     private static final float ROW_TITLE_SP = 16f;
     private static final float ROW_SUMMARY_SP = 13.5f;
     private static final int NO_SCROLL_POSITION_REQUESTED = -1;
-    private static final String TOOLBAR_TITLE_PATCHES = "Patches";
+    private static final String TOOLBAR_TITLE_PATCHES = "Gboard+ Menu";
     private static final String DOCUMENT_TYPE_FALLBACK = "text/plain";
     private static final String DOCUMENT_PICKER_FAILED = "Unable to open file picker.";
     private static final String DOCUMENT_WRITE_FAILED = "Failed to export file.";

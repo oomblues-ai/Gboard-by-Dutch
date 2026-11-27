@@ -9,9 +9,9 @@ internal object PatchBuildInfo {
 internal object Constants {
     const val GBOARD_PACKAGE_NAME = "com.google.android.inputmethod.latin"
     const val GBOARD_PATCHED_PACKAGE_NAME = "dev.jason.com.google.android.inputmethod.latin"
-    const val GBOARD_PATCH_AUTHOR = "JohninNL"
-    const val GBOARD_PATCH_AUTHOR_URL = "https://gitlab.com/johninnld"
-    const val GBOARD_PATCH_REPOSITORY_URL = "https://gitlab.com/johninnld/nl-morphe-patches"
+    const val GBOARD_PATCH_AUTHOR = "Aziz Nugroho"
+    const val GBOARD_PATCH_AUTHOR_URL = "https://github.com/oomblues-ai"
+    const val GBOARD_PATCH_REPOSITORY_URL = "https://github.com/oomblues-ai/Gboard-by-Dutch"
     val GBOARD_PATCH_VERSION = PatchBuildInfo.VERSION
 
     val COMPATIBILITY_GBOARD = gboardCompatibility

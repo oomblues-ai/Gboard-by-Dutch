@@ -101,12 +101,12 @@ android {
 
     defaultConfig {
         minSdk = 26
-        buildConfigField("String", "PATCH_AUTHOR", "\"JohninNL\"")
-        buildConfigField("String", "PATCH_AUTHOR_URL", "\"https://gitlab.com/johninnld\"")
+        buildConfigField("String", "PATCH_AUTHOR", "\"Aziz Nugroho\"")
+        buildConfigField("String", "PATCH_AUTHOR_URL", "\"https://github.com/oomblues-ai\"")
         buildConfigField(
             "String",
             "PATCH_REPOSITORY_URL",
-            "\"https://gitlab.com/johninnld/nl-morphe-patches\""
+            "\"https://github.com/oomblues-ai/Gboard-by-Dutch\""
         )
         buildConfigField("String", "PATCH_VERSION", "\"${project.version}\"")
     }

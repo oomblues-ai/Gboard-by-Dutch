@@ -9,13 +9,13 @@ import org.w3c.dom.Element
 private const val ANDROID_NS = "http://schemas.android.com/apk/res/android"
 private const val BRANDING_NAME = "morphe_gboard_app_name"
 private const val BRANDING_ICON = "morphe_gboard_launcher"
-private const val DEFAULT_NAME = "Gboard Parakeet/Rambler"
-private const val DEFAULT_ICON = "parakeet"
+private const val DEFAULT_NAME = "Gboard+"
+private const val DEFAULT_ICON = "oomblues"
 private const val ORIGINAL_ICON = "original"
 
 /** Bundled launcher icons under resources/gboard/branding/<id>/. */
 internal val gboardIconStyles = linkedMapOf(
-    "Parakeet (default)" to DEFAULT_ICON,
+    "oomblues (default)" to DEFAULT_ICON,
     "Original Gboard" to ORIGINAL_ICON,
     "3D keys" to "glossy_3d",
     "Classic blue" to "classic_blue",

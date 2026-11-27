@@ -7,7 +7,7 @@ import org.w3c.dom.Attr
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 
-internal const val GBOARD_MORPHE_PACKAGE = "app.morphe.android.inputmethod.latin"
+internal const val GBOARD_MORPHE_PACKAGE = "com.android.oomblues.inputmethod.latin"
 
 private fun Document.elements(tag: String): List<Element> =
     getElementsByTagName(tag).let { list -> (0 until list.length).map { list.item(it) as Element } }

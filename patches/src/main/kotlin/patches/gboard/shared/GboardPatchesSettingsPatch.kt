@@ -159,7 +159,7 @@ internal const val GBOARD_PATCHES_SETTINGS_PROVIDER_CLASS =
     "dev.jason.gboardpatches.extension.settings.GboardPatchesSettingsProvider"
 internal const val GBOARD_PATCHES_SETTINGS_PROVIDER_AUTHORITY_SUFFIX = ".gboard_patches"
 private const val PATCHES_SETTINGS_ENTRY_KEY = "gboard_patches_entry"
-private const val PATCHES_SETTINGS_ENTRY_TITLE = "Patches"
+private const val PATCHES_SETTINGS_ENTRY_TITLE = "Gboard+ Menu"
 private const val HEADER_PREFERENCE_TAG =
     "com.google.android.libraries.inputmethod.settings.widget.HeaderPreference"
 private const val RATE_US_PREFERENCE_TAG =
