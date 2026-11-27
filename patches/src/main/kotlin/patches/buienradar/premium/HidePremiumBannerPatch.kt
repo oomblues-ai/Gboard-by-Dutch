@@ -120,19 +120,21 @@ val hidePremiumBannerPatch = bytecodePatch(
         }
         check(settingsSites == 2) { "Expected Info tab and Pay-or-OK promotions, found $settingsSites" }
 
-        // Complete the trial notification job successfully without posting it.
-        // The worker's own early exit (no notification permission) returns this result type.
-        TrialNotificationWorkFingerprint.method.apply {
-            val successType = instructions.last { it.opcode == Opcode.NEW_INSTANCE }
-                .let { ((it as ReferenceInstruction).reference as TypeReference).type }
-            addInstructions(
-                0,
-                """
-                    new-instance v0, $successType
-                    invoke-direct {v0}, $successType-><init>()V
-                    return-object v0
-                """
-            )
+        // 8.1.0 removes the trial worker and deletes the old notification channel.
+        if (packageMetadata.versionName == "7.4.8") {
+            TrialNotificationWorkFingerprint.method.apply {
+                // Complete the job with the same success result as its stock early exit.
+                val successType = instructions.last { it.opcode == Opcode.NEW_INSTANCE }
+                    .let { ((it as ReferenceInstruction).reference as TypeReference).type }
+                addInstructions(
+                    0,
+                    """
+                        new-instance v0, $successType
+                        invoke-direct {v0}, $successType-><init>()V
+                        return-object v0
+                    """
+                )
+            }
         }
     }
 }

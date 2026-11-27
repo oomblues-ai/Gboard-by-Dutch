@@ -5,7 +5,7 @@ import app.morphe.patcher.patch.AppTarget
 import app.morphe.patcher.patch.Compatibility
 
 internal object Constants {
-    private fun compatibility(build: Int) = Compatibility(
+    private fun compatibility(vararg targets: AppTarget) = Compatibility(
         name = "Buienradar",
         packageName = "com.supportware.Buienradar",
         apkFileType = ApkFileType.APKM,
@@ -15,21 +15,18 @@ internal object Constants {
             "4392d8f67eedd4d2c52370e69911df3ad465d6d6f7d7176cd5f2b4bdefcca9cc",
             "80d91716e88298892a4d34076ae3562ac9e2212e08048d09dbfeca2c26a6ed92",
         ),
-        targets = listOf(
-            AppTarget(
-                version = "7.4.8",
-                versionCode = build,
-                minSdk = 28
-            )
-        )
+        targets = targets.toList(),
     )
 
-    val COMPATIBILITY_BUIENRADAR = compatibility(7915)
+    val COMPATIBILITY_BUIENRADAR = compatibility(
+        AppTarget(version = "8.1.0", versionCode = 7989, minSdk = 28),
+        AppTarget(version = "7.4.8", versionCode = 7915, minSdk = 28),
+    )
 
     // Morphe allows one catalog target per version name. Keep the earlier signed build in preflight.
     val originalInput = patches.shared.originalInput(
         COMPATIBILITY_BUIENRADAR,
-        variants = listOf(compatibility(7897)),
+        variants = listOf(compatibility(AppTarget(version = "7.4.8", versionCode = 7897, minSdk = 28))),
         additionalMinSdksByVersion = mapOf("7.4.8" to setOf(29, 32)),
     )
 }
