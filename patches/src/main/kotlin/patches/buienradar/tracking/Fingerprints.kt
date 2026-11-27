@@ -27,6 +27,21 @@ internal object AnalyticsDispatchFingerprint : Fingerprint(
     strings = listOf("SNOWPLOW failed to get page name", "Failed to send Usabilla event: ")
 )
 
+/** 8.1.0 dispatches the same events from a suspend function returning Unit. */
+internal object SuspendAnalyticsDispatchFingerprint : Fingerprint(
+    returnType = "Ljava/lang/Object;",
+    parameters = listOf("L", "L"),
+    strings = listOf("PLUS_SUBSCRIPTION_STATUS_SENT", "Failed to send Usabilla event: "),
+    filters = listOf(methodCall(definingClass = "Lcom/usabilla/sdk/ubform/Usabilla;", name = "sendEvent")),
+)
+
+internal object KotlinUnitFingerprint : Fingerprint(
+    name = "toString",
+    returnType = "Ljava/lang/String;",
+    parameters = listOf(),
+    strings = listOf("kotlin.Unit"),
+)
+
 /** Shared coroutine class whose video-play branch sends pings to Smartocto. */
 internal object SmartoctoRequestFingerprint : Fingerprint(
     strings = listOf("https://ingestion.smartocto.com/")
@@ -41,6 +56,18 @@ internal fun smartoctoListenerFingerprint(requestType: String, videoPlayBranch: 
         literal(videoPlayBranch),
         methodCall(definingClass = requestType, name = "<init>")
     )
+)
+
+/** In 8.1.0 the constructor reuses the value 1 from the playback state comparison. */
+internal fun smartoctoPlaybackFingerprint(requestType: String) = Fingerprint(
+    returnType = "V",
+    parameters = listOf("L"),
+    filters = listOf(
+        literal(1L),
+        methodCall(name = "getTitle", returnType = "Ljava/lang/String;"),
+        newInstance(requestType),
+        methodCall(definingClass = requestType, name = "<init>"),
+    ),
 )
 
 internal object BitmovinPlayerAnalyticsFingerprint : Fingerprint(

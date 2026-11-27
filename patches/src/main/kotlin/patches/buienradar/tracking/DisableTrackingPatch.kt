@@ -6,6 +6,7 @@ import app.morphe.patcher.patch.resourcePatch
 import org.w3c.dom.Element
 import patches.buienradar.shared.Constants.COMPATIBILITY_BUIENRADAR
 import patches.buienradar.shared.Constants.originalInput
+import patches.shared.uniqueMatch
 
 private const val ANDROID = "http://schemas.android.com/apk/res/android"
 
@@ -84,13 +85,22 @@ val disableTrackingPatch = bytecodePatch(
         SnowplowInitFingerprint.method.addInstructions(0, "return-void")
 
         // The dispatcher only forwards events and records which ones were sent.
-        AnalyticsDispatchFingerprint.method.addInstructions(0, "return-void")
-
-        // Smartocto "videoPlay" ping on first playback of each video.
         val smartoctoRequest = SmartoctoRequestFingerprint.originalClassDef.type
-        // R8 assigned the same coroutine action a new switch case in build 7915.
-        val videoPlayBranch = if (packageMetadata.versionCode == "7915") 0x1dL else 0x1cL
-        smartoctoListenerFingerprint(smartoctoRequest, videoPlayBranch).method.addInstructions(0, "return-void")
+        val smartoctoListener = if (packageMetadata.versionName == "8.1.0") {
+            val unitClass = KotlinUnitFingerprint.originalClassDef
+            val unit = unitClass.staticFields.single { it.type == unitClass.type }
+            SuspendAnalyticsDispatchFingerprint.uniqueMatch().method.addInstructions(
+                0,
+                "sget-object v0, ${unit.definingClass}->${unit.name}:${unit.type}\nreturn-object v0",
+            )
+            smartoctoPlaybackFingerprint(smartoctoRequest).uniqueMatch().method
+        } else {
+            AnalyticsDispatchFingerprint.method.addInstructions(0, "return-void")
+            val videoPlayBranch = if (packageMetadata.versionCode == "7915") 0x1dL else 0x1cL
+            smartoctoListenerFingerprint(smartoctoRequest, videoPlayBranch).method
+        }
+        // Smartocto "videoPlay" ping on first playback of each video.
+        smartoctoListener.addInstructions(0, "return-void")
 
         // Bitmovin Analytics: return the player/source without attaching a collector.
         BitmovinPlayerAnalyticsFingerprint.method.addInstructions(0, "return-object p0")
